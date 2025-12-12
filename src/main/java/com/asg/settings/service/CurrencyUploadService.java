@@ -1,7 +1,7 @@
 package com.asg.settings.service;
 
 import com.asg.settings.dto.CurrencyRateDto;
-import com.asg.settings.dto.CurrencyUpdateRequest;
+import com.asg.settings.dto.request.CurrencyUpdateRequest;
 import com.asg.settings.repository.CurrencyRateTempRepository;
 import com.asg.settings.repository.CurrencyRepository;
 import com.asg.settings.repository.CurrencyUploadRepository;

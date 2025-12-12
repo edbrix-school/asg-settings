@@ -1,0 +1,22 @@
+package com.asg.settings.dto.response;
+
+import lombok.Data;
+
+import java.sql.Timestamp;
+
+@Data
+public class DivisionResponse {
+    private Long divisionId;
+    private String divisionCode;
+    private String divisionName;
+    private String companyName;
+    private String address;
+    private String remarks;
+    private String active;
+    private Integer seqNo;
+    private Integer deleted;
+    private String createdBy;
+    private Timestamp createdAt;
+    private String updatedBy;
+    private Timestamp updatedAt;
+}

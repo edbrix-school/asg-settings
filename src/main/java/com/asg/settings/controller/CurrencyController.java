@@ -5,8 +5,8 @@ import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.CurrencyRateDto;
-import com.asg.settings.dto.CurrencyUpdateRequest;
 import com.asg.settings.dto.request.CurrencyCreateRequest;
+import com.asg.settings.dto.request.CurrencyUpdateRequest;
 import com.asg.settings.entity.CurrencyEntity;
 import com.asg.settings.service.CurrencyService;
 import com.asg.settings.service.CurrencyUploadService;
@@ -29,7 +29,7 @@ import java.util.Map;
 import static com.asg.common.lib.dto.response.ApiResponse.*;
 
 @RestController
-@RequestMapping("/v1/currency")
+@RequestMapping("/v1/master/currency")
 
 @RequiredArgsConstructor
 public class CurrencyController {
