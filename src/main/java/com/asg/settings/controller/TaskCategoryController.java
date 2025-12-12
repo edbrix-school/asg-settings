@@ -3,6 +3,7 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.TaskCategoryDto;
 import com.asg.settings.dto.TaskSubCategoryDto;
 import com.asg.settings.service.TaskCategoryService;
@@ -48,8 +49,6 @@ public class TaskCategoryController {
      * Retrieves a task category by its unique identifier
      *
      * @param categoryPoid    The unique identifier of the task category to retrieve
-     * @param documentId      The document identifier for tracking purposes
-     * @param actionRequested The action being performed ( VIEW)
      * @return ResponseEntity containing the TaskCategoryDto if found
      */
     @Operation(
@@ -71,22 +70,7 @@ public class TaskCategoryController {
     @GetMapping("/{categoryPoid}")
     public ResponseEntity<?> getTaskCategory(
             @Parameter(description = "CATEGORY_POID of the task category to be retrieved", required = true, example = "1")
-            @PathVariable Long categoryPoid,
-
-            @Parameter(
-                    description = "Document identifier for tracking purposes",
-                    required = true,
-                    example = "000-019"
-            )
-            @RequestParam String documentId,
-
-            @Parameter(
-                    description = "Action being performed on the resource",
-                    required = true,
-                    example = "VIEW",
-                    schema = @Schema(allowableValues = {"VIEW"})
-            )
-            @RequestParam String actionRequested) {
+            @PathVariable Long categoryPoid) {
 
         TaskCategoryDto taskCategoryDto = taskCategoryService.getTaskCategory(categoryPoid);
 
@@ -107,11 +91,7 @@ public class TaskCategoryController {
     public ResponseEntity<?> softDeleteTaskCategory(
             @Parameter(description = "Task Category POID", required = true)
             @PathVariable Long catPoid,
-            Principal principal,
-            @Parameter(description = "Document identifier", required = true)
-            @RequestParam String documentId,
-            @Parameter(description = "Action requested", required = true)
-            @RequestParam String actionRequested) {
+            Principal principal) {
         try {
             return taskCategoryService.softDeleteTaskCategory(catPoid, principal.getName());
         } catch (Exception ex) {
@@ -156,10 +136,6 @@ public class TaskCategoryController {
                       Examples:
                       • sort=CATEGORY_DESCRIPTION,ASC
                       • sort=CATEGORY_POID,DESC
-                    
-                    - ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document
-                        - **actionRequested:** Action being performed (`VIEW`)
                     """,
             content = @Content(
                     schema = @Schema(implementation = FilterRequestDto.class),
@@ -201,13 +177,9 @@ public class TaskCategoryController {
     @PostMapping("/list")
     public ResponseEntity<?> getTaskCategory(
             @ParameterObject Pageable pageable,
-            @RequestBody(required = false) FilterRequestDto filters,
-            @Parameter(description = "Document identifier", required = true)
-            @RequestParam String documentId,
-            @Parameter(description = "Action requested", required = true)
-            @RequestParam String actionRequested) {
+            @RequestBody(required = false) FilterRequestDto filters) {
         try {
-            Map<String, Object> taskCategories = taskCategoryService.listTaskCategories(documentId, filters, pageable);
+            Map<String, Object> taskCategories = taskCategoryService.listTaskCategories(UserContext.getDocumentId(), filters, pageable);
             return success("Task Category fetched successfully", taskCategories);
         } catch (ValidationException ex) {
             return badRequest(ex.getMessage());
@@ -261,11 +233,7 @@ public class TaskCategoryController {
     )
     @PostMapping
     public ResponseEntity<?> createTaskCategory(
-            @Valid @RequestBody TaskCategoryDto taskCategoryDto,
-            @Parameter(description = "Document identifier", required = true)
-            @RequestParam String documentId,
-            @Parameter(description = "Action requested", required = true)
-            @RequestParam String actionRequested) {
+            @Valid @RequestBody TaskCategoryDto taskCategoryDto) {
 
         TaskCategoryDto createdCategory = taskCategoryService.createTaskCategory(taskCategoryDto);
         return success("Task Category created successfully", createdCategory);
@@ -325,11 +293,7 @@ public class TaskCategoryController {
     public ResponseEntity<?> updateTaskCategory(
             @Parameter(description = "CATEGORY_POID of the task category to be updated", required = true)
             @PathVariable Long categoryPoid,
-            @Valid @RequestBody TaskCategoryDto taskCategoryDto,
-            @Parameter(description = "Document identifier", required = true)
-            @RequestParam String documentId,
-            @Parameter(description = "Action requested", required = true)
-            @RequestParam String actionRequested) {
+            @Valid @RequestBody TaskCategoryDto taskCategoryDto) {
 
         TaskCategoryDto updatedCategory = taskCategoryService.updateTaskCategory(categoryPoid, taskCategoryDto);
         return success("Task Category updated successfully", updatedCategory);
@@ -364,21 +328,7 @@ public class TaskCategoryController {
                     example = "123",
                     required = false
             )
-            @RequestParam(required = false) Long categoryPoid,
-
-            @Parameter(
-                    description = "Document identifier",
-                    example = "000-019",
-                    required = true
-            )
-            @RequestParam String documentId,
-
-            @Parameter(
-                    description = "Action requested",
-                    example = "VIEW",
-                    required = true
-            )
-            @RequestParam String actionRequested) {
+            @RequestParam(required = false) Long categoryPoid) {
 
         if (StringUtils.isBlank(categoryDescription)) {
             return success("Category does not exist by description", false);

@@ -5,6 +5,7 @@ import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.LastTaskDto;
 import com.asg.settings.dto.TaskDto;
 import com.asg.settings.entity.Task;
@@ -59,10 +60,6 @@ public class TaskController {
                         - **taskType:** Type of task (e.g., Minor Enhancement).  
                         - **taskUserPoid:** User allocated to the task.  
                         - Other fields as applicable for task management.
-
-                    ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-018`)  
-                        - **actionRequested:** Action being performed (`CREATE`)
                     """,
             content = @Content(
                     schema = @Schema(implementation = Task.class),
@@ -101,17 +98,6 @@ public class TaskController {
     public ResponseEntity<?> createTask(
             @RequestBody @Valid Task task,
             @RequestParam(required = false, defaultValue = "0") Long userPoid
-            , @Parameter(
-                    description = "Document identifier",
-                    required = true
-            )
-            @RequestParam String documentId,
-
-            @Parameter(
-                    description = "Action requested",
-                    required = true
-            )
-            @RequestParam String actionRequested
     ) {
         try {
 
@@ -152,10 +138,6 @@ public class TaskController {
                         - **taskType:** Type of task (e.g., Minor Enhancement).  
                         - **taskUserPoid:** User allocated to the task.  
                         - Other fields as applicable for task management.
-
-                    ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-018`)  
-                        - **actionRequested:** Action being performed (`EDIT`)
                     """,
             content = @Content(
                     schema = @Schema(implementation = Task.class),
@@ -194,26 +176,13 @@ public class TaskController {
     public ResponseEntity<?> updateTask(
             @RequestBody @Valid Task task,
             @RequestParam(required = false, defaultValue = "0") Long userPoid
-            , @Parameter(
-            description = "Document identifier",
-            required = true
-    )
-            @RequestParam String documentId,
-
-            @Parameter(
-                    description = "Action requested",
-                    required = true
-            )
-            @RequestParam String actionRequested
     ) {
         try {
 
             if (task.getTransactionPoid() == null) {
                 return badRequest("transactionPoid is required when updating");
             }
-
             String taskPoid = taskService.saveOrUpdateTask(task, userPoid);
-
             Map<String, Object> data = Map.of("taskPoid", taskPoid);
             return success("Task Updated successfully", data);
 
@@ -233,25 +202,11 @@ public class TaskController {
                         ### Request Parameters
                         - **userPoid:** User's Primary Key
                         - **companyPoid:** Company's Primary Key
-                        
-                        ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-018`)  
-                        - **actionRequested:** Action being performed (`VIEW`)
                     """
     )
     @GetMapping("/getLastTask")
     public ResponseEntity<?> getLastTask(@RequestParam(required = false, defaultValue = "0") Long userPoid,
-                                         @RequestParam(required = false, defaultValue = "0") Long companyPoid
-            , @Parameter(
-                    description = "Document identifier",
-                    required = true)
-                                         @RequestParam String documentId,
-
-                                         @Parameter(
-                                                 description = "Action requested",
-                                                 required = true
-                                         )
-                                         @RequestParam String actionRequested) {
+                                         @RequestParam(required = false, defaultValue = "0") Long companyPoid) {
         try {
             if (userPoid == null || companyPoid == null) {
                 throw new RuntimeException("Missing or empty parameter: userPoid or companyPoid");
@@ -272,26 +227,12 @@ public class TaskController {
                         ### Request Parameters
                         - **file:** Excel file (`.csv` format only) containing task data  
                         - **userPoid:** User's Primary Key 
-                        - **companyPoid:** Company Primary Key   
-
-                        ### Authorization Parameters 
-                        - **documentId:** Unique identifier for the document (`000-018`)  
-                        - **actionRequested:** Action being performed (`CREATE`)
+                        - **companyPoid:** Company Primary Key
                     """
     )
     @PostMapping("/upload-excel")
     public ResponseEntity<?> importTasksFromExcel(@RequestParam("file") MultipartFile file, @RequestParam(required = false, defaultValue = "0") Long userPoid,
-                                                  @RequestParam(required = false, defaultValue = "0") Long companyPoid
-            , @Parameter(
-                    description = "Document identifier",
-                    required = true)
-                                                  @RequestParam String documentId,
-
-                                                  @Parameter(
-                                                          description = "Action requested",
-                                                          required = true
-                                                  )
-                                                  @RequestParam String actionRequested) {
+                                                  @RequestParam(required = false, defaultValue = "0") Long companyPoid) {
         try {
             String result = taskService.uploadTasks(file, companyPoid, userPoid);
             if (result == null || result.toUpperCase().contains("ERROR")) {
@@ -309,20 +250,12 @@ public class TaskController {
                                
                         ### Request Parameters
                         - **transactionPoid:** Transaction Poid reference identifier for the task
-                        
-                        ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-018`)  
-                        - **actionRequested:** Action being performed (`VIEW`)
                     """
     )
     @GetMapping("/{transactionPoid}")
     public ResponseEntity<?> getTaskByDocRef(
             @Parameter(description = "Transaction Poid reference identifier", required = true)
-            @PathVariable String transactionPoid,
-            @Parameter(description = "Document identifier", required = true)
-            @RequestParam String documentId,
-            @Parameter(description = "Action requested", required = true)
-            @RequestParam String actionRequested) {
+            @PathVariable String transactionPoid) {
         try {
             TaskDto task = taskService.getTaskByTransactionPoid(transactionPoid);
             return success("Task fetched successfully", task);
@@ -347,10 +280,6 @@ public class TaskController {
                       2. Any combination of specific fields (TRANSACTION_DATE,DOC_REF,TASK_DESCRIPTION,TASK_CATEGORY,TASK_SUB_CATEGORY,TASK_PRIORITY, TASK_STATUS,TASK_TYPE).
                       3. operator field will either have "AND" or "OR", if not given will be considered as "OR"
                       4. isDeleted when 'N' or null, will search and return non deleted records, 'Y' will check and return deleted records
-                      
-                    - ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-018`)
-                        - **actionRequested:** Action being performed (`VIEW`)
                     """,
             content = @Content(
                     array = @ArraySchema(schema = @Schema(implementation = FilterDto.class)),
@@ -381,25 +310,14 @@ public class TaskController {
             @RequestBody(required = false) FilterRequestDto filters,
 
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-
-            @Parameter(
-            description = "Document identifier",
-            required = true)
-            @RequestParam String documentId,
-
-            @Parameter(
-                    description = "Action requested",
-                    required = true
-            )
-            @RequestParam String actionRequested){
+            @RequestParam(required = false) LocalDate endDate){
         try {
 
             if((startDate == null && endDate != null) || (startDate != null && endDate == null)) {
                 return badRequest("Both startDate and endDate should be specified or both dates should be empty.");
             }
 
-            Map<String, Object> tasks = taskService.listTasks(documentId, filters, startDate, endDate, pageable);
+            Map<String, Object> tasks = taskService.listTasks(UserContext.getDocumentId(), filters, startDate, endDate, pageable);
 
             return success("Task list fetched successfully", tasks);
 
@@ -411,9 +329,7 @@ public class TaskController {
     @DeleteMapping("/{taskPoid}")
     public ResponseEntity<?> softDeleteTask(
             @PathVariable("taskPoid") Long taskPoid,
-            @RequestParam Long userPoid,
-            @RequestParam String documentId,
-            @RequestParam String actionRequested) {
+            @RequestParam Long userPoid) {
         try {
             taskService.softDeleteTask(taskPoid, userPoid.toString());
             return success("Task soft deleted successfully", null);

@@ -29,7 +29,7 @@ import java.util.Map;
 import static com.asg.common.lib.dto.response.ApiResponse.*;
 
 @RestController
-@RequestMapping("/v1/master/currency")
+@RequestMapping("/v1/currency")
 
 @RequiredArgsConstructor
 public class CurrencyController {

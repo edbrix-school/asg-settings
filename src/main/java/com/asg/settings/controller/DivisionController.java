@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.request.DivisionCreateRequest;
 import com.asg.settings.dto.request.DivisionUpdateRequest;
 import com.asg.settings.dto.response.DivisionResponse;
@@ -41,16 +42,12 @@ public class DivisionController {
     @Operation(
             summary = "Create Division (DocId: 000-017)",
             description = """
-            Create a new division in the system.
-
-            ### Validation
-            - Division code must be unique (case-insensitive).
-            - Required fields: `divisionCode`, `divisionName`, `active`, `createdBy`
-
-            ### Authorization Parameters (handled by interceptor)
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`CREATE`)
-            """
+                    Create a new division in the system.
+                    
+                    ### Validation
+                    - Division code must be unique (case-insensitive).
+                    - Required fields: `divisionCode`, `divisionName`, `active`, `createdBy`
+                    """
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -60,24 +57,20 @@ public class DivisionController {
                     examples = @ExampleObject(
                             name = "Division Create Example",
                             value = """
-            {
-              "divisionCode": "FIN01",
-              "divisionName": "Finance",
-              "active": "Y",
-              "seqNo": 1,
-              "createdBy": "Admin",
-              "remarks": "Handles finance operations"
-            }
-            """
+                                    {
+                                      "divisionCode": "FIN01",
+                                      "divisionName": "Finance",
+                                      "active": "Y",
+                                      "seqNo": 1,
+                                      "createdBy": "Admin",
+                                      "remarks": "Handles finance operations"
+                                    }
+                                    """
                     )
             )
     )
     @PostMapping("/create")
-    public ResponseEntity<?> createDivision(@Valid @RequestBody DivisionCreateRequest request,
-                                            @Parameter(description = "Document identifier", required = true)
-                                            @RequestParam String documentId,
-                                            @Parameter(description = "Action requested", required = true)
-                                            @RequestParam String actionRequested) {
+    public ResponseEntity<?> createDivision(@Valid @RequestBody DivisionCreateRequest request) {
         if (divisionService.existsByDivisionCodeAndDeleted(request.getDivisionCode(), 0)) {
             return conflict("Division code already exists");
         }
@@ -129,10 +122,6 @@ public class DivisionController {
                       Examples:
                       • sort=DIVISION_NAME,ASC
                       • sort=DIVISION_CODE,DESC
-                    
-                    - ### Authorization Parameters (handled by interceptor)
-                        - **documentId:** Unique identifier for the document (`000-017`)
-                        - **actionRequested:** Action being performed (`VIEW`)
                     """,
             content = @Content(
                     schema = @Schema(implementation = FilterRequestDto.class),
@@ -158,13 +147,9 @@ public class DivisionController {
     )
     @PostMapping("/list")
     public ResponseEntity<?> getDivisions(@ParameterObject Pageable pageable,
-                                          @RequestBody(required = false) FilterRequestDto filters,
-                                          @Parameter(description = "Document identifier", required = true)
-                                          @RequestParam String documentId,
-                                          @Parameter(description = "Action requested", required = true)
-                                          @RequestParam String actionRequested) {
+                                          @RequestBody(required = false) FilterRequestDto filters) {
         try {
-            Map<String, Object> data = divisionService.listDivisions(documentId, filters, pageable);
+            Map<String, Object> data = divisionService.listDivisions(UserContext.getDocumentId(), filters, pageable);
             return success("Divisions fetched successfully", data);
         } catch (Exception ex) {
             return internalServerError("Unable to fetch division list: " + ex.getMessage());
@@ -174,19 +159,11 @@ public class DivisionController {
     @Operation(
             summary = "Get Division By Id (DocId: 000-017)",
             description = """
-            Fetch a division by its primary key.
-
-            ### Authorization Parameters (handled by interceptor)
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`VIEW`)
-            """
+                    Fetch a division by its primary key.
+                    """
     )
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDivisionById(@PathVariable
-                                             @Parameter(description = "Division ID", required = true) Long id,
-                                             @RequestParam String documentId,
-                                             @Parameter(description = "Action requested", required = true)
-                                             @RequestParam String actionRequested) {
+    public ResponseEntity<?> getDivisionById(@PathVariable @Parameter(description = "Division ID", required = true) Long id) {
         Optional<DivisionResponse> divisionOpt = divisionService.getDivisionById(id);
         if (divisionOpt.isPresent()) {
             return success("Division found", divisionOpt.get());
@@ -198,12 +175,8 @@ public class DivisionController {
     @Operation(
             summary = "Update Division (DocId: 000-017)",
             description = """
-            Update an existing division.
-
-            ### Authorization Parameters
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`EDIT`)
-            """
+                    Update an existing division.
+                    """
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -213,23 +186,21 @@ public class DivisionController {
                     examples = @ExampleObject(
                             name = "Division Update Example",
                             value = """
-            {
-              "divisionName": "Finance & Accounts",
-              "remarks": "Updated remark",
-              "seqNo": 2,
-              "active": "N",
-              "updatedBy": "Admin"
-            }
-            """
+                                    {
+                                      "divisionName": "Finance & Accounts",
+                                      "remarks": "Updated remark",
+                                      "seqNo": 2,
+                                      "active": "N",
+                                      "updatedBy": "Admin"
+                                    }
+                                    """
                     )
             )
     )
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDivision(@PathVariable
                                             @Parameter(description = "Division ID", required = true) Long id,
-                                            @Valid @RequestBody DivisionUpdateRequest request,
-                                            @RequestParam String documentId,
-                                            @RequestParam String actionRequested) {
+                                            @Valid @RequestBody DivisionUpdateRequest request) {
         try {
             return success("Division updated successfully",
                     divisionService.updateDivision(id, request));
@@ -244,21 +215,13 @@ public class DivisionController {
     @Operation(
             summary = "Soft Delete Division (DocId: 000-017)",
             description = """
-            Soft delete a division (mark as deleted without physical deletion).
-
-            ### Authorization Parameters
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`DELETE`)
-            """
+                    Soft delete a division (mark as deleted without physical deletion).
+                    """
     )
     @DeleteMapping("/{id}")
     public ResponseEntity<?> softDeleteDivision(@PathVariable
                                                 @Parameter(description = "Division ID", required = true) Long id,
-                                                @RequestParam @Parameter(description = "Updated by") String updatedBy,
-                                                @Parameter(description = "Document identifier", required = true)
-                                                @RequestParam String documentId,
-                                                @Parameter(description = "Action requested", required = true)
-                                                @RequestParam String actionRequested) {
+                                                @RequestParam @Parameter(description = "Updated by") String updatedBy) {
         divisionService.softDeleteDivision(id, updatedBy);
         return success("Division deleted successfully", Map.of("deleted", true));
     }
@@ -266,21 +229,13 @@ public class DivisionController {
     @Operation(
             summary = "Activate Division (DocId: 000-017)",
             description = """
-            Activate a division.
-
-            ### Authorization Parameters
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`EDIT`)
-            """
+                    Activate a division.
+                    """
     )
     @PutMapping("/{id}/activate")
     public ResponseEntity<?> activateDivision(@PathVariable
                                               @Parameter(description = "Division ID", required = true) Long id,
-                                              @RequestParam @Parameter(description = "Updated by") String updatedBy,
-                                              @Parameter(description = "Document identifier", required = true)
-                                              @RequestParam String documentId,
-                                              @Parameter(description = "Action requested", required = true)
-                                              @RequestParam String actionRequested) {
+                                              @RequestParam @Parameter(description = "Updated by") String updatedBy) {
         divisionService.activateDivision(id, updatedBy);
         return success("Division activated successfully", Collections.emptyMap());
     }
@@ -288,21 +243,13 @@ public class DivisionController {
     @Operation(
             summary = "Deactivate Division (DocId: 000-017)",
             description = """
-            Deactivate a division.
-
-            ### Authorization Parameters
-            - **documentId:** Unique identifier for the document (`000-017`)
-            - **actionRequested:** Action being performed (`EDIT`)
-            """
+                    Deactivate a division.
+                    """
     )
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<?> deactivateDivision(@PathVariable
                                                 @Parameter(description = "Division ID", required = true) Long id,
-                                                @RequestParam @Parameter(description = "Updated by") String updatedBy,
-                                                @Parameter(description = "Document identifier", required = true)
-                                                @RequestParam String documentId,
-                                                @Parameter(description = "Action requested", required = true)
-                                                @RequestParam String actionRequested) {
+                                                @RequestParam @Parameter(description = "Updated by") String updatedBy) {
         divisionService.deactivateDivision(id, updatedBy);
         return success("Division deactivated successfully", Collections.emptyMap());
     }
