@@ -8,6 +8,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -22,7 +23,6 @@ import com.asg.settings.repository.DocumentRepository;
 import com.asg.settings.repository.GroupRepository;
 import com.asg.settings.repository.TermsTemplateDtlRepository;
 import com.asg.settings.repository.TermsTemplateRepository;
-import com.asg.settings.service.DocumentService;
 import com.asg.settings.service.TermsTemplateService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
     private final LoggingService loggingService;
 
     @Autowired
-    DocumentService documentService;
+    DocumentSearchService documentService;
 
     public Map<String, Object> listTerms(String docId, FilterRequestDto request, Pageable pageable) {
 

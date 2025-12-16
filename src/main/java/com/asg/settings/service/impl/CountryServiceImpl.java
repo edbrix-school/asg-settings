@@ -7,6 +7,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceAlreadyExistsException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.CountryDto;
@@ -14,7 +15,6 @@ import com.asg.settings.entity.Country;
 import com.asg.settings.repository.CountryRepository;
 import com.asg.settings.repository.GroupRepository;
 import com.asg.settings.service.CountryService;
-import com.asg.settings.service.DocumentService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -35,7 +35,7 @@ public class CountryServiceImpl implements CountryService {
 
     private final CountryRepository countryRepository;
     private final GroupRepository groupRepository;
-    private final DocumentService documentService;
+    private final DocumentSearchService documentService;
 
     @Override
     public CountryDto getCountryById(Long countryPoid) {

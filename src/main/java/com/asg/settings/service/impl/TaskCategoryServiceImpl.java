@@ -8,6 +8,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceAlreadyExistsException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -20,7 +21,6 @@ import com.asg.settings.entity.TaskCategoryEntity;
 import com.asg.settings.repository.RoleRepository;
 import com.asg.settings.repository.TaskCategoryDTLRepository;
 import com.asg.settings.repository.TaskCategoryRepository;
-import com.asg.settings.service.DocumentService;
 import com.asg.settings.service.TaskCategoryService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +52,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
     @Autowired
     private RoleRepository roleRepository;
     @Autowired
-    private DocumentService documentService;
+    private DocumentSearchService documentService;
 
     @Autowired
     private LoggingService loggingService;

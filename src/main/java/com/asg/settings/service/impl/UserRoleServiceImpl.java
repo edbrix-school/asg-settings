@@ -6,13 +6,13 @@ import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.UserRoleRequestDto;
 import com.asg.settings.dto.UserRolesDto;
 import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.repository.RoleRepository;
-import com.asg.settings.service.DocumentService;
 import com.asg.settings.service.UserRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -40,7 +40,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     LoggingService loggingService;
 
     @Autowired
-    DocumentService documentService;
+    DocumentSearchService documentService;
 
     public RoleEntity getUserRoleByRolePoid(Long userRolePoid) {
         return roleRepository.findByUserRolePoid(userRolePoid);

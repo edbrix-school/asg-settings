@@ -5,6 +5,7 @@ import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.request.DivisionCreateRequest;
@@ -13,7 +14,6 @@ import com.asg.settings.dto.response.DivisionResponse;
 import com.asg.settings.entity.DivisionMasterEntity;
 import com.asg.settings.repository.DivisionRepository;
 import com.asg.settings.service.DivisionService;
-import com.asg.settings.service.DocumentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ public class DivisionServiceImpl implements DivisionService {
     private LoggingService loggingService;
 
     @Autowired
-    private DocumentService documentService;
+    private DocumentSearchService documentService;
 
     @Override
     public DivisionResponse createDivision(DivisionCreateRequest request) {

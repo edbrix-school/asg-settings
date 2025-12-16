@@ -6,6 +6,7 @@ import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.CurrencyRateDto;
@@ -40,7 +41,7 @@ public class CurrencyService {
     private final CurrencyCreateRepository currencyCreateRepository;
 
     @Autowired
-    DocumentService documentService;
+    DocumentSearchService documentService;
 
     @Autowired
     CurrencyRateRepository currencyRateRepository;

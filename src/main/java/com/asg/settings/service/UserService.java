@@ -7,6 +7,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.AsgException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -77,7 +78,7 @@ public class UserService {
     DataSource dataSource;
 
     @Autowired
-    DocumentService documentService;
+    DocumentSearchService documentService;
 
     @Autowired
     LoggingService loggingService;

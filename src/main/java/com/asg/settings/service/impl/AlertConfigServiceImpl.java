@@ -9,6 +9,7 @@ import com.asg.common.lib.enums.FrequencyTypeEnum;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -18,7 +19,6 @@ import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.repository.AlertConfigRepository;
 import com.asg.settings.repository.RoleRepository;
 import com.asg.settings.service.AlertConfigService;
-import com.asg.settings.service.DocumentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ public class AlertConfigServiceImpl implements AlertConfigService {
     private LoggingService loggingService;
 
     private final AlertConfigRepository alertConfigRepository;
-    private final DocumentService documentService;
+    private final DocumentSearchService documentService;
     private final RoleRepository roleRepository;
 
     public Map<String, Object> getAllAlertConfigs(String docId, FilterRequestDto request, Pageable pageable) {

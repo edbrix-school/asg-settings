@@ -6,6 +6,7 @@ import com.asg.common.lib.dto.LovGetListDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -55,7 +56,7 @@ public class TaskService {
     private EntityManager em;
 
     @Autowired
-    private DocumentService documentService;
+    private DocumentSearchService documentService;
 
     @Autowired
     private UserService userService;

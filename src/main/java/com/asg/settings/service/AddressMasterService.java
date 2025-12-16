@@ -6,6 +6,7 @@ import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -38,10 +39,11 @@ public class AddressMasterService {
     private final AddressMasterRepository masterRepo;
     private final AddressDetailsRepository detailsRepo;
     private final AddressProcedureRepository procRepo;
-    private final DocumentService documentService;
+    private final DocumentSearchService documentService;
 
     @Autowired
     LoggingService loggingService;
+
     /**
      * Get single Address Master with all department details (tabs).
      */

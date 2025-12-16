@@ -7,7 +7,7 @@ import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.ApprovalActionRequest;
 import com.asg.settings.dto.DocumentDto;
-import com.asg.settings.dto.DropdownStringDto;
+import com.asg.common.lib.dto.DropdownStringDto;
 import com.asg.settings.dto.request.UpdateDocumentRequest;
 import com.asg.settings.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
