@@ -199,7 +199,7 @@ public class UserController {
             @RequestBody(required = false) FilterRequestDto filters
     ) {
         try {
-            Map<String, Object> users = userService.listUsers(null, filters, pageable);
+            Map<String, Object> users = userService.listUsers(UserContext.getDocumentId(), filters, pageable);
 
             return success("Users list fetched successfully", users);
 
