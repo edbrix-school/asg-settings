@@ -5,6 +5,7 @@ import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.CompanyDto;
 import com.asg.settings.entity.Company;
 import com.asg.settings.service.CompanyService;
@@ -85,7 +86,7 @@ public class CompanyController {
             @RequestBody(required = false) FilterRequestDto filters
     ) {
         try {
-            Map<String, Object> companies = companyService.listCompanies(null, filters, pageable);
+            Map<String, Object> companies = companyService.listCompanies(UserContext.getDocumentId(), filters, pageable);
             return success("Companies list fetched successfully", companies);
         } catch (Exception ex) {
             return internalServerError("Failed to list company: " + ex.getMessage());
