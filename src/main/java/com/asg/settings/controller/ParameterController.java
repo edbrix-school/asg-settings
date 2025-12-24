@@ -1,5 +1,6 @@
 package com.asg.settings.controller;
 
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.BulkUpdateResponseDTO;
 import com.asg.settings.dto.GlobalParameterResponse;
 import com.asg.settings.dto.UpdateParameterRequestDTO;
@@ -78,14 +79,13 @@ public class ParameterController {
     })
     @GetMapping("/system")
     public ResponseEntity<?> getSystemParameters(
-            @RequestParam Long userPoid,
             @RequestParam(required = false) String filter,
             @ParameterObject Pageable pageable
     ) {
-        GlobalParameterResponse response = parameterService.getSystemParameters(userPoid, filter, pageable);
+        GlobalParameterResponse response = parameterService.getSystemParameters(UserContext.getUserPoid(), filter, pageable);
 
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("userPoid", userPoid);
+        responseData.put("userPoid", UserContext.getUserPoid());
         responseData.put("globalParameters", response.getGlobalParameters());
         responseData.put("privileged", response.getPrivileged());
         responseData.put("page", pageable.getPageNumber());
