@@ -10,9 +10,9 @@ import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
-import com.asg.settings.dto.AddressDetailsDTO;
-import com.asg.settings.dto.AddressMasterResponse;
-import com.asg.settings.dto.AddressTypeMapDTO;
+import com.asg.common.lib.dto.AddressDetailsDTO;
+import com.asg.common.lib.dto.response.AddressMasterResponse;
+import com.asg.common.lib.dto.AddressTypeMapDTO;
 import com.asg.settings.entity.AddressDetails;
 import com.asg.settings.entity.AddressMaster;
 import com.asg.settings.repository.AddressDetailsRepository;
@@ -21,6 +21,7 @@ import com.asg.settings.repository.AddressProcedureRepository;
 import com.asg.settings.repository.CountryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -134,6 +135,36 @@ public class AddressMasterService {
         return saved.getAddressMasterPoid();
     }
 
+    @Transactional
+    public void softDeleteAddressMaster(Long addressMasterPoid) {
+        AddressMaster master = masterRepo.findById(addressMasterPoid)
+                .orElseThrow(() -> new ResourceNotFoundException("Address Master", "addressMasterPoid", addressMasterPoid));
+
+        // Permanently delete all related AddressDetails
+        detailsRepo.deleteByAddressMasterPoid(addressMasterPoid);
+
+        // Soft delete the AddressMaster
+        master.setActive("N");
+        master.setDeleted("Y");
+        master.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
+        master.setLastModifiedDate(LocalDateTime.now());
+        masterRepo.save(master);
+    }
+
+    public String createAll(Long addressMasterPoid) {
+        Long groupPoid = 1L;
+        Long userPoid = UserContext.getUserPoid() != null ? UserContext.getUserPoid() : null;
+        Long companyPoid = 200L;
+        return procRepo.createAllTypes(groupPoid, userPoid, companyPoid, addressMasterPoid);
+    }
+
+    public String copyAll(Long targetPoid) {
+        Long groupPoid = 1L;
+        Long userPoid = UserContext.getUserPoid() != null ? UserContext.getUserPoid() : null;
+        Long companyPoid = 200L;
+        return procRepo.copyAllTypes(groupPoid, userPoid, companyPoid, targetPoid);
+    }
+
     private void validateMandatoryFields(AddressMasterResponse req) {
         if (req.getAddressName() == null || req.getAddressName().isBlank())
             throw new IllegalArgumentException("Address Name is mandatory");
@@ -227,57 +258,56 @@ public class AddressMasterService {
 
         for (Map.Entry<String, List<AddressDetailsDTO>> entry : typedLists.entrySet()) {
             String type = entry.getKey();
-
             for (AddressDetailsDTO dto : entry.getValue()) {
+                String actionType = StringUtils.isBlank(dto.getActionType()) ? null : dto.getActionType();
 
-                // Fix blank string POID
-                String dtoPoid = dto.getAddressPoid();
-                if (dtoPoid != null && dtoPoid.isBlank()) {
-                    dtoPoid = null;
+                // Handle backward compatibility: if actionType is null, determine from addressPoid
+                if (actionType == null) {
+                    actionType = (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid()))
+                            ? "isUpdated"
+                            : "isCreated";
                 }
 
-                AddressDetails detail;
-
-                // -----------------------------
-                //     UPDATE EXISTING ROW
-                // -----------------------------
-                if (dtoPoid != null && existingMap.containsKey(dtoPoid)) {
-                    detail = existingMap.get(dtoPoid);
-
-                    // Remove from map to track unused old rows if needed later
-                    existingMap.remove(dtoPoid);
-
-                    updateDetail(detail, dto, currentUser);
+                switch (actionType.toLowerCase()) {
+                    case "nochange" -> {
+                        // Skip processing
+                        continue;
+                    }
+                    case "iscreated" -> {
+                        AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
+                        toSave.add(detail);
+                    }
+                    case "isupdated" -> {
+                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
+                            AddressDetails detail = existingMap.get(dto.getAddressPoid());
+                            updateDetail(detail, dto, currentUser);
+                            toSave.add(detail);
+                        } else {
+                            // Address not found, treat as create
+                            AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
+                            toSave.add(detail);
+                        }
+                    }
+                    default -> {
+                        // Default behavior for backward compatibility
+                        AddressDetails detail;
+                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
+                            detail = existingMap.get(dto.getAddressPoid());
+                            updateDetail(detail, dto, currentUser);
+                        } else {
+                            detail = buildDetail(dto, master, type, counter++, currentUser);
+                        }
+                        toSave.add(detail);
+                    }
                 }
-
-                // -----------------------------
-                //     CREATE NEW ROW
-                // -----------------------------
-                else {
-                    detail = new AddressDetails();
-
-                    String newId = master.getAddressMasterPoid() + String.format("%03d", counter);
-
-                    counter++;  // increment counter globally
-
-                    detail.setAddressPoid(newId);
-                    detail.setAddressMasterPoid(master.getAddressMasterPoid());
-                    detail.setAddressType(type);
-                    detail.setCreatedBy(currentUser);
-                    detail.setCreatedDate(LocalDateTime.now());
-
-                    updateDetail(detail, dto, currentUser);
-                }
-
-                toSave.add(detail);
             }
         }
 
+        //  Save updated and new details
         if (!toSave.isEmpty()) {
             detailsRepo.saveAll(toSave);
         }
     }
-
 
     private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String currentUser) {
         entity.setContactPerson(dto.getContactPerson());
@@ -327,7 +357,6 @@ public class AddressMasterService {
         entity.setFacebook(dto.getFacebook());
 
     }
-
 
     private AddressDetails buildDetail(AddressDetailsDTO dto, AddressMaster master, String type, int counter, String currentUser) {
         AddressDetails detail = new AddressDetails();
@@ -391,19 +420,6 @@ public class AddressMasterService {
     }
 
     // --- Stored procedure calls (unchanged) ---
-    public String createAll(Long addressMasterPoid) {
-        Long groupPoid = 1L;
-        Long userPoid = UserContext.getUserPoid() != null ? UserContext.getUserPoid() : null;
-        Long companyPoid = 200L;
-        return procRepo.createAllTypes(groupPoid, userPoid, companyPoid, addressMasterPoid);
-    }
-
-    public String copyAll(Long targetPoid) {
-        Long groupPoid = 1L;
-        Long userPoid = UserContext.getUserPoid() != null ? UserContext.getUserPoid() : null;
-        Long companyPoid = 200L;
-        return procRepo.copyAllTypes(groupPoid, userPoid, companyPoid, targetPoid);
-    }
 
     /**
      * Convert AddressMaster -> DTO
@@ -519,21 +535,6 @@ public class AddressMasterService {
                 .build();
     }
 
-    @Transactional
-    public void softDeleteAddressMaster(Long addressMasterPoid) {
-        AddressMaster master = masterRepo.findById(addressMasterPoid)
-                .orElseThrow(() -> new ResourceNotFoundException("Address Master", "addressMasterPoid", addressMasterPoid));
-
-        // Permanently delete all related AddressDetails
-        detailsRepo.deleteByAddressMasterPoid(addressMasterPoid);
-
-        // Soft delete the AddressMaster
-        master.setActive("N");
-        master.setDeleted("Y");
-        master.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        master.setLastModifiedDate(LocalDateTime.now());
-        masterRepo.save(master);
-    }
     private int getNextCounter(List<AddressDetails> existingDetails, String masterPoid) {
         int max = 0;
 

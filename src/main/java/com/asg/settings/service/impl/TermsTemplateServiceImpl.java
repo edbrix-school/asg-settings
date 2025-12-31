@@ -20,7 +20,7 @@ import com.asg.settings.entity.TermsTemplateDtlEntity;
 import com.asg.settings.entity.TermsTemplateEntity;
 import com.asg.settings.entity.key.TermsTemplateDtlKey;
 import com.asg.settings.repository.DocumentRepository;
-import com.asg.settings.repository.GroupRepository;
+import com.asg.common.lib.repository.GroupRepository;
 import com.asg.settings.repository.TermsTemplateDtlRepository;
 import com.asg.settings.repository.TermsTemplateRepository;
 import com.asg.settings.service.TermsTemplateService;

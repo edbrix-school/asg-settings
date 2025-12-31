@@ -2,7 +2,7 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.security.util.UserContext;
-import com.asg.settings.dto.CountryDto;
+import com.asg.common.lib.dto.CountryDto;
 import com.asg.settings.service.CountryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

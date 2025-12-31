@@ -1,6 +1,6 @@
 package com.asg.settings.repository;
 
-import com.asg.settings.entity.CompanyDivisionEntity;
+import com.asg.common.lib.entity.CompanyDivisionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

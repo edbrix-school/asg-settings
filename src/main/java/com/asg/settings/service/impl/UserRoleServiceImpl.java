@@ -3,6 +3,7 @@ package com.asg.settings.service.impl;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.RoleDto;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
@@ -10,7 +11,7 @@ import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.UserRoleRequestDto;
-import com.asg.settings.dto.UserRolesDto;
+import com.asg.common.lib.dto.UserRolesDto;
 import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.repository.RoleRepository;
 import com.asg.settings.service.UserRoleService;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.asg.common.lib.security.util.UserContext.getCurrentUser;
 
@@ -167,6 +169,43 @@ public class UserRoleServiceImpl implements UserRoleService {
             return roleRepository.existsByUserRoleName(roleName);
         }
         return roleRepository.existsByUserRoleNameAndUserRolePoidNot(roleName, excludePoid);
+    }
+
+    @Override
+    public RoleDto getUserRoleById(Long userRolePoid) {
+        RoleEntity entity = roleRepository.findByUserRolePoid(userRolePoid);
+        if (entity == null) {
+            throw new ResourceNotFoundException("User Role", "userRolePoid", userRolePoid);
+        }
+        return RoleDto.builder()
+                .userRolePoid(entity.getUserRolePoid())
+                .groupPoid(entity.getGroupPoid())
+                .userRoleId(entity.getUserRoleId())
+                .userRoleName(entity.getUserRoleName())
+                .userRoleName2(entity.getUserRoleName2())
+                .active(entity.getActive())
+                .seqNo(entity.getSeqNo())
+                .companyPoid(entity.getCompanyPoid())
+                .deleted(entity.getDeleted())
+                .build();
+    }
+
+    @Override
+    public List<RoleDto> getUserRolesByIds(List<Long> userRolePoids) {
+        List<RoleEntity> entities = roleRepository.findByUserRolePoidIn(userRolePoids);
+        return entities.stream()
+                .map(entity -> RoleDto.builder()
+                        .userRolePoid(entity.getUserRolePoid())
+                        .groupPoid(entity.getGroupPoid())
+                        .userRoleId(entity.getUserRoleId())
+                        .userRoleName(entity.getUserRoleName())
+                        .userRoleName2(entity.getUserRoleName2())
+                        .active(entity.getActive())
+                        .seqNo(entity.getSeqNo())
+                        .companyPoid(entity.getCompanyPoid())
+                        .deleted(entity.getDeleted())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }

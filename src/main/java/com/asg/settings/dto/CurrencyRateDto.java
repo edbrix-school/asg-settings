@@ -1,6 +1,6 @@
 package com.asg.settings.dto;
 
-import com.asg.settings.entity.CurrencyRateEntity;
+import com.asg.common.lib.entity.CurrencyRateEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

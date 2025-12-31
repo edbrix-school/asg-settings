@@ -6,7 +6,7 @@ import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
-import com.asg.settings.dto.AddressMasterResponse;
+import com.asg.common.lib.dto.response.AddressMasterResponse;
 import com.asg.settings.service.AddressMasterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -80,6 +80,16 @@ public class AddressMasterController {
     @GetMapping("/{poid}")
     public ResponseEntity<?> getMaster(
             @PathVariable @Parameter(description = "Address Master POID", required = true) Long poid) {
+        try {
+            AddressMasterResponse response = service.getMasterWithDetails(poid);
+            return success("Address Master fetched successfully", response);
+        } catch (Exception e) {
+            return internalServerError("Error fetching Address Master: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/simple/{poid}")
+    public ResponseEntity<?> getSimple(@PathVariable Long poid) {
         try {
             AddressMasterResponse response = service.getMasterWithDetails(poid);
             return success("Address Master fetched successfully", response);
@@ -351,6 +361,21 @@ public class AddressMasterController {
     }
 
 
+
+    @PostMapping("/upsert")
+    public ResponseEntity<?> upsertAddress(@Valid @RequestBody AddressMasterResponse request) {
+        try {
+            Long poid = service.saveAddressMaster(request);
+            AddressMasterResponse response = service.getMasterWithDetails(poid);
+            return success("Address Master saved successfully", response);
+        } catch (ValidationException ex) {
+            return badRequest(ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            return unprocessableEntity(ex.getMessage());
+        } catch (Exception ex) {
+            return internalServerError("Error saving Address Master: " + ex.getMessage());
+        }
+    }
 
     @Operation(
             summary = "Soft Delete Address Master",

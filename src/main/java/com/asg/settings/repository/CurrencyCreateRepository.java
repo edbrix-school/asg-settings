@@ -1,7 +1,7 @@
 package com.asg.settings.repository;
 
+import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.settings.dto.request.CurrencyCreateRequest;
-import com.asg.settings.entity.CurrencyEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;

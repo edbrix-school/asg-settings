@@ -153,4 +153,23 @@ public class ParameterController {
             default -> error("Failed to update parameters", 500, response);
         };
     }
+
+    @Operation(summary = "Get parameter value by name", description = "Simple endpoint for internal service calls")
+    @GetMapping("/value/{parameterName}")
+    public ResponseEntity<?> getParameterValue(@PathVariable String parameterName) {
+        String value = parameterService.getParameterValue(parameterName);
+        return success("Parameter value fetched", value);
+    }
+
+    @GetMapping("/value-decimal/{parameterType}/{parameterName}")
+    public ResponseEntity<?> getParameterValueAsDecimal(@PathVariable String parameterType, @PathVariable String parameterName) {
+        java.math.BigDecimal value = parameterService.getParameterValueByNameAsDecimal(parameterType, parameterName);
+        return success("Parameter value fetched", value);
+    }
+
+    @GetMapping("/value/{parameterType}/{parameterName}")
+    public ResponseEntity<?> getParameterValueByType(@PathVariable String parameterType, @PathVariable String parameterName) {
+        Integer value = parameterService.getParameterValueByName(parameterType, parameterName);
+        return success("Parameter value fetched", value);
+    }
 }

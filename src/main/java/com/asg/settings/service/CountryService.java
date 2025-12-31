@@ -1,7 +1,7 @@
 package com.asg.settings.service;
 
 import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.settings.dto.CountryDto;
+import com.asg.common.lib.dto.CountryDto;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Map;

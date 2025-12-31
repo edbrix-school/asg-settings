@@ -2,12 +2,13 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.CurrencyRateDto;
 import com.asg.settings.dto.request.CurrencyCreateRequest;
 import com.asg.settings.dto.request.CurrencyUpdateRequest;
-import com.asg.settings.entity.CurrencyEntity;
+
 import com.asg.settings.service.CurrencyService;
 import com.asg.settings.service.CurrencyUploadService;
 import io.swagger.v3.oas.annotations.Operation;

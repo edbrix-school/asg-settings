@@ -1,7 +1,7 @@
 package com.asg.settings.service;
 
 import com.asg.settings.dto.UserAuthRoleDto;
-import com.asg.settings.dto.UserRoleDto;
+import com.asg.common.lib.dto.UserRoleDto;
 import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.entity.UserAuthRoleEntity;
 import com.asg.settings.repository.RoleRepository;
@@ -60,7 +60,7 @@ public class RoleService {
     // Derived from getUserRoles to get only roleids
     public List<String> getUserRoleNames(Long userPoid) {
         return getUserRoles(userPoid).stream()
-                .map(UserRoleDto::roleName)
+                .map(UserRoleDto::userRoleName)
                 .toList();
     }
 
