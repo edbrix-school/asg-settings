@@ -1,6 +1,6 @@
 package com.asg.settings.repository;
 
-import com.asg.settings.entity.CurrencyEntity;
+import com.asg.common.lib.entity.CurrencyEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

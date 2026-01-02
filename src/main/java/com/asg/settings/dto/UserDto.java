@@ -1,5 +1,7 @@
 package com.asg.settings.dto;
 
+import com.asg.common.lib.dto.DetailsDto;
+
 import java.util.Date;
 import java.util.List;
 

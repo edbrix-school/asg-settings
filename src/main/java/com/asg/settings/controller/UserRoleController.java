@@ -1,13 +1,10 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
-import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.UserRoleRequestDto;
-import com.asg.settings.dto.UserRoleRightsDetDto;
-import com.asg.settings.dto.UserRoleRightsDto;
-import com.asg.settings.dto.UserRolesDto;
 import com.asg.settings.dto.request.LoadDefaultRightsRequest;
 import com.asg.settings.dto.request.RightsUpdateRequest;
 import com.asg.settings.dto.request.RolePermissionRequest;
@@ -69,7 +66,7 @@ public class UserRoleController {
             description = """
                     ### Request Body
                         Add permissions to the user by providing the required details.
-                        - **roleId:** ID of the role. Required.
+                        - **userRoleId:** ID of the role. Required.
                         - **permissions:** Parameters to be added. This field is mandatory.
                     
                     ### Notes
@@ -83,7 +80,7 @@ public class UserRoleController {
                                     name = "Add Permissions Example",
                                     value = """
                                             {
-                                                "roleId": "222",
+                                                "userRoleId": "222",
                                                 "permissions": [
                                                     {
                                                         "detRowId": "1",
@@ -175,7 +172,7 @@ public class UserRoleController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/{roleId}/rights")
+    @PutMapping("/{userRoleId}/rights")
     public ResponseEntity<?> updatePermissions(
             @PathVariable Long roleId,
             @Valid @RequestBody RightsUpdateRequest request) {
@@ -441,6 +438,18 @@ public class UserRoleController {
         }
 
         return success("User role does not exists by userRoleName", false);
+    }
+
+    @GetMapping("/simple/{userRolePoid}")
+    public ResponseEntity<?> getRoleSimple(@PathVariable Long userRolePoid) {
+        RoleDto role = userRoleService.getUserRoleById(userRolePoid);
+        return success("Role fetched", role);
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> getRolesBatch(@RequestBody List<Long> userRolePoids) {
+        List<RoleDto> roles = userRoleService.getUserRolesByIds(userRolePoids);
+        return success("Roles fetched", roles);
     }
 
 }

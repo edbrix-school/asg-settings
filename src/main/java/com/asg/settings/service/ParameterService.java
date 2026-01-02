@@ -18,4 +18,6 @@ public interface ParameterService {
     Integer getParameterValueByName(String parameterType, String parameterName);
 
     BigDecimal getParameterValueByNameAsDecimal(String parameterType, String parameterName);
+
+    String getParameterValue(String parameterName);
 }

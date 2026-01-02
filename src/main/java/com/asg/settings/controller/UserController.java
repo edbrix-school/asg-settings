@@ -14,7 +14,7 @@ import com.asg.settings.dto.request.CreatePasswordRequest;
 import com.asg.settings.dto.request.FavoriteMenuRequest;
 import com.asg.settings.dto.request.ResetPasswordRequest;
 import com.asg.settings.dto.response.UserPermissionsResponse;
-import com.asg.settings.entity.Company;
+import com.asg.common.lib.entity.Company;
 import com.asg.settings.entity.FavoriteMenuEntity;
 import com.asg.settings.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,7 +69,7 @@ public class UserController {
 
     @Operation(summary = "Get User List By Role Poid")
     @GetMapping
-    public ResponseEntity<?> getUserListByRolePoid(@RequestParam("roleId") Long userRoleId) {
+    public ResponseEntity<?> getUserListByRolePoid(@RequestParam("userRoleId") Long userRoleId) {
 
         UserResponse usersDto = userService.getUserDetailsByRolePoid(userRoleId);
         return success("User list fetched successfully", usersDto);

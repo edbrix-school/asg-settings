@@ -2,8 +2,9 @@ package com.asg.settings.service;
 
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.common.lib.dto.LovGetListDto;
 import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.entity.Company;
+import com.asg.common.lib.entity.CompanyDivisionEntity;
 import com.asg.common.lib.entity.TimeZoneEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
@@ -12,19 +13,19 @@ import com.asg.common.lib.repository.TimeZoneDataRepository;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
+import com.asg.common.lib.service.LovDataService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
-import com.asg.settings.dto.CompanyDivisionDto;
-import com.asg.settings.dto.CompanyDto;
-import com.asg.settings.dto.TimeZoneDto;
+import com.asg.common.lib.dto.CompanyDivisionDto;
+import com.asg.common.lib.dto.CompanyDto;
+import com.asg.common.lib.dto.TimeZoneDto;
 import com.asg.settings.dto.UserCompanyDto;
 import com.asg.settings.entity.*;
-import com.asg.settings.entity.key.CompanyDivisionEntityKey;
+import com.asg.common.lib.entity.key.CompanyDivisionEntityKey;
 import com.asg.settings.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,39 +45,25 @@ public class CompanyService {
     public static final String IS_CREATED = "isCreated";
     public static final String NO_CHANGE = "noChange";
 
-    @Autowired
-    CompanyRepository companyRepository;
+    private final CompanyRepository companyRepository;
 
-    @Autowired
-    CountryRepository countryRepository;
+    private final CountryRepository countryRepository;
 
-    @Autowired
-    StateRepository stateRepository;
+    private final StateRepository stateRepository;
 
-    @Autowired
-    UsersCompanyRepository usersCompanyRepository;
+    private final UsersCompanyRepository usersCompanyRepository;
 
-    @Autowired
-    CompanyDivisionRepository companyDivisionRepository;
+    private final CompanyDivisionRepository companyDivisionRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    private final DivisionRepository divisionRepository;
 
-    @Autowired
-    DivisionRepository divisionRepository;
+    private final TimeZoneDataRepository timeZoneRepository;
 
-    @Autowired
-    TimeZoneDataRepository timeZoneRepository;
+    private final DocumentSearchService documentService;
 
-    @Autowired
-    DocumentSearchService documentService;
+    private final LoggingService loggingService;
 
-    @Autowired
-    GlBankRepository glBankRepository;
-
-    @Autowired
-    private LoggingService loggingService;
-
+    private final LovDataService lovDataService;
 
     private final CurrencyService currencyService;
 
@@ -91,18 +78,11 @@ public class CompanyService {
                 Long companyPoid = usersCompanyEntity.getId().getCompanyPoid();
                 Company company = companyRepository.findByCompanyPoid(companyPoid);
                 TimeZoneEntity timeZoneEntity = timeZoneRepository.findByTimezoneId(company.getTimezoneId());
-
                 TimeZoneDto timeZoneDto = timeZoneEntity != null ? new TimeZoneDto(timeZoneEntity.getTimezoneId(), timeZoneEntity.getTimezoneCode(), timeZoneEntity.getTimezoneName()) : null;
-
-//                String countryCode = company.getCountryId() != null ? getCountryForCompany(companyPoid).getCountryCode() : null;
-
                 String countryCode = company.getCountryId() != null ? getCountryCodeForCompany(companyPoid) : null;
-
                 State state = getStateForCompany(company.getCountryId(), company.getStateId());
                 String stateName = state != null ? state.getStateName() : null;
-
                 String dateFormat = company.getDateFormat() != null ? company.getDateFormat() : null;
-
                 result.add(new UserCompanyDto(company.getCompanyPoid(), company.getCompanyName(), countryCode, stateName, expiry, company.getDeleted(), timeZoneDto, dateFormat, company.getActive(), ""));
             }
             return result;
@@ -129,11 +109,7 @@ public class CompanyService {
                 }
 
                 if (company.getCountryId() != null) {
-//                    Country country = getCountryForCompany(company.getCompanyPoid());
-
                     String countryCode = getCountryCodeForCompany(company.getCompanyPoid());
-
-//                    company.setCountryCode(country.getCountryCode());
                     company.setCountryCode(countryCode);
 
                     if (company.getStateId() != null) {
@@ -172,13 +148,8 @@ public class CompanyService {
                 TimeZoneDto timeZoneDto = timeZoneEntity != null ? new TimeZoneDto(timeZoneEntity.getTimezoneId(), timeZoneEntity.getTimezoneCode(), timeZoneEntity.getTimezoneName()) : null;
                 company.setTimeZone(timeZoneDto);
             }
-
-//            Country country = getCountryForCompany(company.getCompanyPoid());
             String countryCode = getCountryCodeForCompany(company.getCompanyPoid());
-
-//            company.setCountryCode(country.getCountryCode());
             company.setCountryCode(countryCode);
-
             company.setDivisions(companyDivisionRepository.findById_CompanyPoid(company.getCompanyPoid()));
 
             if (company.getCountryId() != null && company.getStateId() != null) {
@@ -190,6 +161,19 @@ public class CompanyService {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    public com.asg.common.lib.dto.CompanySimpleDto getCompanySimple(Long companyPoid) {
+        Company company = companyRepository.findByCompanyPoid(companyPoid);
+        if (company == null) {
+            throw new ResourceNotFoundException("Company", "companyPoid", companyPoid);
+        }
+        return com.asg.common.lib.dto.CompanySimpleDto.builder()
+                .companyPoid(company.getCompanyPoid())
+                .companyCode(company.getCompanyCode())
+                .companyName(company.getCompanyName())
+                .vatFilingPeriod(company.getVatFilingPeriod())
+                .build();
     }
 
     //Replaced with this to just get country code instead
@@ -616,7 +600,7 @@ public class CompanyService {
         dto.setSubmissionPeriod(entity.getSubmissionPeriod());
 
         if (entity.getBankPoid() != null) {
-            dto.setBankDet(toBankLovDet(glBankRepository.findByBankPoid(entity.getBankPoid())));
+            dto.setBankDet(lovDataService.getDetailsByPoidAndLovNameFast(entity.getBankPoid(), "BANK_MASTER"));
         }
 
         if (entity.getDivisions() != null) {
@@ -647,18 +631,6 @@ public class CompanyService {
         dto.setActionType(entity.getActionType());
 
         return dto;
-    }
-
-    private LovGetListDto toBankLovDet(GlBankEntity glBankEntity) {
-        if (glBankEntity == null) {
-            return null;
-        }
-        LovGetListDto lovGetListDto = new LovGetListDto();
-        lovGetListDto.setPoid(glBankEntity.getGlPoid());
-        lovGetListDto.setCode(glBankEntity.getBankCode());
-        lovGetListDto.setLabel(glBankEntity.getBankDescription());
-        lovGetListDto.setDescription(glBankEntity.getBankDescription());
-        return lovGetListDto;
     }
 
 }

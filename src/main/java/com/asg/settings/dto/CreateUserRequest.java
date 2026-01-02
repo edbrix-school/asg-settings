@@ -1,5 +1,6 @@
 package com.asg.settings.dto;
 
+import com.asg.common.lib.dto.UserRoleDto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 

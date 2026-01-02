@@ -179,4 +179,9 @@ public class ParameterServiceImpl implements ParameterService {
         return null;
     }
 
+    @Override
+    public String getParameterValue(String parameterName) {
+        return globalParameterRepository.findParameterValueByName(parameterName).orElse(null);
+    }
+
 }

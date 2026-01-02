@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.settings.dto.*;
 import com.asg.settings.dto.request.RightsUpdateRequest;
@@ -149,7 +150,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         if (!roleRepo.existsById(request.getRoleId())) {
             request.getPermissions().forEach(p ->
-                    errors.add(new RolePermissionError(p.getDocId(), "Invalid roleId")));
+                    errors.add(new RolePermissionError(p.getDocId(), "Invalid userRoleId")));
             return new RolePermissionResponse("FAILURE", "Failed to add role permissions.", errors);
         }
 
@@ -186,7 +187,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
         if (!roleRepo.existsById(roleId)) {
             request.getRightsUpdateList().forEach(p ->
-                    errors.add(new RolePermissionError(p.getDocId(), "Invalid roleId")));
+                    errors.add(new RolePermissionError(p.getDocId(), "Invalid userRoleId")));
             return new RolePermissionResponse("FAILURE", "Failed to update role permissions.", errors);
         }
 

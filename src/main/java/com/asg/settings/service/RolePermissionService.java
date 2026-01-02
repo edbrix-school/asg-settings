@@ -1,7 +1,7 @@
 package com.asg.settings.service;
 
-import com.asg.settings.dto.UserRoleRightsDetDto;
-import com.asg.settings.dto.UserRoleRightsDto;
+import com.asg.common.lib.dto.UserRoleRightsDetDto;
+import com.asg.common.lib.dto.UserRoleRightsDto;
 import com.asg.settings.dto.request.RightsUpdateRequest;
 import com.asg.settings.dto.request.RolePermissionRequest;
 import com.asg.settings.dto.response.RolePermissionResponse;

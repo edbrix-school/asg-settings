@@ -1,8 +1,6 @@
 package com.asg.settings.service;
 
-import com.asg.common.lib.dto.FilterDto;
-import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.AsgException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
@@ -481,7 +479,7 @@ public class UserService {
             loggingService.logSimpleFieldChange(UserRolesEntity.class, docId, finalUser.getUserPoid().toString(), "UserRolePoid", null, role.userRolePoId().toString(), detail);
 
         } else {
-            throw new InputMismatchException("You are attempting to update the same role multiple times. Please review your selection. roleId -> " + role.roleId());
+            throw new InputMismatchException("You are attempting to update the same role multiple times. Please review your selection. userRoleId -> " + role.userRoleId());
         }
 
     }
@@ -491,7 +489,7 @@ public class UserService {
         if (null != rolePresent) {
             userRoleRepository.deleteByUserRolePoidAndId_UserPoid(role.userRolePoId(), finalUser.getUserPoid());
         } else {
-            throw new InputMismatchException("Cannot delete a role that  is not assigned to the user, roleId  -> " + role.roleId());
+            throw new InputMismatchException("Cannot delete a role that  is not assigned to the user, userRoleId  -> " + role.userRoleId());
         }
     }
 
@@ -507,7 +505,7 @@ public class UserService {
             loggingService.logSimpleFieldChange(UserRolesEntity.class, docId, finalUser.getUserPoid().toString(), "ExpiryDate", oldExpiryDate != null ? oldExpiryDate.toString() : null, rolePresent.getExpiryDate() != null ? rolePresent.getExpiryDate().toString() : null, detail);
 
         } else {
-            throw new InputMismatchException("Cannot update a role that is not assigned to the user, roleId   -> " + role.roleId());
+            throw new InputMismatchException("Cannot update a role that is not assigned to the user, userRoleId   -> " + role.userRoleId());
         }
     }
 
