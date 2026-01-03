@@ -22,5 +22,6 @@ public interface UserRoleService {
     boolean existsByRoleName(String roleName, Long excludePoid);
     RoleDto getUserRoleById(Long userRolePoid);
     List<RoleDto> getUserRolesByIds(List<Long> userRolePoids);
+    byte[] generateUserRolePdf(Long transactionPoid, String documentId) throws Exception;
 
 }

@@ -7,8 +7,7 @@ import com.asg.common.lib.dto.RoleDto;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
-import com.asg.common.lib.service.DocumentSearchService;
-import com.asg.common.lib.service.LoggingService;
+import com.asg.common.lib.service.*;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.UserRoleRequestDto;
 import com.asg.common.lib.dto.UserRolesDto;
@@ -16,6 +15,8 @@ import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.repository.RoleRepository;
 import com.asg.settings.service.UserRoleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JasperReport;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,9 +37,13 @@ import static com.asg.common.lib.security.util.UserContext.getCurrentUser;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserRoleServiceImpl implements UserRoleService {
 
     private final RoleRepository roleRepository;
+    private final JasperReportLoader reportLoader;
+    private final PdfContextParamsProvider contextParams;
+    private final DataSource dataSource;
 
     @Autowired
     LoggingService loggingService;
@@ -206,6 +213,59 @@ public class UserRoleServiceImpl implements UserRoleService {
                         .deleted(entity.getDeleted())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public byte[] generateUserRolePdf(Long userRolePoid, String documentId) {
+
+        try {
+            Map<String, Object> params = contextParams.baseParams();
+            params.putAll(buildParams(userRolePoid,documentId));
+
+            // Subreports
+            params.put("SUB_HEADER", reportLoader.load("DocHeaderSubReport.jrxml"));
+            params.put("SUB_FOOTER", reportLoader.load("DocFooterSubReport.jrxml"));
+            params.put("SUB_1", reportLoader.load("User_Roles_Rights_subreport1.jrxml"));
+
+            // Main report
+            JasperReport mainReport =
+                    reportLoader.load("User_Roles_Rights.jrxml");
+
+            return JasperReportExporter.fillReportToPdf(
+                    mainReport,
+                    params,
+                    dataSource
+            );
+
+        } catch (Exception e) {
+            log.error("Failed to generate User Role PDF for POID {}", userRolePoid, e);
+            throw new RuntimeException("PDF generation failed", e);
+        }
+    }
+
+    private Map<String, Object> buildParams(Long userRolePoid, String documentId) {
+
+        RoleEntity entity = roleRepository.findByUserRolePoid(userRolePoid);
+
+        if (entity == null) {
+            throw new RuntimeException("User Role not found: " + userRolePoid);
+        }
+
+        Map<String, Object> params = new HashMap<>();
+
+        params.put("USER_ROLE_POID", entity.getUserRolePoid());
+        params.put("USER_ROLE_ID", entity.getUserRoleId());
+        params.put("USER_ROLE_NAME", entity.getUserRoleName());
+        params.put("USER_ROLE_NAME2", entity.getUserRoleName2());
+        params.put("ACTIVE", entity.getActive());
+        params.put("SEQ_NO", entity.getSeqNo());
+        params.put("GROUP_POID", entity.getGroupPoid());
+        params.put("COMPANY_POID", entity.getCompanyPoid());
+
+        // Document info
+        params.put("DOC_KEY_POID", userRolePoid);
+        params.put("DOC_ID", documentId);
+
+        return params;
     }
 
 }

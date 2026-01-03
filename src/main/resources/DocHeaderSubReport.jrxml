@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="DocHeaderSubReport" language="groovy" pageWidth="555" pageHeight="802" whenNoDataType="BlankPage"
+              columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+    <parameter name="LOGIN_COMP_POID" class="java.lang.String">
+        <defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+    </parameter>
+    <parameter name="LOGIN_DIV_POID" class="java.lang.String">
+        <defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+    </parameter>
+    <queryString>
+        <![CDATA[SELECT CM.COMPANY_POID, CM.COMPANY_NAME, CM.ADDRESS, CM.LOGO_IMAGE, CMD.REMARKS, CMD.COMPANY_DIV_LOGO, CMD.COMPANY_DIV_ADDRESS FROM GLOBAL_COMPANY_MASTER CM INNER JOIN GLOBAL_COMPANY_MASTER_DIV_DTL CMD ON CM.COMPANY_POID = CMD.COMPANY_POID AND CMD.DIV_POID = $P{LOGIN_DIV_POID} WHERE CM.COMPANY_POID = $P{LOGIN_COMP_POID}]]></queryString>
+    <field name="COMPANY_POID" class="java.math.BigDecimal"/>
+    <field name="COMPANY_NAME" class="java.lang.String"/>
+    <field name="ADDRESS" class="java.lang.String"/>
+    <field name="LOGO_IMAGE" class="java.io.InputStream"/>
+    <field name="REMARKS" class="java.lang.String"/>
+    <field name="COMPANY_DIV_LOGO" class="java.io.InputStream"/>
+    <field name="COMPANY_DIV_ADDRESS" class="java.lang.String"/>
+    <title>
+        <band height="75">
+            <image hAlign="Center">
+                <reportElement mode="Transparent" x="0" y="0" width="555" height="52" backcolor="#CCCCCC"/>
+                <imageExpression><![CDATA[$F{COMPANY_DIV_LOGO}]]></imageExpression>
+            </image>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="0" y="55" width="555" height="20" isPrintWhenDetailOverflows="true"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{COMPANY_DIV_ADDRESS}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+</jasperReport>

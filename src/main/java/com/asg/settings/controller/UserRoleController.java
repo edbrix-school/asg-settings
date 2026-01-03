@@ -13,6 +13,7 @@ import com.asg.settings.dto.response.RolePermissionResponse;
 import com.asg.settings.entity.RoleEntity;
 import com.asg.settings.service.RolePermissionService;
 import com.asg.settings.service.UserRoleService;
+import com.asg.settings.service.UserRolePdfService;
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,11 +22,14 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +47,8 @@ public class UserRoleController {
     private final UserRoleService userRoleService;
 
     private final RolePermissionService userPermissionService;
+
+    private final UserRolePdfService userRolePdfService;
 
     @Operation(summary = "Fetch permissions")
     @ApiResponses(value = {
@@ -66,7 +72,7 @@ public class UserRoleController {
             description = """
                     ### Request Body
                         Add permissions to the user by providing the required details.
-                        - **userRoleId:** ID of the role. Required.
+                        - **roleId:** ID of the role. Required.
                         - **permissions:** Parameters to be added. This field is mandatory.
                     
                     ### Notes
@@ -80,7 +86,7 @@ public class UserRoleController {
                                     name = "Add Permissions Example",
                                     value = """
                                             {
-                                                "userRoleId": "222",
+                                                "roleId": "222",
                                                 "permissions": [
                                                     {
                                                         "detRowId": "1",
@@ -172,7 +178,7 @@ public class UserRoleController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/{userRoleId}/rights")
+    @PutMapping("/{roleId}/rights")
     public ResponseEntity<?> updatePermissions(
             @PathVariable Long roleId,
             @Valid @RequestBody RightsUpdateRequest request) {
@@ -451,5 +457,82 @@ public class UserRoleController {
         List<RoleDto> roles = userRoleService.getUserRolesByIds(userRolePoids);
         return success("Roles fetched", roles);
     }
+
+    /*@Operation(
+            summary = "Generate PDF for User Role",
+            description = "Generate PDF report for a specific user role with permissions details"
+    )
+    @GetMapping("/pdf-report/{userRolePoid}")
+    public ResponseEntity<?> generateUserRolePdf(@PathVariable Long userRolePoid) {
+        try {
+            byte[] pdf = userRolePdfService.generateUserRolePdf(userRolePoid);
+            return PdfResponseUtil.inline(
+                    pdf,
+                    "user-role-" + userRolePoid + ".pdf"
+            );
+        } catch (Exception e) {
+            return internalServerError(
+                    "Failed to generate PDF: " + e.getMessage()
+            );
+        }
+    }*/
+
+    @Operation(
+            summary = "Generate PDF for User Role",
+            description = "Generate PDF report for a specific User Role with permissions details",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "PDF generated successfully",
+                            content = @Content(mediaType = "application/pdf")
+                    ),
+                    @ApiResponse(responseCode = "404", description = "User Role not found"),
+                    @ApiResponse(responseCode = "500", description = "Failed to generate PDF")
+            },
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @GetMapping("/pdf-report/{userRolePoid}")
+    public ResponseEntity<?> generateUserRolePdf(
+
+            @Parameter(
+                    description = "User Role POID",
+                    required = true,
+                    example = "101"
+            )
+            @PathVariable Long userRolePoid,
+
+            @Parameter(
+                    description = "Document ID",
+                    required = true,
+                    example = "000-004"
+            )
+            @RequestParam(defaultValue = "000-004") String documentId,
+
+            @Parameter(
+                    description = "Requested action",
+                    required = true,
+                    example = "PRINT"
+            )
+            @RequestParam(defaultValue = "PRINT") String actionRequested
+    ) {
+        try {
+
+            byte[] pdf = userRoleService.generateUserRolePdf(userRolePoid, documentId);
+
+            return ResponseEntity.ok()
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "inline; filename=user-role-" + userRolePoid + ".pdf"
+                    )
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+
+        } catch (Exception e) {
+            return internalServerError(
+                    "Failed to generate PDF: " + e.getMessage()
+            );
+        }
+    }
+
 
 }
