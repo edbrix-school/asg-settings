@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
@@ -10,7 +10,7 @@
     <property name="ireport.y" value="0"/>
     <style name="Title" fontName="Times New Roman" fontSize="50" isBold="true" pdfFontName="Times-Bold"/>
     <style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
-    <style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+    <style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true" pdfFontName="Helvetica-Bold"/>
     <style name="Detail" fontName="Arial" fontSize="12"/>
     <style name="Row" mode="Transparent">
         <conditionalStyle>
@@ -21,11 +21,11 @@
     <style name="style1" isBold="false">
         <conditionalStyle>
             <conditionExpression><![CDATA[$F{MENU_LEVEL} == 0]]></conditionExpression>
-            <style fontSize="12" isBold="true"/>
+            <style fontSize="12" isBold="true" pdfFontName="Helvetica-Bold"/>
         </conditionalStyle>
         <conditionalStyle>
             <conditionExpression><![CDATA[$F{MENU_LEVEL} == 1]]></conditionExpression>
-            <style fontSize="10" isBold="true"/>
+            <style fontSize="10" isBold="true" pdfFontName="Helvetica-Bold"/>
         </conditionalStyle>
     </style>
     <subDataset name="CurrentDatetime" uuid="0057d7a9-4b86-4b40-8012-658713568c61">
@@ -51,7 +51,9 @@ where user_role_poid =$P{DOC_KEY_POID}]]>
     <parameter name="LOGIN_COMP_POID" class="java.lang.String">
         <defaultValueExpression><![CDATA[1]]></defaultValueExpression>
     </parameter>
-    <parameter name="LOGIN_DIV_POID" class="java.lang.String"/>
+    <parameter name="LOGIN_DIV_POID" class="java.lang.String">
+        <defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
+    </parameter>
     <parameter name="LOGIN_USER_POID" class="java.lang.String"/>
     <parameter name="DOC_ID" class="java.lang.String">
         <defaultValueExpression><![CDATA["000-004"]]></defaultValueExpression>
@@ -146,63 +148,63 @@ FROM
             <staticText>
                 <reportElement x="0" y="75" width="178" height="15" uuid="bd1069cf-98a4-4741-9dca-769ba72c0e3b"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Menu]]></text>
             </staticText>
             <staticText>
                 <reportElement x="184" y="75" width="72" height="15" uuid="efb1aaae-fe10-46ac-a122-c88d8be1704f"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Doc type]]></text>
             </staticText>
             <staticText>
                 <reportElement x="260" y="75" width="65" height="15" uuid="b5d13058-efaf-4c53-a6ed-146f6cb7e9bb"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Menu ID]]></text>
             </staticText>
             <staticText>
                 <reportElement x="338" y="75" width="30" height="15" uuid="1e416b0d-37db-4a9a-b8c4-83c9ba6aa8f9"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[View]]></text>
             </staticText>
             <staticText>
                 <reportElement x="378" y="75" width="32" height="15" uuid="fb307e8d-0e19-4c1c-9304-3156c9f8ae84"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Create]]></text>
             </staticText>
             <staticText>
                 <reportElement x="418" y="75" width="22" height="15" uuid="6aa396ff-cdeb-49a2-b31b-59de7f4237e2"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Edit]]></text>
             </staticText>
             <staticText>
                 <reportElement x="447" y="75" width="31" height="15" uuid="80ac6be6-272c-4bfd-86f3-d85a4edf73e0"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Delete]]></text>
             </staticText>
             <staticText>
                 <reportElement x="487" y="75" width="25" height="15" uuid="ad561b08-86aa-4b74-8c67-1e7aaa5371f9"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Print]]></text>
             </staticText>
             <staticText>
                 <reportElement x="520" y="75" width="30" height="15" uuid="81af907c-e502-40bf-a60a-48b70ab14d89"/>
                 <textElement>
-                    <font isBold="true"/>
+                    <font isBold="true" pdfFontName="Helvetica-Bold"/>
                 </textElement>
                 <text><![CDATA[Email]]></text>
             </staticText>
