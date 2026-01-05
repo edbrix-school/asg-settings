@@ -26,14 +26,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 
 import static com.asg.common.lib.dto.response.ApiResponse.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/v1/user-roles")
 @RequiredArgsConstructor
@@ -450,6 +454,34 @@ public class UserRoleController {
     public ResponseEntity<?> getRolesBatch(@RequestBody List<Long> userRolePoids) {
         List<RoleDto> roles = userRoleService.getUserRolesByIds(userRolePoids);
         return success("Roles fetched", roles);
+    }
+
+    @AllowedAction(UserRolesRightsEnum.PRINT)
+    @Operation(
+            summary = "Generate PDF for User Roles Rights Report",
+            description = "Generate PDF report for a specific User Role showing all permissions and rights",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "PDF generated successfully",
+                            content = @Content(mediaType = "application/pdf")),
+                    @ApiResponse(responseCode = "404", description = "User Role not found"),
+                    @ApiResponse(responseCode = "500", description = "Failed to generate PDF")
+            }
+    )
+    @GetMapping("/print/{userRolePoid}")
+    public ResponseEntity<?> print(
+            @Parameter(description = "User Role POID", example = "21")
+            @PathVariable Long userRolePoid) {
+        try {
+            byte[] pdf = userRoleService.print(userRolePoid);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=user-roles-rights-" + userRolePoid + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdf);
+        } catch (Exception e) {
+            log.error("Failed to generate PDF for User Roles Rights: {}", userRolePoid, e);
+            return error("Failed to generate PDF: " + e.getMessage(), 500);
+        }
     }
 
 }

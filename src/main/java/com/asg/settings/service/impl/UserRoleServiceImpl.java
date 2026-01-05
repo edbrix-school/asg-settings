@@ -9,6 +9,9 @@ import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
+import com.asg.common.lib.service.PrintService;
+import net.sf.jasperreports.engine.JasperReport;
+import javax.sql.DataSource;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.UserRoleRequestDto;
 import com.asg.common.lib.dto.UserRolesDto;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,6 +47,12 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Autowired
     DocumentSearchService documentService;
+    
+    @Autowired
+    PrintService printService;
+    
+    @Autowired
+    DataSource dataSource;
 
     public RoleEntity getUserRoleByRolePoid(Long userRolePoid) {
         return roleRepository.findByUserRolePoid(userRolePoid);
@@ -206,6 +216,33 @@ public class UserRoleServiceImpl implements UserRoleService {
                         .deleted(entity.getDeleted())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public byte[] print(Long userRolePoid) throws Exception {
+        Map<String, Object> params = printService.buildBaseParams(userRolePoid, "000-009");
+        params.putAll(buildUserRoleParams(userRolePoid));
+        params.put("SUBREPORT1", printService.load("Settings/User_Roles_Rights_subreport1.jrxml"));
+        params.put("BLACK_CHECK_MARK", "jasper/Settings/BlackCheckMark.gif");
+        JasperReport mainReport = printService.load("Settings/User_Roles_Rights.jrxml");
+        return printService.fillReportToPdf(mainReport, params, dataSource);
+    }
+
+    private Map<String, Object> buildUserRoleParams(Long userRolePoid) {
+        RoleEntity entity = roleRepository.findByUserRolePoid(userRolePoid);
+        if (entity == null) {
+            throw new RuntimeException("User Role not found: " + userRolePoid);
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("USER_ROLE_POID", entity.getUserRolePoid());
+        params.put("USER_ROLE_ID", entity.getUserRoleId());
+        params.put("USER_ROLE_NAME", entity.getUserRoleName());
+        params.put("USER_ROLE_NAME2", entity.getUserRoleName2());
+        params.put("ACTIVE", entity.getActive());
+        params.put("SEQ_NO", entity.getSeqNo());
+        params.put("GROUP_POID", entity.getGroupPoid());
+        params.put("COMPANY_POID", entity.getCompanyPoid());
+        return params;
     }
 
 }

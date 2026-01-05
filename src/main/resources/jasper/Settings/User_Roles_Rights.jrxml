@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="User_Roles_Rights" language="groovy" pageWidth="595" pageHeight="842"
+              whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20"
+              bottomMargin="20" uuid="51f26c1c-332c-43f0-beb9-5722768520c7">
+    <property name="ireport.zoom" value="1.3310000000000004"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <style name="Title" fontName="Times New Roman" fontSize="50" isBold="true" pdfFontName="Times-Bold"/>
+    <style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18"/>
+    <style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12" isBold="true"/>
+    <style name="Detail" fontName="Arial" fontSize="12"/>
+    <style name="Row" mode="Transparent">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+            <style backcolor="#E6DAC3"/>
+        </conditionalStyle>
+    </style>
+    <style name="style1" isBold="false">
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{MENU_LEVEL} == 0]]></conditionExpression>
+            <style fontSize="12" isBold="true"/>
+        </conditionalStyle>
+        <conditionalStyle>
+            <conditionExpression><![CDATA[$F{MENU_LEVEL} == 1]]></conditionExpression>
+            <style fontSize="10" isBold="true"/>
+        </conditionalStyle>
+    </style>
+    <subDataset name="CurrentDatetime" uuid="0057d7a9-4b86-4b40-8012-658713568c61">
+        <queryString>
+            <![CDATA[select to_char(SYSTIMESTAMP,'DD-MON-YYYY HH:MI:SS') date_time from dual]]>
+        </queryString>
+        <field name="DATE_TIME" class="java.lang.String"/>
+    </subDataset>
+    <subDataset name="User_role_list" uuid="9de23218-f992-465e-93b7-c7e14f56287c">
+        <parameter name="DOC_KEY_POID" class="java.lang.String"/>
+        <queryString>
+            <![CDATA[select 'User List :'||LISTAGG(GUSER.USER_NAME,',')  WITHIN GROUP (ORDER BY GUSER.USER_NAME) userlist from GLOBAL_USERS_AUTH_ROLES_DTL DTL
+INNER JOIN GLOBAL_USERS GUSER ON
+DTL.USER_POID = GUSER.USER_POID
+where user_role_poid =$P{DOC_KEY_POID}]]>
+        </queryString>
+        <field name="USERLIST" class="java.lang.String"/>
+    </subDataset>
+    <subDataset name="dataset1" uuid="06bfe86d-8cdb-4af3-ba41-39096c2e8b0b"/>
+    <parameter name="LOGIN_GROUP_POID" class="java.lang.String">
+        <defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+    </parameter>
+    <parameter name="LOGIN_COMP_POID" class="java.lang.String">
+        <defaultValueExpression><![CDATA[1]]></defaultValueExpression>
+    </parameter>
+    <parameter name="LOGIN_DIV_POID" class="java.lang.String"/>
+    <parameter name="LOGIN_USER_POID" class="java.lang.String"/>
+    <parameter name="DOC_ID" class="java.lang.String">
+        <defaultValueExpression><![CDATA["000-004"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="DOC_KEY_POID" class="java.lang.String"/>
+    <parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+        <defaultValueExpression>
+            <![CDATA["\\\\ASGERPFS01.SHIPPINGBAHRAIN.COM\\ERP_Reports\\Reports\\"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="USER_ROLE_POID" class="java.math.BigDecimal">
+        <defaultValueExpression><![CDATA[]]></defaultValueExpression>
+    </parameter>
+    <parameter name="SUB_HEADER" class="net.sf.jasperreports.engine.JasperReport"/>
+    <parameter name="SUB_FOOTER" class="net.sf.jasperreports.engine.JasperReport"/>
+    <parameter name="SUBREPORT1" class="net.sf.jasperreports.engine.JasperReport"/>
+    <parameter name="BLACK_CHECK_MARK" class="java.lang.String"/>
+    <queryString>
+        <![CDATA[SELECT DECODE(MENU_LEVEL,0,' ',1,' ',MENU_ID) MENU_ID, DECODE(LEVEL,'1',MENU_NAME,LPAD(' ', 2*LEVEL,'  ') || MENU_NAME) MENU_NAME, DOC_TYPE,
+      VIEW_RIGHT, CREATE_RIGHT, EDIT_RIGHT, DELETE_RIGHT,PRINT_RIGHT, EMAIL_RIGHT, MENU_LEVEL, TO_CHAR(SYSTIMESTAMP, 'dd-mon-yyyy hh.mi.ss AM') as DATE_TIME
+FROM
+      ( SELECT DISTINCT DM.MODULE_ID, MM.MODULE_ID MENU_ID, MM.MODULE_NAME MENU_NAME, 0 MENU_LEVEL, '' MENU_GROUP, '' TASKFLOW_URL, ' ' DOC_TYPE, ' '
+            VIEW_RIGHT,' ' CREATE_RIGHT,' ' EDIT_RIGHT,' ' DELETE_RIGHT,' ' PRINT_RIGHT,' ' EMAIL_RIGHT
+      FROM  GLOBAL_MODULE_MASTER MM
+      INNER JOIN GLOBAL_DOC_MASTER DM            ON MM.MODULE_ID = DM.MODULE_ID AND NVL(DM.ACTIVE,'N')  = 'Y'
+      INNER JOIN GLOBAL_USER_ROLES_RIGHTS_DTL RD ON DM.DOC_ID    = RD.DOC_ID
+      WHERE SUBSTR(NVL(RD.RIGHTS,'000000'),1,1)                  = '1'
+        AND RD.USER_ROLE_POID                                    = $P{DOC_KEY_POID}
+      UNION ALL
+      SELECT DISTINCT DM.MODULE_ID, TO_CHAR(MM.MODULE_ID + DT.CONST_NO) MENU_ID, DT.CONST_NAME MENU_NAME, 1 MENU_LEVEL, MM.MODULE_ID MENU_GROUP, ''
+            TASKFLOW_URL, ' ' DOC_TYPE, ' ' VIEW_RIGHT,' ' CREATE_RIGHT,' ' EDIT_RIGHT,' ' DELETE_RIGHT,' ' PRINT_RIGHT,' ' EMAIL_RIGHT
+      FROM  GLOBAL_MODULE_MASTER MM
+      INNER JOIN GLOBAL_DOC_MASTER DM            ON MM.MODULE_ID = DM.MODULE_ID AND NVL(DM.ACTIVE,'N')  = 'Y'
+      INNER JOIN CONST_DOC_TYPES DT              ON DM.DOC_TYPE  = DT.CONST_NAME
+      INNER JOIN GLOBAL_USER_ROLES_RIGHTS_DTL RD ON DM.DOC_ID    = RD.DOC_ID
+      WHERE SUBSTR(NVL(RD.RIGHTS,'000000'),1,1)                  = '1'
+        AND RD.USER_ROLE_POID                                    = $P{DOC_KEY_POID}
+      UNION ALL
+      SELECT DISTINCT DM.MODULE_ID, DM.DOC_ID AS MENU_ID, DM.DOC_SHORT_NAME AS MENU_NAME, 2 MENU_LEVEL, TO_CHAR(MM.MODULE_ID + DT.CONST_NO) AS
+            MENU_GROUP, TASKFLOW_URL, DM.DOC_TYPE, DECODE(SUBSTR(RD.RIGHTS,1,1),1,'Y',0,' ',NULL,' ') VIEW_RIGHT, DECODE(SUBSTR(RD.RIGHTS,2,1),1,'Y',
+            0,' ',NULL,' ') CREATE_RIGHT,DECODE(SUBSTR(RD.RIGHTS,3,1),1,'Y',0,' ',NULL,' ') EDIT_RIGHT,DECODE(SUBSTR(RD.RIGHTS,4,1),1,'Y',0,' ',NULL,
+            ' ') DELETE_RIGHT,DECODE(SUBSTR(RD.RIGHTS,5,1),1,'Y',0,' ',NULL,' ') PRINT_RIGHT,DECODE(SUBSTR(RD.RIGHTS,6,1),1,'Y',0,' ',NULL,' ')
+            EMAIL_RIGHT
+      FROM  GLOBAL_DOC_MASTER DM
+      INNER JOIN GLOBAL_MODULE_MASTER MM         ON DM.MODULE_ID = MM.MODULE_ID
+      INNER JOIN CONST_DOC_TYPES DT              ON DM.DOC_TYPE  = DT.CONST_NAME
+      INNER JOIN GLOBAL_USER_ROLES_RIGHTS_DTL RD ON DM.DOC_ID    = RD.DOC_ID
+      WHERE SUBSTR(NVL(RD.RIGHTS,'000000'),1,1)                  = '1' AND NVL(DM.ACTIVE,'N')  = 'Y'
+        AND RD.USER_ROLE_POID                                    = $P{DOC_KEY_POID}
+      )
+      START WITH MENU_GROUP   IS NULL
+      CONNECT BY PRIOR MENU_ID = MENU_GROUP
+  AND LEVEL                   <= 3]]>
+    </queryString>
+    <field name="MENU_ID" class="java.lang.String"/>
+    <field name="MENU_NAME" class="java.lang.String"/>
+    <field name="DOC_TYPE" class="java.lang.String"/>
+    <field name="VIEW_RIGHT" class="java.lang.String"/>
+    <field name="CREATE_RIGHT" class="java.lang.String"/>
+    <field name="EDIT_RIGHT" class="java.lang.String"/>
+    <field name="DELETE_RIGHT" class="java.lang.String"/>
+    <field name="PRINT_RIGHT" class="java.lang.String"/>
+    <field name="EMAIL_RIGHT" class="java.lang.String"/>
+    <field name="MENU_LEVEL" class="java.math.BigDecimal"/>
+    <field name="DATE_TIME" class="java.lang.String"/>
+    <variable name="variable1" class="java.lang.String">
+        <variableExpression>
+            <![CDATA["SELECT USER_ROLE_NAME FROM GLOBAL_USER_ROLES WHERE USER_ROLE_POID = $P{DOC_KEY_POID}"]]></variableExpression>
+    </variable>
+    <variable name="variable2" class="java.lang.String">
+        <variableExpression><![CDATA[$V{variable1}]]></variableExpression>
+    </variable>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band height="67" splitType="Stretch">
+            <subreport>
+                <reportElement x="0" y="0" width="555" height="66" uuid="11dd97b8-4c92-45fe-85bb-3b9358474446"/>
+                <subreportParameter name="LOGIN_COMP_POID">
+                    <subreportParameterExpression><![CDATA[$P{LOGIN_COMP_POID}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportParameter name="LOGIN_DIV_POID">
+                    <subreportParameterExpression><![CDATA[$P{LOGIN_DIV_POID}]]></subreportParameterExpression>
+                </subreportParameter>
+                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                <subreportExpression><![CDATA[$P{SUB_HEADER}]]></subreportExpression>
+            </subreport>
+        </band>
+    </title>
+    <columnHeader>
+        <band height="93">
+            <staticText>
+                <reportElement x="0" y="75" width="178" height="15" uuid="bd1069cf-98a4-4741-9dca-769ba72c0e3b"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Menu]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="184" y="75" width="72" height="15" uuid="efb1aaae-fe10-46ac-a122-c88d8be1704f"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Doc type]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="260" y="75" width="65" height="15" uuid="b5d13058-efaf-4c53-a6ed-146f6cb7e9bb"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Menu ID]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="338" y="75" width="30" height="15" uuid="1e416b0d-37db-4a9a-b8c4-83c9ba6aa8f9"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[View]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="378" y="75" width="32" height="15" uuid="fb307e8d-0e19-4c1c-9304-3156c9f8ae84"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Create]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="418" y="75" width="22" height="15" uuid="6aa396ff-cdeb-49a2-b31b-59de7f4237e2"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Edit]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="447" y="75" width="31" height="15" uuid="80ac6be6-272c-4bfd-86f3-d85a4edf73e0"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Delete]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="487" y="75" width="25" height="15" uuid="ad561b08-86aa-4b74-8c67-1e7aaa5371f9"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Print]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="520" y="75" width="30" height="15" uuid="81af907c-e502-40bf-a60a-48b70ab14d89"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Email]]></text>
+            </staticText>
+            <line>
+                <reportElement x="0" y="89" width="555" height="1" uuid="d5ffd8ea-dc80-499a-beaf-9c71e5b6de9e"/>
+                <graphicElement>
+                    <pen lineWidth="0.5"/>
+                </graphicElement>
+            </line>
+            <subreport>
+                <reportElement x="0" y="0" width="555" height="23" uuid="e7d54e5d-10aa-4b44-a608-2274c90af26b"/>
+                <subreportParameter name="LOGIN_GROUP_POID"/>
+                <subreportParameter name="LOGIN_COMP_POID"/>
+                <subreportParameter name="LOGIN_USER_POID"/>
+                <subreportParameter name="DOC_ID"/>
+                <subreportParameter name="DOC_KEY_POID">
+                    <subreportParameterExpression><![CDATA[$P{DOC_KEY_POID}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportParameter name="SUBREPORT_DIR"/>
+                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                <subreportExpression><![CDATA[$P{SUBREPORT1}]]></subreportExpression>
+            </subreport>
+            <componentElement>
+                <reportElement key="table" stretchType="RelativeToTallestObject" x="0" y="26" width="550" height="18"
+                               isPrintWhenDetailOverflows="true" uuid="06a19f6c-2a6a-47db-9e4f-7673f3740c22"/>
+                <jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                          xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+                    <datasetRun subDataset="User_role_list" uuid="e840e60f-913c-48ac-97cf-950c9e3c2839">
+                        <datasetParameter name="DOC_KEY_POID">
+                            <datasetParameterExpression><![CDATA[$P{DOC_KEY_POID}]]></datasetParameterExpression>
+                        </datasetParameter>
+                        <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                    </datasetRun>
+                    <jr:column width="570" uuid="bb2f17bb-d1e2-4b87-a6c5-09212ab5b16e">
+                        <jr:detailCell height="22" rowSpan="1">
+                            <textField isStretchWithOverflow="true">
+                                <reportElement x="0" y="0" width="559" height="22"
+                                               uuid="644b0d13-0057-44b7-80e2-5113a41c2639"/>
+                                <textFieldExpression><![CDATA[$F{USERLIST}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                </jr:table>
+            </componentElement>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="13" splitType="Stretch">
+            <textField>
+                <reportElement x="260" y="1" width="65" height="12" uuid="c7b32a47-443f-4a2f-a51f-f42e5368bbf9"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{MENU_ID}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="184" y="0" width="72" height="12" uuid="4e792747-a90b-45e0-ace6-cdc6e8cacb02"/>
+                <textElement>
+                    <font size="8"/>
+                    <paragraph lineSpacing="Fixed"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{DOC_TYPE}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement style="style1" x="0" y="0" width="178" height="12"
+                               uuid="85c337ea-dd99-45ed-a24d-b183ba746131"/>
+                <textElement>
+                    <font size="8"/>
+                    <paragraph lineSpacing="Single"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{MENU_NAME}]]></textFieldExpression>
+            </textField>
+            <image>
+                <reportElement x="346" y="1" width="10" height="11" uuid="e08a3f6a-5fb4-4883-b3ca-9f88321e1469">
+                    <printWhenExpression><![CDATA[$F{VIEW_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+            <image>
+                <reportElement x="385" y="1" width="10" height="11" uuid="2cc19d56-73e7-424a-bdf9-4cbaa2a7791d">
+                    <printWhenExpression><![CDATA[$F{CREATE_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+            <image>
+                <reportElement x="422" y="1" width="10" height="11" uuid="71167af8-9c48-4e33-b7b5-c9fb253f06a8">
+                    <printWhenExpression><![CDATA[$F{EDIT_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+            <image>
+                <reportElement x="456" y="1" width="10" height="11" uuid="e819da25-9bbd-44f6-8cc5-884680f4cf8d">
+                    <printWhenExpression><![CDATA[$F{DELETE_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+            <image>
+                <reportElement x="493" y="1" width="10" height="11" uuid="6f19e88a-b004-458b-b112-6af5c09ed8c9">
+                    <printWhenExpression><![CDATA[$F{PRINT_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+            <image>
+                <reportElement x="529" y="1" width="10" height="11" uuid="b7cabe72-34a5-4aab-b45f-53b4a0f51b7d">
+                    <printWhenExpression><![CDATA[$F{EMAIL_RIGHT}=="Y"]]></printWhenExpression>
+                </reportElement>
+                <imageExpression><![CDATA[$P{BLACK_CHECK_MARK}]]></imageExpression>
+            </image>
+        </band>
+    </detail>
+    <pageFooter>
+        <band height="44" splitType="Stretch">
+            <subreport>
+                <reportElement x="0" y="3" width="555" height="26" uuid="326ecd66-b7ad-4850-8e0f-10877494dc9d"/>
+                <subreportParameter name="DOC_ID">
+                    <subreportParameterExpression><![CDATA[$P{DOC_ID}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportParameter name="LOGIN_COMP_POID">
+                    <subreportParameterExpression><![CDATA[$P{LOGIN_COMP_POID}]]></subreportParameterExpression>
+                </subreportParameter>
+                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                <subreportExpression><![CDATA[$P{SUB_FOOTER}]]></subreportExpression>
+            </subreport>
+            <textField>
+                <reportElement x="313" y="32" width="242" height="12" uuid="dce43797-fad0-49ce-893a-210d0c226831"/>
+                <textElement textAlignment="Right">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{DATE_TIME}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>
