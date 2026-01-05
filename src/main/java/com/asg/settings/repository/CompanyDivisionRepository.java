@@ -22,6 +22,8 @@ public interface CompanyDivisionRepository extends JpaRepository<CompanyDivision
     //  Delete all divisions by companyPoid
     void deleteById_CompanyPoid(Long companyPoid);
 
+    CompanyDivisionEntity findByIdCompanyPoidAndIdDetRowId(Long companyPoid, Long detRowId);
+
 }
 
 

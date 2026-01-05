@@ -20,6 +20,9 @@ import com.asg.common.lib.dto.CompanyDivisionDto;
 import com.asg.common.lib.dto.CompanyDto;
 import com.asg.common.lib.dto.TimeZoneDto;
 import com.asg.settings.dto.UserCompanyDto;
+import com.asg.settings.dto.request.CompanyDivisionRequestDto;
+import com.asg.settings.dto.request.CreateCompanyRequest;
+import com.asg.settings.dto.request.UpdateCompanyRequest;
 import com.asg.settings.entity.*;
 import com.asg.common.lib.entity.key.CompanyDivisionEntityKey;
 import com.asg.settings.repository.*;
@@ -213,7 +216,7 @@ public class CompanyService {
 
     }
 
-    @Transactional
+    /*@Transactional
     // Modified method signature to accept actionType
     public String saveOrUpdateCompany(Company company) {
 
@@ -231,6 +234,128 @@ public class CompanyService {
         }
 
         return updatedCompanyId.toString();
+    }*/
+
+    @Transactional
+    public String createCompany(CreateCompanyRequest request) {
+        Company company = mapCreateRequestToEntity(request);
+        String userId = UserContext.getUserId() != null ? UserContext.getUserId() : null;
+        Long companyId = createNewCompany(company, userId);
+        return companyId.toString();
+    }
+
+    @Transactional
+    public String updateCompany(UpdateCompanyRequest request) {
+        Company company = mapUpdateRequestToEntity(request);
+        String userId = UserContext.getUserId() != null ? UserContext.getUserId() : null;
+        Long companyId = updateExistingCompany(company, userId);
+        return companyId.toString();
+    }
+
+    private Company mapCreateRequestToEntity(CreateCompanyRequest request) {
+        Company company = new Company();
+        company.setCompanyPoid(null);
+        mapCommonFields(company, request.getCompanyCode(), request.getCompanyName(), request.getCompanyName2(),
+                request.getContactPerson(), request.getTelephone(), request.getFax(), request.getEmail(),
+                request.getCountryId(), request.getStateId(), request.getCompanyColor(), request.getAddress(),
+                request.getFinancialPeriodStart(), request.getFinancialPeriodEnd(), request.getReportPeriodStart(),
+                request.getReportPeriodEnd(), request.getTransPeriodStart(), request.getTransPeriodEnd(),
+                request.getProvisionalClosedDate(), request.getStockPeriodStart(), request.getStockPeriodEnd(),
+                request.getVatRegistrationDate(), request.getVatLastFiledDate(), request.getActive(),
+                request.getSeqNo(), request.getBankDetail(), request.getBankPoid(), request.getTinNumber(),
+                request.getAccountPerson(), request.getVatFilingPeriod(), request.getAccountEmail(),
+                request.getLogoImageBase64(), request.getDateFormat(), request.getTimezoneId(),
+                request.getCurrencyPoid(), request.getSubmissionPeriod());
+        company.setDivisions(mapDivisionRequestsToEntities(request.getDivisions()));
+        return company;
+    }
+
+    private Company mapUpdateRequestToEntity(UpdateCompanyRequest request) {
+        Company company = new Company();
+        company.setCompanyPoid(request.getCompanyPoid());
+        mapCommonFields(company, request.getCompanyCode(), request.getCompanyName(), request.getCompanyName2(),
+                request.getContactPerson(), request.getTelephone(), request.getFax(), request.getEmail(),
+                request.getCountryId(), request.getStateId(), request.getCompanyColor(), request.getAddress(),
+                request.getFinancialPeriodStart(), request.getFinancialPeriodEnd(), request.getReportPeriodStart(),
+                request.getReportPeriodEnd(), request.getTransPeriodStart(), request.getTransPeriodEnd(),
+                request.getProvisionalClosedDate(), request.getStockPeriodStart(), request.getStockPeriodEnd(),
+                request.getVatRegistrationDate(), request.getVatLastFiledDate(), request.getActive(),
+                request.getSeqNo(), request.getBankDetail(), request.getBankPoid(), request.getTinNumber(),
+                request.getAccountPerson(), request.getVatFilingPeriod(), request.getAccountEmail(),
+                request.getLogoImageBase64(), request.getDateFormat(), request.getTimezoneId(),
+                request.getCurrencyPoid(), request.getSubmissionPeriod());
+        company.setDivisions(mapDivisionRequestsToEntities(request.getDivisions()));
+        return company;
+    }
+
+    private void mapCommonFields(Company company, String companyCode, String companyName, String companyName2,
+                                 String contactPerson, String telephone, String fax, String email,
+                                 String countryId, String stateId, String companyColor, String address,
+                                 java.util.Date financialPeriodStart, java.util.Date financialPeriodEnd, java.util.Date reportPeriodStart,
+                                 java.util.Date reportPeriodEnd, java.util.Date transPeriodStart, java.util.Date transPeriodEnd,
+                                 java.util.Date provisionalClosedDate, java.util.Date stockPeriodStart, java.util.Date stockPeriodEnd,
+                                 java.util.Date vatRegistrationDate, java.util.Date vatLastFiledDate, String active,
+                                 Integer seqNo, String bankDetail, Long bankPoid, String tinNumber,
+                                 String accountPerson, String vatFilingPeriod, String accountEmail,
+                                 String logoImageBase64, String dateFormat, Long timezoneId,
+                                 Long currencyPoid, Long submissionPeriod) {
+        company.setCompanyCode(companyCode);
+        company.setCompanyName(companyName);
+        company.setCompanyName2(companyName2);
+        company.setContactPerson(contactPerson);
+        company.setTelephone(telephone);
+        company.setFax(fax);
+        company.setEmail(email);
+        company.setCountryId(countryId);
+        company.setStateId(stateId);
+        company.setCompanyColor(companyColor);
+        company.setAddress(address);
+        company.setFinancialPeriodStart(financialPeriodStart);
+        company.setFinancialPeriodEnd(financialPeriodEnd);
+        company.setReportPeriodStart(reportPeriodStart);
+        company.setReportPeriodEnd(reportPeriodEnd);
+        company.setTransPeriodStart(transPeriodStart);
+        company.setTransPeriodEnd(transPeriodEnd);
+        company.setProvisionalClosedDate(provisionalClosedDate);
+        company.setStockPeriodStart(stockPeriodStart);
+        company.setStockPeriodEnd(stockPeriodEnd);
+        company.setVatRegistrationDate(vatRegistrationDate);
+        company.setVatLastFiledDate(vatLastFiledDate);
+        company.setActive(active);
+        company.setSeqNo(seqNo);
+        company.setBankDetail(bankDetail);
+        company.setBankPoid(bankPoid);
+        company.setTinNumber(tinNumber);
+        company.setAccountPerson(accountPerson);
+        company.setVatFilingPeriod(vatFilingPeriod);
+        company.setAccountEmail(accountEmail);
+        company.setLogoImageBase64(logoImageBase64);
+        company.setDateFormat(dateFormat);
+        company.setTimezoneId(timezoneId);
+        company.setCurrencyPoid(currencyPoid);
+        company.setSubmissionPeriod(submissionPeriod);
+    }
+
+    private List<CompanyDivisionEntity> mapDivisionRequestsToEntities(List<CompanyDivisionRequestDto> requests) {
+        if (requests == null) {
+            return null;
+        }
+        return requests.stream().map(req -> {
+            CompanyDivisionEntity entity = new CompanyDivisionEntity();
+            entity.setDivPoid(req.getDivPoid());
+            entity.setDivisionName(req.getDivisionName());
+            entity.setRemarks(req.getRemarks());
+            entity.setLogoImageBase64(req.getLogoImageBase64());
+            entity.setCompanyDivAddress(req.getCompanyDivAddress());
+            entity.setCompanyDivAddressPos(req.getCompanyDivAddressPos());
+            entity.setActionType(req.getActionType());
+            if (req.getDetRowId() != null) {
+                CompanyDivisionEntityKey key = new CompanyDivisionEntityKey();
+                key.setDetRowId(req.getDetRowId());
+                entity.setId(key);
+            }
+            return entity;
+        }).collect(Collectors.toList());
     }
 
     private void processDivisions(Long companyPoid, List<CompanyDivisionEntity> divisions) {
@@ -245,7 +370,7 @@ public class CompanyService {
                     divisionActions.put(div.getDivPoid(), div.actionType);
                 }
             }
-            
+
             divisions.forEach(division -> {
                 // Skip processing if divPoid is null or actionType is null/noChange
                 if (division.getDivPoid() == null ||
@@ -273,12 +398,12 @@ public class CompanyService {
             // Handle null division name by fetching from master data
             String divisionName = division.getDivisionName();
             if (divisionName == null || divisionName.trim().isEmpty()) {
-                Optional<DivisionMasterEntity> masterDiv =
-                    divisionRepository.findById(division.getDivPoid());
-                divisionName = masterDiv.map(DivisionMasterEntity::getDivisionName)
-                    .orElseThrow(() -> new ValidationException("Division not found in master data for divPoid: " + division.getDivPoid()));
+                Optional<com.asg.settings.entity.DivisionMasterEntity> masterDiv =
+                        divisionRepository.findById(division.getDivPoid());
+                divisionName = masterDiv.map(com.asg.settings.entity.DivisionMasterEntity::getDivisionName)
+                        .orElseThrow(() -> new ValidationException("Division not found in master data for divPoid: " + division.getDivPoid()));
             }
-            
+
             CompanyDivisionEntity companyDivision = new CompanyDivisionEntity();
             companyDivision.setDivisionName(divisionName);
             companyDivision.setRemarks(division.getRemarks());
@@ -300,14 +425,18 @@ public class CompanyService {
 
     private void updateDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndDivPoid(companyPoid, division.getDivPoid());
+                .findByIdCompanyPoidAndIdDetRowId(companyPoid, division.getId().getDetRowId());
 
         if (existingDivision != null) {
+            existingDivision.setDivPoid(division.getDivPoid());
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
+            if (division.getId() != null && division.getId().getDetRowId() != null) {
+                existingDivision.getId().setDetRowId(division.getId().getDetRowId());
+            }
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
             throw new ValidationException("Cannot update a division that is not assigned to the company, divisionId -> " + division.getDivPoid());
@@ -504,7 +633,7 @@ public class CompanyService {
         targetCompany.setTimezoneId(sourceCompany.getTimezoneId());
         targetCompany.setCurrencyPoid(sourceCompany.getCurrencyPoid());
         targetCompany.setSubmissionPeriod(sourceCompany.getSubmissionPeriod());
-        
+
         // Note: Financial/Trans/Report/Inventory date tracking fields are handled conditionally above
 
     }

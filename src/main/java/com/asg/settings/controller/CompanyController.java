@@ -8,8 +8,11 @@ import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.dto.CompanyDto;
 import com.asg.common.lib.entity.Company;
+import com.asg.settings.dto.request.CreateCompanyRequest;
+import com.asg.settings.dto.request.UpdateCompanyRequest;
 import com.asg.settings.service.CompanyService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -115,14 +118,20 @@ public class CompanyController {
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
             description = """
+                    ### Request Parameters
+                        - **userPoid:** User's Primary Key (optional, defaults to 0)
+                    
                     ### Request Body
                         Provide company details.
                         - **companyPoid:** If `null`, a new company will be created.
                         - Other fields as applicable for company setup.
                     
+                    ### Authorization Parameters (handled by interceptor)
+                        - **documentId:** Unique identifier for the document (`000-002`)
+                        - **actionRequested:** Action being performed (`CREATE`)
                     """,
             content = @Content(
-                    schema = @Schema(implementation = Company.class),
+                    schema = @Schema(implementation = CreateCompanyRequest.class),
                     examples = {
                             @ExampleObject(
                                     name = "Company Create Example",
@@ -199,13 +208,19 @@ public class CompanyController {
     )
     @PostMapping("/create")
     public ResponseEntity<?> createCompany(
-            @RequestBody @Valid Company company) {
+            @RequestBody @Valid CreateCompanyRequest request,
+            @RequestParam(required = false, defaultValue = "0") Long userPoid,
+            @Parameter(
+                    description = "Document identifier",
+                    required = true)
+            @RequestParam String documentId,
+            @Parameter(
+                    description = "Action requested",
+                    required = true
+            )
+            @RequestParam String actionRequested) {
         try {
-            if (company.getCompanyPoid() != null) {
-                return badRequest("companyPoid must be null when creating");
-            }
-
-            String companyPoid = companyService.saveOrUpdateCompany(company);
+            String companyPoid = companyService.createCompany(request);
 
             Map<String, Object> data = Map.of("companyPoid", companyPoid);
             return success("Company created successfully", data);
@@ -233,9 +248,12 @@ public class CompanyController {
                         - **companyPoid:** Existing company will be updated for provided companypoid.
                         - Other fields as applicable for company setup.
                     
+                    ### Authorization Parameters (handled by interceptor)
+                        - **documentId:** Unique identifier for the document (`000-002`)
+                        - **actionRequested:** Action being performed (`EDIT`)
                     """,
             content = @Content(
-                    schema = @Schema(implementation = Company.class),
+                    schema = @Schema(implementation = UpdateCompanyRequest.class),
                     examples = {
                             @ExampleObject(
                                     name = "Company Update Example",
@@ -312,14 +330,19 @@ public class CompanyController {
     )
     @PostMapping("/update")
     public ResponseEntity<?> updateCompany(
-            @RequestBody @Valid Company company,
-            @RequestParam(required = false, defaultValue = "0") Long userPoid) {
+            @RequestBody @Valid UpdateCompanyRequest request,
+            @RequestParam(required = false, defaultValue = "0") Long userPoid,
+            @Parameter(
+                    description = "Document identifier",
+                    required = true)
+            @RequestParam String documentId,
+            @Parameter(
+                    description = "Action requested",
+                    required = true
+            )
+            @RequestParam String actionRequested) {
         try {
-            if (company.getCompanyPoid() == null) {
-                return badRequest("companyPoid is required when updating");
-            }
-
-            String companyPoid = companyService.saveOrUpdateCompany(company);
+            String companyPoid = companyService.updateCompany(request);
 
             Map<String, Object> data = Map.of("companyPoid", companyPoid);
             return success("Company updated successfully", data);
