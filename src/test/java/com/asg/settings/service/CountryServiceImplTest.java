@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,6 +43,9 @@ class CountryServiceImplTest {
     @Mock
     private DocumentSearchService documentService;
 
+    @Mock
+    private com.asg.common.lib.service.LoggingService loggingService;
+
     @InjectMocks
     private CountryServiceImpl countryService;
 
@@ -50,6 +54,9 @@ class CountryServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // Mock LoggingService to prevent NullPointerException
+        org.springframework.test.util.ReflectionTestUtils.setField(countryService, "loggingService", loggingService);
+        
         country = new Country();
         country.setCountryPoid(1L);
         country.setCountryCode("US");
@@ -257,7 +264,7 @@ class CountryServiceImplTest {
         ResourceAlreadyExistsException exception = assertThrows(ResourceAlreadyExistsException.class,
                 () -> countryService.createCountry(countryDto));
 
-        assertEquals("countryCode already exists with value: US", exception.getMessage());
+        assertEquals("Country Code already exists with value: US", exception.getMessage());
         verify(countryRepository).existsByCountryCode("US");
         verify(countryRepository, never()).save(any(Country.class));
     }

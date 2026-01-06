@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.request.DivisionCreateRequest;
 import com.asg.settings.dto.request.DivisionUpdateRequest;
 import com.asg.settings.dto.response.DivisionResponse;
@@ -15,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Timestamp;
@@ -33,6 +35,9 @@ class DivisionServiceImplTest {
     @Mock
     private DocumentService documentService;
 
+    @Mock
+    private LoggingService loggingService;
+
     @InjectMocks
     private DivisionServiceImpl divisionService;
 
@@ -42,6 +47,8 @@ class DivisionServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(divisionService, "loggingService", loggingService);
+        
         createRequest = new DivisionCreateRequest();
         createRequest.setDivisionCode("FIN01");
         createRequest.setDivisionName("Finance");

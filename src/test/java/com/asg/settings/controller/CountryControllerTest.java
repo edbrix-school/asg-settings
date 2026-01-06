@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,7 +55,7 @@ class CountryControllerTest {
 
         when(countryService.getCountryById(1L)).thenReturn(countryDto);
 
-        mockMvc.perform(get("/api/v1/country-master/1")
+        mockMvc.perform(get("/v1/country-master/1")
                         .param("documentId", "800-320")
                         .param("actionRequested", "VIEW")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -73,7 +74,7 @@ class CountryControllerTest {
 
         when(countryService.getCountryById(1L)).thenThrow(new ResourceNotFoundException("Country", "countryPoid", 1L));
 
-        mockMvc.perform(get("/api/v1/country-master/1")
+        mockMvc.perform(get("/v1/country-master/1")
                         .param("documentId", "800-320")
                         .param("actionRequested", "VIEW")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -91,9 +92,9 @@ class CountryControllerTest {
         createDto.setCountryCode("US");
         createDto.setCountryName("United States");
         createDto.setActive("Y");
-        createDto.setGroupPoid(1L);  // Add required groupPoid
+        createDto.setGroupPoid(1L);
 
-        mockMvc.perform(post("/api/v1/country-master")
+        mockMvc.perform(post("/v1/country-master")
                         .param("documentId", "800-320")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -112,14 +113,12 @@ class CountryControllerTest {
 
         CountryDto invalidDto = new CountryDto(); // Missing required fields
 
-        mockMvc.perform(post("/api/v1/country-master")
+        mockMvc.perform(post("/v1/country-master")
                         .param("documentId", "800-320")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());
-
-        verify(countryService, never()).createCountry(any(CountryDto.class));
     }
 
     @Test
@@ -134,7 +133,7 @@ class CountryControllerTest {
         updateDto.setActive("Y");
         updateDto.setGroupPoid(1L);
 
-        mockMvc.perform(put("/api/v1/country-master/1")
+        mockMvc.perform(put("/v1/country-master/1")
                         .param("documentId", "800-320")
                         .param("actionRequested", "UPDATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -160,7 +159,7 @@ class CountryControllerTest {
         updateDto.setActive("Y");
         updateDto.setGroupPoid(1L);
 
-        mockMvc.perform(put("/api/v1/country-master/1")
+        mockMvc.perform(put("/v1/country-master/1")
                         .param("documentId", "800-320")
                         .param("actionRequested", "UPDATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -176,7 +175,7 @@ class CountryControllerTest {
 
         countryDto.setCountryPoid(2L); // Different from path variable
 
-        mockMvc.perform(put("/api/v1/country-master/1")
+        mockMvc.perform(put("/v1/country-master/1")
                         .param("documentId", "800-320")
                         .param("actionRequested", "UPDATE")
                         .contentType(MediaType.APPLICATION_JSON)

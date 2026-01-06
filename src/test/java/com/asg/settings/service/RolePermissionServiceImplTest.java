@@ -113,7 +113,7 @@ class RolePermissionServiceImplTest {
             assertEquals("Failed to add role permissions.", response.getMessage());
             assertEquals(1, response.getErrors().size());
             assertEquals("DOC001", response.getErrors().get(0).getDocId());
-            assertEquals("Invalid roleId", response.getErrors().get(0).getError());
+            assertEquals("Invalid userRoleId", response.getErrors().get(0).getError());
 
             verify(roleRepo, times(1)).existsById(1L);
             verify(rightsRepo, never()).save(any());
@@ -205,7 +205,7 @@ class RolePermissionServiceImplTest {
             assertEquals("Failed to update role permissions.", response.getMessage());
             assertEquals(1, response.getErrors().size());
             assertEquals("DOC001", response.getErrors().get(0).getDocId());
-            assertEquals("Invalid roleId", response.getErrors().get(0).getError());
+            assertEquals("Invalid userRoleId", response.getErrors().get(0).getError());
 
             verify(roleRepo, times(1)).existsById(1L);
             verify(rightsRepo, never()).save(any());

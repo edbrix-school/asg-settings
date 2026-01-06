@@ -7,6 +7,7 @@ import com.asg.common.lib.enums.FrequencyTypeEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.DocumentSearchService;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.settings.dto.AlertAndRemainderDto;
 import com.asg.settings.entity.AlertConfigEntity;
@@ -23,6 +24,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,6 +46,9 @@ class AlertConfigServiceImplTest {
     @Mock
     private DocumentSearchService documentService;
 
+    @Mock
+    private LoggingService loggingService;
+
     @InjectMocks
     private AlertConfigServiceImpl alertConfigService;
 
@@ -53,6 +58,8 @@ class AlertConfigServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(alertConfigService, "loggingService", loggingService);
+        
         alertAndRemainderDto = new AlertAndRemainderDto();
         alertAndRemainderDto.setAlertName("Test Alert");
         alertAndRemainderDto.setSqlQuery("SELECT * FROM test_table");

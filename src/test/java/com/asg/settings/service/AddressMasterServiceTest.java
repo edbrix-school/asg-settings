@@ -4,6 +4,7 @@ import com.asg.common.lib.dto.AddressDetailsDTO;
 import com.asg.common.lib.dto.AddressTypeMapDTO;
 import com.asg.common.lib.dto.response.AddressMasterResponse;
 import com.asg.common.lib.exception.ResourceNotFoundException;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.settings.entity.AddressDetails;
 import com.asg.settings.entity.AddressMaster;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
@@ -37,6 +39,8 @@ class AddressMasterServiceTest {
     private AddressDetailsRepository detailsRepo;
     @Mock
     private AddressProcedureRepository procRepo;
+    @Mock
+    private LoggingService loggingService;
 
     @InjectMocks
     private AddressMasterService service;
@@ -47,6 +51,8 @@ class AddressMasterServiceTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(service, "loggingService", loggingService);
+        
         testMaster = new AddressMaster();
         testMaster.setAddressMasterPoid(1L);
         testMaster.setAddressName("Test Company");

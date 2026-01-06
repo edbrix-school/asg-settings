@@ -41,6 +41,9 @@ class TermsTemplateServiceImplTest {
     @Mock
     private TermsTemplateDtlRepository termsTemplateDtlRepository;
 
+    @Mock
+    private com.asg.common.lib.service.LoggingService loggingService;
+
     @InjectMocks
     private TermsTemplateServiceImpl termsTemplateService;
 
@@ -56,6 +59,8 @@ class TermsTemplateServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        org.springframework.test.util.ReflectionTestUtils.setField(termsTemplateService, "loggingService", loggingService);
+        
         testTemplate = new TermsTemplateEntity();
         testTemplate.setTermsPoid(1L);
         testTemplate.setTemplateId("TEMP-001");
@@ -167,7 +172,7 @@ class TermsTemplateServiceImplTest {
 
     @Test
     void getTermsTemplateAndClauses_WithValidTermsPoid_ShouldReturnTemplateWithClauses() {
-        when(termsTemplateRepository.findByTermsPoidAndActive(1L, "Y")).thenReturn(testTemplate);
+        when(termsTemplateRepository.findByTermsPoid(1L)).thenReturn(Optional.of(testTemplate));
         when(termsTemplateDtlRepository.findAllById_TermsPoidAndActive(1L, "Y"))
                 .thenReturn(Arrays.asList(testClause1, testClause2));
 
@@ -181,7 +186,7 @@ class TermsTemplateServiceImplTest {
 
     @Test
     void getTermsTemplateAndClauses_WithInvalidTermsPoid_ShouldThrowException() {
-        when(termsTemplateRepository.findByTermsPoidAndActive(999L, "Y")).thenReturn(null);
+        when(termsTemplateRepository.findByTermsPoid(999L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,

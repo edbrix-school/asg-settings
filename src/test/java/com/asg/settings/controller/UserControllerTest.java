@@ -1,6 +1,8 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.CreateUserRequest;
 import com.asg.settings.dto.UserDto;
 import com.asg.settings.dto.UserResponse;
@@ -13,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -34,6 +38,9 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private LoggingService loggingService;
+
     @InjectMocks
     private UserController userController;
 
@@ -42,6 +49,7 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(userController, "loggingService", loggingService);
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
@@ -54,8 +62,8 @@ class UserControllerTest {
         UserResponse userResponse = new UserResponse();
         when(userService.getUserDetailsByRolePoid(1L)).thenReturn(userResponse);
 
-        mockMvc.perform(get("/api/v1/users")
-                        .param("roleId", "1"))
+        mockMvc.perform(get("/v1/users")
+                        .param("userRoleId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("User list fetched successfully"));
@@ -69,8 +77,10 @@ class UserControllerTest {
         request.setUserId("testUser");
 
         when(userService.resetUserPassword("testUser")).thenReturn("TRUE");
+        when(userService.getUserPoidByUserId("testUser")).thenReturn(1L);
+        doNothing().when(loggingService).createLogSummaryEntry(any(), any(), any());
 
-        mockMvc.perform(post("/api/v1/users/reset-password")
+        mockMvc.perform(post("/v1/users/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -85,7 +95,7 @@ class UserControllerTest {
 
         when(userService.resetUserPassword("testUser")).thenReturn("FALSE");
 
-        mockMvc.perform(post("/api/v1/users/reset-password")
+        mockMvc.perform(post("/v1/users/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -99,7 +109,7 @@ class UserControllerTest {
 
         when(userService.resetUserPassword("testUser")).thenReturn("");
 
-        mockMvc.perform(post("/api/v1/users/reset-password")
+        mockMvc.perform(post("/v1/users/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -113,7 +123,7 @@ class UserControllerTest {
 
         when(userService.resetUserPassword("testUser")).thenReturn(null);
 
-        mockMvc.perform(post("/api/v1/users/reset-password")
+        mockMvc.perform(post("/v1/users/reset-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -123,17 +133,24 @@ class UserControllerTest {
     @Test
     void listUsers_Success() throws Exception {
         Map<String, Object> users = new HashMap<>();
+        users.put("content", Collections.emptyList());
+        users.put("totalElements", 0);
+        
         when(userService.listUsers(eq("000-005"), any(FilterRequestDto.class), any(Pageable.class)))
                 .thenReturn(users);
 
-        mockMvc.perform(post("/api/v1/users/list")
-                        .param("documentId", "000-005")
-                        .param("actionRequested", "VIEW")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"operator\":\"AND\",\"isDeleted\":\"N\",\"filters\":[]}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Users list fetched successfully"));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getDocumentId).thenReturn("000-005");
+            
+            mockMvc.perform(post("/v1/users/list")
+                            .param("documentId", "000-005")
+                            .param("actionRequested", "VIEW")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"operator\":\"AND\",\"isDeleted\":\"N\",\"filters\":[]}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Users list fetched successfully"));
+        }
     }
 
     @Test
@@ -142,8 +159,9 @@ class UserControllerTest {
                 null, null, null, null, "US", "1234567890", "test@example.com",
                 null, null, 1, "Y", "L", "N", null, "N", "admin", null, "admin", null);
         when(userService.getUserDetails(1L)).thenReturn(userDto);
+        doNothing().when(loggingService).createLogSummaryEntry(any(), any(), any());
 
-        mockMvc.perform(get("/api/v1/users/userdetails")
+        mockMvc.perform(get("/v1/users/userdetails")
                         .param("userPoid", "1")
                         .param("documentId", "000-005")
                         .param("actionRequested", "VIEW"))
@@ -163,7 +181,7 @@ class UserControllerTest {
         when(userService.createUser(any(CreateUserRequest.class))).thenReturn("1");
         when(userService.createNewUserPassword(1L)).thenReturn(ResponseEntity.ok().build());
 
-        mockMvc.perform(post("/api/v1/users/create")
+        mockMvc.perform(post("/v1/users/create")
                         .param("documentId", "000-005")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)

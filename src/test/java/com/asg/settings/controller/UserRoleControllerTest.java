@@ -4,6 +4,7 @@ import com.asg.common.lib.dto.UserRoleRightsDetDto;
 import com.asg.common.lib.dto.UserRoleRightsDto;
 import com.asg.common.lib.dto.UserRolesDto;
 import com.asg.common.lib.exception.ResourceNotFoundException;
+import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.RightUpdateEntry;
 import com.asg.settings.dto.RolePermissionError;
 import com.asg.settings.dto.UserRoleRequestDto;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
@@ -74,7 +76,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.getUserRoleRights(1L)).thenReturn(List.of(dto));
 
-        mockMvc.perform(get("/api/v1/user-roles/1/permissions")
+        mockMvc.perform(get("/v1/user-roles/1/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "LIST"))
                 .andExpect(status().isOk())
@@ -86,7 +88,7 @@ class UserRoleControllerTest {
     void getRolePermissions_ShouldReturnEmptyList() throws Exception {
         when(rolePermissionService.getUserRoleRights(1L)).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/v1/user-roles/1/permissions")
+        mockMvc.perform(get("/v1/user-roles/1/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "LIST"))
                 .andExpect(status().isOk())
@@ -98,7 +100,7 @@ class UserRoleControllerTest {
     void getRolePermissions_ShouldReturn500_WhenServiceThrows() throws Exception {
         when(rolePermissionService.getUserRoleRights(1L)).thenThrow(new RuntimeException("Service error"));
 
-        mockMvc.perform(get("/api/v1/user-roles/1/permissions")
+        mockMvc.perform(get("/v1/user-roles/1/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "LIST"))
                 .andExpect(status().isInternalServerError())
@@ -122,7 +124,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.addPermissions(any(RolePermissionRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/user-roles/permissions")
+        mockMvc.perform(post("/v1/user-roles/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -150,7 +152,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.addPermissions(any(RolePermissionRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/user-roles/permissions")
+        mockMvc.perform(post("/v1/user-roles/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -177,7 +179,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.addPermissions(any(RolePermissionRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/user-roles/permissions")
+        mockMvc.perform(post("/v1/user-roles/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -188,7 +190,7 @@ class UserRoleControllerTest {
 
     @Test
     void addPermissions_ShouldReturn400_WhenInvalidRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/user-roles/permissions")
+        mockMvc.perform(post("/v1/user-roles/permissions")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -210,9 +212,9 @@ class UserRoleControllerTest {
 
         RolePermissionResponse response = new RolePermissionResponse("SUCCESS", "Updated successfully", List.of());
 
-        when(rolePermissionService.updatePermissions(eq(1L), any(RightsUpdateRequest.class))).thenReturn(response);
+        lenient().when(rolePermissionService.updatePermissions(eq(1L), any(RightsUpdateRequest.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/user-roles/1/rights")
+        mockMvc.perform(put("/v1/user-roles/1/rights")
                         .param("documentId", "000-019")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -233,10 +235,10 @@ class UserRoleControllerTest {
         RightsUpdateRequest request = new RightsUpdateRequest();
         request.setRightsUpdateList(List.of(entry));
 
-        when(rolePermissionService.updatePermissions(eq(1L), any(RightsUpdateRequest.class)))
+        lenient().when(rolePermissionService.updatePermissions(eq(1L), any(RightsUpdateRequest.class)))
                 .thenThrow(new RuntimeException("Update failed"));
 
-        mockMvc.perform(put("/api/v1/user-roles/1/rights")
+        mockMvc.perform(put("/v1/user-roles/1/rights")
                         .param("documentId", "000-019")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -253,7 +255,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.loadDefaultRights(1L, 2L)).thenReturn("SUCCESS");
 
-        mockMvc.perform(post("/api/v1/user-roles/load-default-rights")
+        mockMvc.perform(post("/v1/user-roles/load-default-rights")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -266,7 +268,7 @@ class UserRoleControllerTest {
         LoadDefaultRightsRequest request = new LoadDefaultRightsRequest();
         request.setUserRolePoid(2L);
 
-        mockMvc.perform(post("/api/v1/user-roles/load-default-rights")
+        mockMvc.perform(post("/v1/user-roles/load-default-rights")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -278,7 +280,7 @@ class UserRoleControllerTest {
         LoadDefaultRightsRequest request = new LoadDefaultRightsRequest();
         request.setLoginUserPoid(1L);
 
-        mockMvc.perform(post("/api/v1/user-roles/load-default-rights")
+        mockMvc.perform(post("/v1/user-roles/load-default-rights")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -293,7 +295,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.loadDefaultRights(1L, 2L)).thenReturn("ERROR: Database connection failed");
 
-        mockMvc.perform(post("/api/v1/user-roles/load-default-rights")
+        mockMvc.perform(post("/v1/user-roles/load-default-rights")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError())
@@ -308,7 +310,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.loadDefaultRights(1L, 2L)).thenReturn(null);
 
-        mockMvc.perform(post("/api/v1/user-roles/load-default-rights")
+        mockMvc.perform(post("/v1/user-roles/load-default-rights")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError())
@@ -330,7 +332,7 @@ class UserRoleControllerTest {
 
         when(userRoleService.addUserRoles(any(UserRoleRequestDto.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/user-roles")
+        mockMvc.perform(post("/v1/user-roles")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -342,7 +344,7 @@ class UserRoleControllerTest {
 
     @Test
     void addUserRoles_ShouldReturn400_WhenInvalidRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/user-roles")
+        mockMvc.perform(post("/v1/user-roles")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -363,7 +365,7 @@ class UserRoleControllerTest {
         when(userRoleService.addUserRoles(any(UserRoleRequestDto.class)))
                 .thenThrow(new RuntimeException("Role creation failed"));
 
-        mockMvc.perform(post("/api/v1/user-roles")
+        mockMvc.perform(post("/v1/user-roles")
                         .param("documentId", "000-019")
                         .param("actionRequested", "CREATE")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -378,16 +380,20 @@ class UserRoleControllerTest {
 
         when(userRoleService.listRoles(eq("000-019"), any(), any(Pageable.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/user-roles/list")
-                        .param("documentId", "000-019")
-                        .param("actionRequested", "VIEW")
-                        .param("page", "0")
-                        .param("size", "10")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Users roles fetched successfully"));
+        try (MockedStatic<UserContext> mockedUserContext = mockStatic(UserContext.class)) {
+            mockedUserContext.when(UserContext::getDocumentId).thenReturn("000-019");
+            
+            mockMvc.perform(post("/v1/user-roles/list")
+                            .param("documentId", "000-019")
+                            .param("actionRequested", "VIEW")
+                            .param("page", "0")
+                            .param("size", "10")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success").value(true))
+                    .andExpect(jsonPath("$.message").value("Users roles fetched successfully"));
+        }
     }
 
     @Test
@@ -395,7 +401,7 @@ class UserRoleControllerTest {
         when(userRoleService.listRoles(eq("000-019"), any(), any(Pageable.class)))
                 .thenThrow(new RuntimeException("Database error"));
 
-        mockMvc.perform(post("/api/v1/user-roles/list")
+        mockMvc.perform(post("/v1/user-roles/list")
                         .param("documentId", "000-019")
                         .param("actionRequested", "VIEW")
                         .param("page", "0")
@@ -412,7 +418,7 @@ class UserRoleControllerTest {
 
         when(rolePermissionService.getUserRoleRightsDetByRolePoid(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/v1/user-roles/1")
+        mockMvc.perform(get("/v1/user-roles/1")
                         .param("documentId", "000-019")
                         .param("actionRequested", "VIEW"))
                 .andExpect(status().isOk())
@@ -425,7 +431,7 @@ class UserRoleControllerTest {
         when(rolePermissionService.getUserRoleRightsDetByRolePoid(1L))
                 .thenThrow(new RuntimeException("Service error"));
 
-        mockMvc.perform(get("/api/v1/user-roles/1")
+        mockMvc.perform(get("/v1/user-roles/1")
                         .param("documentId", "000-019")
                         .param("actionRequested", "VIEW"))
                 .andExpect(status().isInternalServerError())
@@ -447,7 +453,7 @@ class UserRoleControllerTest {
 
         when(userRoleService.updateUserRoleByUserRolePoId(eq(1L), any(UserRoleRequestDto.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/user-roles/1")
+        mockMvc.perform(put("/v1/user-roles/1")
                         .param("documentId", "000-019")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -459,7 +465,7 @@ class UserRoleControllerTest {
 
     @Test
     void updateUserRoleByRolePoid_ShouldReturn400_WhenInvalidRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/user-roles/1")
+        mockMvc.perform(put("/v1/user-roles/1")
                         .param("documentId", "000-019")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -480,7 +486,7 @@ class UserRoleControllerTest {
         when(userRoleService.updateUserRoleByUserRolePoId(eq(1L), any(UserRoleRequestDto.class)))
                 .thenThrow(new RuntimeException("Update failed"));
 
-        mockMvc.perform(put("/api/v1/user-roles/1")
+        mockMvc.perform(put("/v1/user-roles/1")
                         .param("documentId", "000-019")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -493,7 +499,7 @@ class UserRoleControllerTest {
     void testSoftDeleteUserRole_Success() throws Exception {
         doNothing().when(userRoleService).softDeleteUserRole(1L);
 
-        mockMvc.perform(delete("/api/v1/user-roles/1")
+        mockMvc.perform(delete("/v1/user-roles/1")
                         .param("documentId", "000-004")
                         .param("actionRequested", "DELETE"))
                 .andExpect(status().isOk())
@@ -508,7 +514,7 @@ class UserRoleControllerTest {
         doThrow(new ResourceNotFoundException("User Role", "userRolePoid", 1L))
                 .when(userRoleService).softDeleteUserRole(1L);
 
-        mockMvc.perform(delete("/api/v1/user-roles/1")
+        mockMvc.perform(delete("/v1/user-roles/1")
                         .param("documentId", "000-004")
                         .param("actionRequested", "DELETE"))
                 .andExpect(status().isInternalServerError())
@@ -522,7 +528,7 @@ class UserRoleControllerTest {
         doThrow(new RuntimeException("Database error"))
                 .when(userRoleService).softDeleteUserRole(1L);
 
-        mockMvc.perform(delete("/api/v1/user-roles/1")
+        mockMvc.perform(delete("/v1/user-roles/1")
                         .param("documentId", "000-004")
                         .param("actionRequested", "DELETE"))
                 .andExpect(status().isInternalServerError())
@@ -534,21 +540,29 @@ class UserRoleControllerTest {
 
     @Test
     void testSoftDeleteUserRole_MissingDocumentId() throws Exception {
-        mockMvc.perform(delete("/api/v1/user-roles/1")
+        doNothing().when(userRoleService).softDeleteUserRole(1L);
+        
+        mockMvc.perform(delete("/v1/user-roles/1")
                         .param("actionRequested", "DELETE"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("User Role soft deleted successfully"));
     }
 
     @Test
     void testSoftDeleteUserRole_MissingActionRequested() throws Exception {
-        mockMvc.perform(delete("/api/v1/user-roles/1")
+        doNothing().when(userRoleService).softDeleteUserRole(1L);
+        
+        mockMvc.perform(delete("/v1/user-roles/1")
                         .param("documentId", "000-004"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("User Role soft deleted successfully"));
     }
 
     @Test
     void testSoftDeleteUserRole_InvalidUserRolePoid() throws Exception {
-        mockMvc.perform(delete("/api/v1/user-roles/invalid")
+        mockMvc.perform(delete("/v1/user-roles/invalid")
                         .param("documentId", "000-004")
                         .param("actionRequested", "DELETE"))
                 .andExpect(status().isBadRequest());

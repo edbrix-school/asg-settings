@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
@@ -50,6 +51,9 @@ class TaskCategoryServiceImplTest {
     @Mock
     private DocumentSearchService documentService;
 
+    @Mock
+    private com.asg.common.lib.service.LoggingService loggingService;
+
     @InjectMocks
     private TaskCategoryServiceImpl taskCategoryService;
 
@@ -60,6 +64,9 @@ class TaskCategoryServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // Mock LoggingService to prevent NullPointerException
+        org.springframework.test.util.ReflectionTestUtils.setField(taskCategoryService, "loggingService", loggingService);
+        
         testCategory = new TaskCategoryEntity();
         testCategory.setCategoryPoid(categoryPoid);
         testCategory.setCategoryDescription("Test Category");
@@ -112,7 +119,7 @@ class TaskCategoryServiceImplTest {
                 () -> taskCategoryService.getTaskCategory(categoryPoid)
         );
 
-        assertEquals("TaskCategory not found with categoryPoid : '" + categoryPoid + "'", exception.getMessage());
+        assertEquals("Task Category not found with categoryPoid : '" + categoryPoid + "'", exception.getMessage());
     }
 
     // Edge Cases for getTaskCategory

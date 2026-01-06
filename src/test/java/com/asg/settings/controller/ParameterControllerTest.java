@@ -62,7 +62,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -90,7 +90,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +118,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -146,7 +146,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -163,7 +163,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(Collections.emptyList());
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -176,7 +176,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(Collections.emptyList());
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -185,7 +185,7 @@ class ParameterControllerTest {
 
     @Test
     void updateParameters_InvalidJson_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -195,7 +195,7 @@ class ParameterControllerTest {
 
     @Test
     void updateParameters_EmptyRequestBody_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -208,7 +208,7 @@ class ParameterControllerTest {
         UpdateParameterRequestDTO request = new UpdateParameterRequestDTO();
         // Missing required loginUserPoid and parameters
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,7 +230,7 @@ class ParameterControllerTest {
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class)))
                 .thenThrow(new RuntimeException("Service error"));
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -260,7 +260,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -277,7 +277,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(null);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -291,7 +291,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(Collections.emptyList());
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -310,7 +310,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(null);
         request.setParameters(List.of(paramUpdate));
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -334,7 +334,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -358,7 +358,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -382,7 +382,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -406,7 +406,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -432,7 +432,7 @@ class ParameterControllerTest {
 
         when(parameterService.updateParameters(any(UpdateParameterRequestDTO.class))).thenReturn(response);
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -442,7 +442,7 @@ class ParameterControllerTest {
 
     @Test
     void updateParameters_WrongHttpMethod_Get_ReturnsInternalServerError() throws Exception {
-        mockMvc.perform(get("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(get("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT"))
                 .andExpect(status().isInternalServerError());
@@ -454,7 +454,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(Collections.emptyList());
 
-        mockMvc.perform(post("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(post("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -468,7 +468,7 @@ class ParameterControllerTest {
         request.setLoginUserPoid(3371L);
         request.setParameters(Collections.emptyList());
 
-        mockMvc.perform(put("/api/v1/global-parameters/bulk-update")
+        mockMvc.perform(put("/v1/global-parameters/bulk-update")
                         .param("documentId", "000-009")
                         .param("actionRequested", "EDIT")
                         .contentType(MediaType.TEXT_PLAIN)
