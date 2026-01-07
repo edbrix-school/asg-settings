@@ -57,11 +57,6 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.asg.common</groupId>
-			<artifactId>asg-common-lib</artifactId>
-			<version>${ags-common-lib.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc11</artifactId>
 			<version>21.1.0.0</version>
@@ -103,6 +98,12 @@
             <version>11.18</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.asg.common</groupId>
+            <artifactId>asg-common-lib</artifactId>
+            <version>${ags-common-lib.version}</version>
+        </dependency>
+
     </dependencies>
 
 	<build>
