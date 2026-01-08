@@ -40,25 +40,27 @@ public class TaskExcelParser {
 
             for (int i = 0; i < rows.size(); i++) {
                 String[] row = rows.get(i);
-                if (row.length < 8 || isRowEmpty(row)) {
+                if (row.length < 9 || isRowEmpty(row)) {
                     log.debug("Skipping empty or short row {}", i + 1);
                     continue;
                 }
+                
+                log.debug("Row {} has {} columns: {}", i + 1, row.length, String.join(",", row));
 
                 String category = row[0].trim();
                 String subcategory = row[1].trim();
                 String taskDescription = row[2].trim();
                 String priority = row[3].trim();
-                //Z take from file itself, this will have userID, which will inturn save that userpoid in task table from temp table
-                //Z in stored procedure its userid for allocated check,so use that only
                 String reportedBy = validateUserIdForTask(row[4].trim(), userService, "REPORTED_BY");
-                //Z take from file itself, this will have userID, which will inturn save that userpoid in task table from temp table
                 String allocatedTo = validateUserIdForTask(row[5].trim(), userService, "ALLOCATED_TO");
-
                 String startDate = getDate(row[6].trim());
-                String dueDate   = getDate(row[7].trim());
+                String dueDate = getDate(row[7].trim());
+                String taskType = row[8].trim();
+                
+                log.debug("Row {}: reportedBy='{}', allocatedTo='{}', startDate='{}', dueDate='{}', taskType='{}'", 
+                    i + 1, reportedBy, allocatedTo, startDate, dueDate, taskType);
 
-                tasks.add(new TaskUploadDto(category, subcategory, taskDescription, priority, reportedBy, allocatedTo, startDate, dueDate));
+                tasks.add(new TaskUploadDto(category, subcategory, taskDescription, priority, reportedBy, allocatedTo, startDate, dueDate, taskType));
             }
 
             log.info("Parsed {} valid tasks", tasks.size());
@@ -71,7 +73,7 @@ public class TaskExcelParser {
     }
 
     private static boolean isRowEmpty(String[] row) {
-        for (int i = 0; i < Math.min(8, row.length); i++) {
+        for (int i = 0; i < Math.min(9, row.length); i++) {
             if (row[i] != null && !row[i].trim().isEmpty()) {
                 return false;
             }

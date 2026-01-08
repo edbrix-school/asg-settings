@@ -8,5 +8,6 @@ public record TaskUploadDto(
          String taskReportedBy,
          String allocatedTo,
          String startDate,
-         String dueDate
+         String dueDate,
+         String taskType
 ) {}

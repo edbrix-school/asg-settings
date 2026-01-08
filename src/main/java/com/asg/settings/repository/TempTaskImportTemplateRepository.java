@@ -27,10 +27,10 @@ public class TempTaskImportTemplateRepository {
         jdbcTemplate.update("DELETE FROM TEMP_TASK_IMPORT_TEMPLATE");
     }
 
-    public void insertTemp(String category, String subCategory, String description, String priority, String reportedBy, String allocatedTo, String startDate, String dueDate) {
+    public void insertTemp(String category, String subCategory, String description, String priority, String reportedBy, String allocatedTo, String startDate, String dueDate, String taskType) {
         jdbcTemplate.update(
-                "INSERT INTO TEMP_TASK_IMPORT_TEMPLATE (CATEGORY, SUBCATEGORY, TASKDESCRIPTION, PRIORITY, REPORTEDBY, ALLOCATEDTO, STARTDATE, DUEDATE) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                 category,  subCategory,  description,  priority,  reportedBy,  allocatedTo, startDate,  dueDate
+                "INSERT INTO TEMP_TASK_IMPORT_TEMPLATE (CATEGORY, SUBCATEGORY, TASKDESCRIPTION, PRIORITY, REPORTEDBY, ALLOCATEDTO, STARTDATE, DUEDATE, TASK_TYPE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                 category,  subCategory,  description,  priority,  reportedBy,  allocatedTo, startDate,  dueDate, taskType
         );
     }
 

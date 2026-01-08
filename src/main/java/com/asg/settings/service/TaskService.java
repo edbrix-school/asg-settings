@@ -260,7 +260,7 @@ public class TaskService {
 
             int insertedCount = 0;
             for (TaskUploadDto task : parsed) {
-                tempTaskImportTemplateRepository.insertTemp(task.taskCategory(), task.taskSubCategory(), task.taskDescription(), task.taskPriority(), task.taskReportedBy(), task.allocatedTo(), task.startDate(), task.dueDate());
+                tempTaskImportTemplateRepository.insertTemp(task.taskCategory(), task.taskSubCategory(), task.taskDescription(), task.taskPriority(), task.taskReportedBy(), task.allocatedTo(), task.startDate(), task.dueDate(), task.taskType());
                 insertedCount++;
             }
 
