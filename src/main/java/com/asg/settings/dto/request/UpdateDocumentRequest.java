@@ -32,7 +32,7 @@ public class UpdateDocumentRequest {
     private String docType;
     private Boolean isoDocument;
     private Boolean enableSla;
-    private Integer duration;
+    private Long duration;
     private String docRevision;
     private String docRevisionDate;
     private Boolean approvalShowInMain;

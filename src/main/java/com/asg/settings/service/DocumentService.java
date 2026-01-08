@@ -458,6 +458,11 @@ public class DocumentService {
         if (StringUtils.isNotBlank(request.getDocType())) document.setDocType(request.getDocType());
         if (request.getIsoDocument() != null) document.setIsoDocument(request.getIsoDocument() ? "Y" : "N");
         if (request.getEnableSla() != null) document.setEnableSla(request.getEnableSla() ? "Y" : "N");
+
+        if (Boolean.TRUE.equals(request.getEnableSla())
+                && request.getDuration() == null) {
+            throw new ValidationException("Duration is required");
+        }
         if (request.getDuration() != null) document.setDuration(request.getDuration().longValue());
         if (StringUtils.isNotBlank(request.getDocRevision()))
             document.setDocRevision(new BigDecimal(request.getDocRevision()));
@@ -513,6 +518,9 @@ public class DocumentService {
 
         if (StringUtils.isNotBlank(request.getAutoRefreshFields()))
             document.setAutoRefreshFields(request.getAutoRefreshFields());
+
+        if (StringUtils.isNotBlank(request.getDocInfoFieldsSql()))
+            document.setDocInfoFieldsSql(request.getDocInfoFieldsSql());
 
 
         // Other fields for flexibility
