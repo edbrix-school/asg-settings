@@ -178,9 +178,9 @@ public class UserRoleController {
     })
     @PutMapping("/{userRoleId}/rights")
     public ResponseEntity<?> updatePermissions(
-            @PathVariable Long roleId,
+            @PathVariable Long userRoleId,
             @Valid @RequestBody RightsUpdateRequest request) {
-        RolePermissionResponse response = userPermissionService.updatePermissions(roleId, request);
+        RolePermissionResponse response = userPermissionService.updatePermissions(userRoleId, request);
         if ("SUCCESS".equals(response.getStatus())) {
             return success("User Role Permissions Updated successfully", response);
         } else {
