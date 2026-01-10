@@ -499,7 +499,11 @@ public class CompanyService {
         targetCompany.setVatRegistrationDate(sourceCompany.getVatRegistrationDate());
         // vatLastFiledBy and vatLastFiledCreatedDate are system-managed
 
-        targetCompany.setLogoImageBase64(sourceCompany.getLogoImageBase64());
+       // targetCompany.setLogoImageBase64(sourceCompany.getLogoImageBase64());
+        if (sourceCompany.getLogoImageBase64() != null
+                && !sourceCompany.getLogoImageBase64().isBlank()) {
+            targetCompany.setLogoImageBase64(sourceCompany.getLogoImageBase64());
+        }
         targetCompany.setDateFormat(sourceCompany.getDateFormat());
         targetCompany.setTimezoneId(sourceCompany.getTimezoneId());
         targetCompany.setCurrencyPoid(sourceCompany.getCurrencyPoid());
