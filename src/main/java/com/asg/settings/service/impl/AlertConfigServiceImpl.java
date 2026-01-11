@@ -210,11 +210,9 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         existingConfig.setExpiryDateField(request.getExpiryDateField());
         existingConfig.setNotifyDays(request.getNotifyDays());
         existingConfig.setFrequencyType(request.getFrequencyType().name());
-        existingConfig.setAlertNotifyFrequency(request.getAlertEscalateFrequency());
+        existingConfig.setAlertNotifyFrequency(request.getAlertNotifyFrequency());
         existingConfig.setEscalateDays(request.getEscalateDays());
-        if (request.getAlertEscalateFrequency() != null) {
-            existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
-        }
+        existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
         existingConfig.setNotifyUserRolesPoid(ASGHelperUtils.convertListToString(request.getNotifyUserRolesPoid()));
         existingConfig.setEscalateUserRolesPoid(ASGHelperUtils.convertListToString(request.getEscalationUserRolesPoid()));
 
