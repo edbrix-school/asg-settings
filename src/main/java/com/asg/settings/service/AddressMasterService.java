@@ -286,6 +286,13 @@ public class AddressMasterService {
                             toSave.add(detail);
                         }
                     }
+                    case "isdeleted" -> {
+                        // Delete the specific record from database
+                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
+                            AddressDetails recordToDelete = existingMap.get(dto.getAddressPoid());
+                            detailsRepo.delete(recordToDelete);
+                        }
+                    }
                     default -> {
                         // Default behavior for backward compatibility
                         AddressDetails detail;
