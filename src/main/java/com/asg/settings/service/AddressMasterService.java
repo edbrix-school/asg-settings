@@ -287,9 +287,10 @@ public class AddressMasterService {
                         }
                     }
                     case "isdeleted" -> {
-                        // Delete the record from database
+                        // Delete the specific record from database
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
-                            detailsRepo.deleteById(dto.getAddressPoid());
+                            AddressDetails recordToDelete = existingMap.get(dto.getAddressPoid());
+                            detailsRepo.delete(recordToDelete);
                         }
                     }
                     default -> {
