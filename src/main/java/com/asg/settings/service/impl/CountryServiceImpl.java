@@ -88,8 +88,6 @@ public class CountryServiceImpl implements CountryService {
         String key = savedCountry.getCountryPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new Country(), savedCountry, Country.class, docId, key, LogDetailsEnum.CREATED, "COUNTRY_POID");
-
         return this.convertToDto(savedCountry);
     }
 
@@ -175,7 +173,6 @@ public class CountryServiceImpl implements CountryService {
         String docId = UserContext.getDocumentId();
         String key = updatedCountry.getCountryPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldCountry, updatedCountry, Country.class, docId, key, LogDetailsEnum.MODIFIED, "COUNTRY_POID");
 
         CountryDto responseDto = new CountryDto();

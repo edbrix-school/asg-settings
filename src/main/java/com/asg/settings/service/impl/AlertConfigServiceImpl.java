@@ -71,7 +71,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String key = alertConfigEntity.getConfigPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new AlertConfigEntity(), alertConfigEntity, AlertConfigEntity.class, docId, key, LogDetailsEnum.CREATED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(alertConfigEntity);
     }
 
@@ -229,7 +228,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String docId = UserContext.getDocumentId();
         String key = updatedConfig.getConfigPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updatedConfig,
                 AlertConfigEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(updatedConfig);

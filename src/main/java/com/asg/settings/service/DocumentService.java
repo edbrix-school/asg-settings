@@ -543,7 +543,6 @@ public class DocumentService {
         // Save updated document
         documentRepository.save(document);
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), document.getDocId());
         loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.MODIFIED, "DOC_ID");
 
 

@@ -63,7 +63,6 @@ public class DivisionServiceImpl implements DivisionService {
         String key = saved.getDivisionId().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new DivisionMasterEntity(), saved, DivisionMasterEntity.class, docId, key, LogDetailsEnum.CREATED, "DIVISION_ID");
 
         return mapToResponse(saved);
     }
@@ -112,7 +111,6 @@ public class DivisionServiceImpl implements DivisionService {
         String docId = UserContext.getDocumentId();
         String key = updated.getDivisionId().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updated, DivisionMasterEntity.class, docId, key, LogDetailsEnum.MODIFIED, "DIVISION_ID");
         return mapToResponse(updated);
     }

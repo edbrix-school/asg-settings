@@ -95,8 +95,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
         String headerKey = updatedTemplate.getTermsPoid().toString();
 
-        // HEADER LOG
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, headerKey);
         loggingService.logChanges(oldTemplate, updatedTemplate, TermsTemplateEntity.class, docId, headerKey, LogDetailsEnum.MODIFIED, "TERMS_POID");
 
         if (request.getClauses() != null && !request.getClauses().isEmpty()) {
@@ -212,7 +210,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         String key = savedTemplate.getTermsPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(null, savedTemplate, TermsTemplateEntity.class, docId, key, LogDetailsEnum.CREATED, "TERMS_POID");
 
         if (templateRequestDto.getClauses() != null && !templateRequestDto.getClauses().isEmpty()) {
             Long nextAvailableId = termsTemplateDtlRepository.getNextDetRowId(savedTemplate.getTermsPoid());

@@ -123,13 +123,9 @@ public class AddressMasterService {
         String key = saved.getAddressMasterPoid().toString();
         // CASE 1: CREATE
         if (oldMaster == null) {
-
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-            loggingService.logChanges(null, saved, AddressMaster.class, docId, key, LogDetailsEnum.CREATED, "ADDRESS_MASTER_POID");
-
         } else {
             // CASE 2: UPDATE
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldMaster, saved, AddressMaster.class, docId, key, LogDetailsEnum.MODIFIED, "ADDRESS_MASTER_POID");
         }
         return saved.getAddressMasterPoid();

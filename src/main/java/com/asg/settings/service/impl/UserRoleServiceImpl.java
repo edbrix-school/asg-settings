@@ -72,7 +72,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         RoleEntity entity = mapToEntity(userRoleRequestDto);
         RoleEntity savedEntity = roleRepository.save(entity);
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, UserContext.getDocumentId(), savedEntity.getUserRolePoid().toString());
-        loggingService.logChanges(new RoleEntity(), savedEntity, RoleEntity.class, UserContext.getDocumentId(), savedEntity.getUserRolePoid().toString(), LogDetailsEnum.CREATED, "USER_ROLE_POID");
 
         UserRolesDto userRolesDto = this.mapToDto(savedEntity);
         return userRolesDto;
@@ -126,7 +125,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         roleEntity.setLastModifiedDate(LocalDateTime.now());
         RoleEntity updatedEntity = roleRepository.save(roleEntity);
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString());
         loggingService.logChanges(oldRole, updatedEntity, RoleEntity.class, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString(), LogDetailsEnum.MODIFIED, "USER_ROLE_POID");
 
         UserRolesDto responseDto = new UserRolesDto();
