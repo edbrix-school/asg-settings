@@ -217,7 +217,9 @@ public class AddressMasterService {
         master.setCrNumber(req.getCrNumber());
         master.setIsForwarder(Boolean.TRUE.equals(req.getIsForwarder()) ? "Y" : "N");
         master.setActive(req.getActive());
-        master.setSeqno(req.getSeqno());
+        if (req.getSeqno() != null) {
+            master.setSeqno(req.getSeqno());
+        }
         master.setLastModifiedBy(currentUser);
         master.setLastModifiedDate(LocalDateTime.now());
 
