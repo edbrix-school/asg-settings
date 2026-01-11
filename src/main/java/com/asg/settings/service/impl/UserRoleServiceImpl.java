@@ -125,7 +125,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         roleEntity.setLastModifiedDate(LocalDateTime.now());
         RoleEntity updatedEntity = roleRepository.save(roleEntity);
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString());
         loggingService.logChanges(oldRole, updatedEntity, RoleEntity.class, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString(), LogDetailsEnum.MODIFIED, "USER_ROLE_POID");
 
         UserRolesDto responseDto = new UserRolesDto();

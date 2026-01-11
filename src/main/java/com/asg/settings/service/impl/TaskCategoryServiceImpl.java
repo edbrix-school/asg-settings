@@ -253,7 +253,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         if (taskCategoryDto.getSubCategories() != null && !taskCategoryDto.getSubCategories().isEmpty()) {
             processSubCategories(categoryPoid, taskCategoryDto.getSubCategories());
         }
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), categoryPoid.toString());
         loggingService.logChanges(oldEntity, taskCategoryEntity, TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), LogDetailsEnum.MODIFIED, "CATEGORY_POID");
         return getTaskCategory(categoryPoid);
     }

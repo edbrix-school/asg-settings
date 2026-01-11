@@ -95,8 +95,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
         String headerKey = updatedTemplate.getTermsPoid().toString();
 
-        // HEADER LOG
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, headerKey);
         loggingService.logChanges(oldTemplate, updatedTemplate, TermsTemplateEntity.class, docId, headerKey, LogDetailsEnum.MODIFIED, "TERMS_POID");
 
         if (request.getClauses() != null && !request.getClauses().isEmpty()) {

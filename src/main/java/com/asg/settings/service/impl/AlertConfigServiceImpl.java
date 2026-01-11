@@ -230,7 +230,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String docId = UserContext.getDocumentId();
         String key = updatedConfig.getConfigPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updatedConfig,
                 AlertConfigEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(updatedConfig);

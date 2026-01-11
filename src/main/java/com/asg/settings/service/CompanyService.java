@@ -445,7 +445,6 @@ public class CompanyService {
             String docId = UserContext.getDocumentId();
             String key = existingCompany.getCompanyPoid().toString();
 
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldCompany, existingCompany, Company.class, docId, key, LogDetailsEnum.MODIFIED, "COMPANY_POID");
 
         } catch (DataIntegrityViolationException e) {

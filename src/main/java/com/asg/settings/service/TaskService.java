@@ -160,7 +160,6 @@ public class TaskService {
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
 
 

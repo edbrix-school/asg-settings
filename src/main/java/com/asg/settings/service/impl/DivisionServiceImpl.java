@@ -111,7 +111,6 @@ public class DivisionServiceImpl implements DivisionService {
         String docId = UserContext.getDocumentId();
         String key = updated.getDivisionId().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updated, DivisionMasterEntity.class, docId, key, LogDetailsEnum.MODIFIED, "DIVISION_ID");
         return mapToResponse(updated);
     }

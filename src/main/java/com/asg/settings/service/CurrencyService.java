@@ -102,8 +102,6 @@ public class CurrencyService {
 
         } else {
             //         UPDATE CASE
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
-
             loggingService.logChanges(oldEntity, saved, CurrencyEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CURRENCY_POID");
         } return saved;
     }
