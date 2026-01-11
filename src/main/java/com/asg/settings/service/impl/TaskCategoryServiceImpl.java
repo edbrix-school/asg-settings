@@ -59,7 +59,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
     @Override
     public TaskCategoryDto getTaskCategory(Long categoryPoid) {
-        TaskCategoryEntity taskCategoryEntity = taskCategoryRepository.findByCategoryPoid(categoryPoid);
+        TaskCategoryEntity taskCategoryEntity = taskCategoryRepository.findActiveByCategoryPoid(categoryPoid);
 
         if (taskCategoryEntity == null) {
             throw new ResourceNotFoundException("Task Category", "categoryPoid", categoryPoid);

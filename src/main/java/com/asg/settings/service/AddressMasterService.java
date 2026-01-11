@@ -49,8 +49,10 @@ public class AddressMasterService {
      * Get single Address Master with all department details (tabs).
      */
     public AddressMasterResponse getMasterWithDetails(Long poid) {
-        AddressMaster master = masterRepo.findById(poid)
-                .orElseThrow(() -> new NoSuchElementException("Address Master not found"));
+        AddressMaster master = masterRepo.findActiveByAddressMasterPoid(poid);
+        if (master == null) {
+            throw new NoSuchElementException("Address Master not found");
+        }
 
         List<AddressDetails> details = detailsRepo.findByAddressMasterPoidOrderByAddressType(poid);
 
