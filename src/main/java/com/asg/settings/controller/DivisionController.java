@@ -71,7 +71,7 @@ public class DivisionController {
     )
     @PostMapping("/create")
     public ResponseEntity<?> createDivision(@Valid @RequestBody DivisionCreateRequest request) {
-        if (divisionService.existsByDivisionCodeAndDeleted(request.getDivisionCode(), 0)) {
+        if (divisionService.existsByDivisionCodeAndDeleted(request.getDivisionCode(), "0")) {
             return conflict("Division code already exists");
         }
         DivisionResponse created = divisionService.createDivision(request);

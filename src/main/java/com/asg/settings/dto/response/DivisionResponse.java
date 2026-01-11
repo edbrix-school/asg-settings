@@ -14,7 +14,7 @@ public class DivisionResponse {
     private String remarks;
     private String active;
     private Integer seqNo;
-    private Integer deleted;
+    private String deleted;
     private String createdBy;
     private Timestamp createdAt;
     private String updatedBy;
