@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface TaskCategoryRepository extends JpaRepository<TaskCategoryEntity, Integer>, JpaSpecificationExecutor<TaskCategoryEntity> {
     TaskCategoryEntity findByCategoryPoid(Long categoryPoid);
 
-    @Query("SELECT t FROM TaskCategoryEntity t WHERE t.categoryPoid = :categoryPoid AND t.active != 'N' AND t.deleted = 'N'")
+    @Query("SELECT t FROM TaskCategoryEntity t WHERE t.categoryPoid = :categoryPoid AND t.active != 'N' AND t.deleted != 'Y'")
     TaskCategoryEntity findActiveByCategoryPoid(@Param("categoryPoid") Long categoryPoid);
 
     boolean existsByCategoryDescriptionIgnoreCase(String categoryDescription);
