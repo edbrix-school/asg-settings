@@ -12,7 +12,7 @@ public interface AddressMasterRepository extends JpaRepository<AddressMaster, Lo
 
     AddressMaster findByAddressMasterPoid(Long addressMasterPoid);
 
-    @Query("SELECT a FROM AddressMaster a WHERE a.addressMasterPoid = :addressMasterPoid AND a.active = 'Y' AND a.deleted = 'N'")
+    @Query("SELECT a FROM AddressMaster a WHERE a.addressMasterPoid = :addressMasterPoid AND (a.active != 'N' OR a.active IS NULL) AND (a.deleted != 'Y' OR a.deleted IS NULL)")
     AddressMaster findActiveByAddressMasterPoid(@Param("addressMasterPoid") Long addressMasterPoid);
 
     boolean existsByAddressMasterPoid(Long addressMasterPoid);
