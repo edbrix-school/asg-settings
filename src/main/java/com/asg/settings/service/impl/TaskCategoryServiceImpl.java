@@ -220,7 +220,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         String docId = UserContext.getDocumentId();
         String key = savedEntity.getCategoryPoid().toString();
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new TaskCategoryEntity(), savedEntity, TaskCategoryEntity.class, docId, key, LogDetailsEnum.CREATED, "CATEGORY_POID");
 
         return getTaskCategory(categoryPoid);
     }

@@ -71,7 +71,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String key = alertConfigEntity.getConfigPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new AlertConfigEntity(), alertConfigEntity, AlertConfigEntity.class, docId, key, LogDetailsEnum.CREATED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(alertConfigEntity);
     }
 

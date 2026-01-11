@@ -125,7 +125,6 @@ public class AddressMasterService {
         if (oldMaster == null) {
 
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-            loggingService.logChanges(null, saved, AddressMaster.class, docId, key, LogDetailsEnum.CREATED, "ADDRESS_MASTER_POID");
 
         } else {
             // CASE 2: UPDATE
