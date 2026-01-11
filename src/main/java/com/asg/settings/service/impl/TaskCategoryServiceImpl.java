@@ -124,8 +124,12 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryDto.setActive(taskCategoryEntity.getActive());
         taskCategoryDto.setSeqNo(taskCategoryEntity.getSeqNo());
         taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
-        taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
         taskCategoryDto.setCategoryCode(taskCategoryEntity.getCategoryCode());
+
+        taskCategoryDto.setCreatedBy(taskCategoryEntity.getCreatedBy());
+        taskCategoryDto.setCreatedDate(taskCategoryEntity.getCreatedDate());
+        taskCategoryDto.setLastModifiedBy(taskCategoryEntity.getLastModifiedBy());
+        taskCategoryDto.setLastModifiedDate(taskCategoryEntity.getLastModifiedDate());
 
         return taskCategoryDto;
     }
