@@ -49,7 +49,7 @@ public class AddressMasterService {
      * Get single Address Master with all department details (tabs).
      */
     public AddressMasterResponse getMasterWithDetails(Long poid) {
-        AddressMaster master = masterRepo.findActiveByAddressMasterPoid(poid);
+        AddressMaster master = masterRepo.findByAddressMasterPoid(poid);
         if (master == null) {
             throw new NoSuchElementException("Address Master not found");
         }
