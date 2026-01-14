@@ -258,7 +258,21 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
             processSubCategories(categoryPoid, taskCategoryDto.getSubCategories());
         }
         loggingService.logChanges(oldEntity, taskCategoryEntity, TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), LogDetailsEnum.MODIFIED, "CATEGORY_POID");
-        return getTaskCategory(categoryPoid);
+        
+        List<TaskCategoryDTLEntity> taskCategoryDTLEntityList = taskCategoryDTLRepository.findByCategoryPoid(categoryPoid);
+        TaskCategoryDto taskCategoryDto1 = entityToDto(taskCategoryEntity);
+        List<TaskCategoryDtlDto> taskCategoryDtlDtoList = new ArrayList<>();
+        if (!taskCategoryDTLEntityList.isEmpty()) {
+            taskCategoryDTLEntityList.forEach(taskCategoryDTLEntity -> {
+                TaskCategoryDtlDto taskCategoryDtlDto = new TaskCategoryDtlDto();
+                taskCategoryDtlDto.setCategoryPoid(taskCategoryDTLEntity.getCategoryPoid());
+                taskCategoryDtlDto.setSubCategoryDescription(taskCategoryDTLEntity.getSubCategoryDescription());
+                taskCategoryDtlDto.setDetRowId(taskCategoryDTLEntity.getDetRowId());
+                taskCategoryDtlDtoList.add(taskCategoryDtlDto);
+            });
+        }
+        taskCategoryDto1.setSubCategories(taskCategoryDtlDtoList);
+        return taskCategoryDto1;
     }
 
     private void processSubCategories(Long categoryPoid, List<TaskCategoryDtlDto> subCategories) {
