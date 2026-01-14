@@ -216,7 +216,7 @@ public class CurrencyController {
                 return badRequest("currencyPoid must be null when creating");
             }
 
-            CurrencyEntity savedEntity = currencyService.createOrUpdateCurrency(currencyDto, UserContext.getGroupPoid(), UserContext.getUserPoid());
+            CurrencyEntity savedEntity = currencyService.createOrUpdateCurrency(currencyDto, UserContext.getGroupPoid(), UserContext.getUserId());
 
             Map<String, Object> data = new HashMap<>();
             data.put("currencyPoid", savedEntity.getCurrencyPoid());
@@ -282,7 +282,7 @@ public class CurrencyController {
                 return badRequest("currencyPoid is required when updating");
             }
 
-            CurrencyEntity savedEntity = currencyService.createOrUpdateCurrency(currencyDto, UserContext.getGroupPoid(), UserContext.getUserPoid());
+            CurrencyEntity savedEntity = currencyService.createOrUpdateCurrency(currencyDto, UserContext.getGroupPoid(), UserContext.getUserId());
 
             Map<String, Object> data = new HashMap<>();
             data.put("currencyPoid", savedEntity.getCurrencyPoid());

@@ -84,13 +84,13 @@ public class CurrencyService {
         return currencyRateDto;
     }
 
-    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest req, Long groupPoid, Long userPoid) {
+    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest req, Long groupPoid, String userId) {
         // Existing record (for update case)
         CurrencyEntity oldEntity = null;
         if (req.getCurrencyPoid() != null) {
             oldEntity = currencyRepository.findById(req.getCurrencyPoid()).orElse(null);
         }
-        CurrencyEntity saved = currencyCreateRepository.createOrUpdateCurrency(req, groupPoid, userPoid);
+        CurrencyEntity saved = currencyCreateRepository.createOrUpdateCurrency(req, groupPoid, userId);
         String docId = UserContext.getDocumentId();
         String key = saved.getCurrencyPoid().toString();
 
