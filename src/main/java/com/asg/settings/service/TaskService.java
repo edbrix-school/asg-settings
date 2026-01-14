@@ -86,7 +86,7 @@ public class TaskService {
                 throw new ValidationException("Start Date cannot be after Due Date");
             }
             if (task.getStartDate().equals(task.getDueDate())) {
-                throw new ValidationException("Start Date cannot be the same as Due Date");
+                throw new ValidationException("Start Date cannot be equal to Due Date");
             }
         }
 
