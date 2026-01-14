@@ -200,7 +200,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         template.setActive(templateRequestDto.getActive() != null ? templateRequestDto.getActive() : "N");
         template.setSeqNo(templateRequestDto.getSeqNo());
         template.setRemarks(templateRequestDto.getRemarks());
-        template.setCreatedBy(loginUserPoid);
+        template.setCreatedBy(UserContext.getUserId());
         template.setCreatedDate(LocalDateTime.now());
         template.setTermsCategory(templateRequestDto.getTermsCategory());
         template.setDeleted("N");
@@ -226,7 +226,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                 termsTemplateDtlEntity.setClauseNo(clause.getClauseNo());
                 termsTemplateDtlEntity.setClauseDetails(clause.getClauseDetails());
                 termsTemplateDtlEntity.setActive(clause.getActive());
-                termsTemplateDtlEntity.setCreatedBy(loginUserPoid);
+                termsTemplateDtlEntity.setCreatedBy(UserContext.getUserId());
                 termsTemplateDtlEntity.setCreatedDate(LocalDateTime.now());
 
                 listOfClauses.add(termsTemplateDtlEntity);
