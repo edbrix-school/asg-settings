@@ -204,7 +204,7 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         BeanUtils.copyProperties(existingConfig, oldEntity);
 
         existingConfig.setAlertName(request.getAlertName());
-        existingConfig.setAlertCheckType(request.getAlertCheckType().name());
+        existingConfig.setAlertCheckType(request.getAlertCheckType() != null ? request.getAlertCheckType().getValue() : null);
         existingConfig.setSqlQuery(request.getSqlQuery());
         existingConfig.setExpiryDateField(request.getExpiryDateField());
         existingConfig.setNotifyDays(request.getNotifyDays());

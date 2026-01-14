@@ -22,6 +22,7 @@ import com.asg.settings.repository.CountryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -107,7 +108,11 @@ public class AddressMasterService {
         AddressMaster oldMaster = null;
         // If UPDATE → fetch old copy for logging
         if (req.getAddressMasterPoid() != null) {
-            oldMaster = masterRepo.findById(req.getAddressMasterPoid()).orElse(null);
+            AddressMaster existing = masterRepo.findById(req.getAddressMasterPoid()).orElse(null);
+            if (existing != null) {
+                oldMaster = new AddressMaster();
+                BeanUtils.copyProperties(existing, oldMaster);
+            }
         }
 
         AddressMaster master = buildOrUpdateMaster(req, currentUser);
