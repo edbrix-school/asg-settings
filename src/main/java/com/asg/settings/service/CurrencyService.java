@@ -88,7 +88,11 @@ public class CurrencyService {
         // Existing record (for update case)
         CurrencyEntity oldEntity = null;
         if (req.getCurrencyPoid() != null) {
-            oldEntity = currencyRepository.findById(req.getCurrencyPoid()).orElse(null);
+            CurrencyEntity existing = currencyRepository.findById(req.getCurrencyPoid()).orElse(null);
+            if (existing != null) {
+                oldEntity = new CurrencyEntity();
+                BeanUtils.copyProperties(existing, oldEntity);
+            }
         }
         CurrencyEntity saved = currencyCreateRepository.createOrUpdateCurrency(req, groupPoid, userId);
         String docId = UserContext.getDocumentId();
