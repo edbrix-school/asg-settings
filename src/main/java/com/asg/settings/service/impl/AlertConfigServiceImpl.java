@@ -71,7 +71,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String key = alertConfigEntity.getConfigPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new AlertConfigEntity(), alertConfigEntity, AlertConfigEntity.class, docId, key, LogDetailsEnum.CREATED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(alertConfigEntity);
     }
 
@@ -210,11 +209,9 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         existingConfig.setExpiryDateField(request.getExpiryDateField());
         existingConfig.setNotifyDays(request.getNotifyDays());
         existingConfig.setFrequencyType(request.getFrequencyType().name());
-        existingConfig.setAlertNotifyFrequency(request.getAlertEscalateFrequency());
+        existingConfig.setAlertNotifyFrequency(request.getAlertNotifyFrequency());
         existingConfig.setEscalateDays(request.getEscalateDays());
-        if (request.getAlertEscalateFrequency() != null) {
-            existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
-        }
+        existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
         existingConfig.setNotifyUserRolesPoid(ASGHelperUtils.convertListToString(request.getNotifyUserRolesPoid()));
         existingConfig.setEscalateUserRolesPoid(ASGHelperUtils.convertListToString(request.getEscalationUserRolesPoid()));
 
@@ -231,7 +228,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String docId = UserContext.getDocumentId();
         String key = updatedConfig.getConfigPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updatedConfig,
                 AlertConfigEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(updatedConfig);

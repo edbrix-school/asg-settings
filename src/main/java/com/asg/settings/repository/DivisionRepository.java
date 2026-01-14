@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DivisionRepository extends JpaRepository<DivisionMasterEntity, Long>, JpaSpecificationExecutor<DivisionMasterEntity> {
 
-    boolean existsByDivisionCodeAndDeleted(String divisionCode, Integer deleted);
+    boolean existsByDivisionCodeAndDeleted(String divisionCode, String deleted);
 
-    java.util.Optional<DivisionMasterEntity> findByDivisionIdAndDeleted(Long divisionId, Integer deleted);
+    java.util.Optional<DivisionMasterEntity> findByDivisionIdAndDeleted(Long divisionId, String deleted);
 
 }

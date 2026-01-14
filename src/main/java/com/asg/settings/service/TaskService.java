@@ -81,8 +81,13 @@ public class TaskService {
         Long updatedTaskId;
 
         // Adding validation for startdate ahead of enddate for update common for create also
-        if (task.getStartDate() != null && !task.getStartDate().before(task.getDueDate())) {
-            throw new ValidationException("Start Date cannot be ahead of Due Date");
+        if (task.getStartDate() != null && task.getDueDate() != null) {
+            if (task.getStartDate().after(task.getDueDate())) {
+                throw new ValidationException("Start Date cannot be after Due Date");
+            }
+            if (task.getStartDate().equals(task.getDueDate())) {
+                throw new ValidationException("Start Date cannot be the same as Due Date");
+            }
         }
 
         if (!isExistingTask) {
@@ -160,7 +165,6 @@ public class TaskService {
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
 
 

@@ -25,5 +25,5 @@ public interface DivisionService {
 
     void deactivateDivision(Long id, String updatedBy);
 
-    boolean existsByDivisionCodeAndDeleted(String divisionCode, int deleted);
+    boolean existsByDivisionCodeAndDeleted(String divisionCode, String deleted);
 }

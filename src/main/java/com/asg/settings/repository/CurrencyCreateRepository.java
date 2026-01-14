@@ -35,7 +35,7 @@ public class CurrencyCreateRepository {
      * Handles CREATE or UPDATE using currencyCode for updates.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
-    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest request, Long groupPoid, Long userPoid) {
+    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest request, Long groupPoid, String userId) {
         CurrencyEntity entity;
 
         if (request.getCurrencyPoid() == null) {
@@ -63,13 +63,13 @@ public class CurrencyCreateRepository {
             entity.setCurrencyCode(currencyCode);
             entity.setCurrencyName(request.getCurrencyName());
             entity.setCurrencyName2(request.getCurrencyName2());
-            entity.setCreatedBy(userPoid != null ? userPoid.toString() : "SYSTEM");
+            entity.setCreatedBy(userId != null ? userId : "SYSTEM");
             entity.setCreatedDate(OffsetDateTime.now());
             entity.setActive("Y");
             entity.setDeleted(null);
 
-            log.info("CURRENCY_CREATE success for code={} name={} by userPoid={}",
-                    currencyCode, request.getCurrencyName(), userPoid);
+            log.info("CURRENCY_CREATE success for code={} name={} by userId={}",
+                    currencyCode, request.getCurrencyName(), userId);
 
         } else {
             // ---------- UPDATE ----------
@@ -95,11 +95,11 @@ public class CurrencyCreateRepository {
             entity.setNumberFormatCurrency(request.getNumberFormatCurrency());
             entity.setSeqno(request.getSeqno());
             entity.setActive(request.getActive());
-            entity.setLastModifiedBy(userPoid != null ? userPoid.toString() : "SYSTEM");
+            entity.setLastModifiedBy(userId != null ? userId : "SYSTEM");
             entity.setLastModifiedDate(OffsetDateTime.now());
 
-            log.info("CURRENCY_UPDATE success for code={} name={} by userPoid={}",
-                    entity.getCurrencyCode(), entity.getCurrencyName(), userPoid);
+            log.info("CURRENCY_UPDATE success for code={} name={} by userId={}",
+                    entity.getCurrencyCode(), entity.getCurrencyName(), userId);
         }
 
         log.info("Transaction active: {}", TransactionSynchronizationManager.isActualTransactionActive());

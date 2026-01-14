@@ -59,7 +59,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
     @Override
     public TaskCategoryDto getTaskCategory(Long categoryPoid) {
-        TaskCategoryEntity taskCategoryEntity = taskCategoryRepository.findByCategoryPoid(categoryPoid);
+        TaskCategoryEntity taskCategoryEntity = taskCategoryRepository.findActiveByCategoryPoid(categoryPoid);
 
         if (taskCategoryEntity == null) {
             throw new ResourceNotFoundException("Task Category", "categoryPoid", categoryPoid);
@@ -124,8 +124,12 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryDto.setActive(taskCategoryEntity.getActive());
         taskCategoryDto.setSeqNo(taskCategoryEntity.getSeqNo());
         taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
-        taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
         taskCategoryDto.setCategoryCode(taskCategoryEntity.getCategoryCode());
+
+        taskCategoryDto.setCreatedBy(taskCategoryEntity.getCreatedBy());
+        taskCategoryDto.setCreatedDate(taskCategoryEntity.getCreatedDate());
+        taskCategoryDto.setLastModifiedBy(taskCategoryEntity.getLastModifiedBy());
+        taskCategoryDto.setLastModifiedDate(taskCategoryEntity.getLastModifiedDate());
 
         return taskCategoryDto;
     }
@@ -220,7 +224,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         String docId = UserContext.getDocumentId();
         String key = savedEntity.getCategoryPoid().toString();
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new TaskCategoryEntity(), savedEntity, TaskCategoryEntity.class, docId, key, LogDetailsEnum.CREATED, "CATEGORY_POID");
 
         return getTaskCategory(categoryPoid);
     }
@@ -254,7 +257,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         if (taskCategoryDto.getSubCategories() != null && !taskCategoryDto.getSubCategories().isEmpty()) {
             processSubCategories(categoryPoid, taskCategoryDto.getSubCategories());
         }
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), categoryPoid.toString());
         loggingService.logChanges(oldEntity, taskCategoryEntity, TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), LogDetailsEnum.MODIFIED, "CATEGORY_POID");
         return getTaskCategory(categoryPoid);
     }

@@ -63,7 +63,6 @@ public class DivisionServiceImpl implements DivisionService {
         String key = saved.getDivisionId().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new DivisionMasterEntity(), saved, DivisionMasterEntity.class, docId, key, LogDetailsEnum.CREATED, "DIVISION_ID");
 
         return mapToResponse(saved);
     }
@@ -71,7 +70,7 @@ public class DivisionServiceImpl implements DivisionService {
     @Override
     public Optional<DivisionResponse> getDivisionById(Long id) {
         return divisionRepository.findById(id)
-                .filter(entity -> entity.getDeleted() == null || entity.getDeleted().equals(0))
+                .filter(this::isNotDeleted)
                 .map(this::mapToResponse);
     }
 
@@ -79,7 +78,7 @@ public class DivisionServiceImpl implements DivisionService {
     @Override
     public DivisionResponse updateDivision(Long id, DivisionUpdateRequest request) {
         DivisionMasterEntity entity = divisionRepository.findById(id)
-                .filter(e -> e.getDeleted() == null || e.getDeleted().equals(0))
+                .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
 
         DivisionMasterEntity oldEntity = new DivisionMasterEntity();
@@ -112,7 +111,6 @@ public class DivisionServiceImpl implements DivisionService {
         String docId = UserContext.getDocumentId();
         String key = updated.getDivisionId().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updated, DivisionMasterEntity.class, docId, key, LogDetailsEnum.MODIFIED, "DIVISION_ID");
         return mapToResponse(updated);
     }
@@ -120,13 +118,13 @@ public class DivisionServiceImpl implements DivisionService {
     @Override
     public void softDeleteDivision(Long id, String updatedBy) {
         DivisionMasterEntity entity = divisionRepository.findById(id)
-                .filter(e -> e.getDeleted() == null || e.getDeleted().equals(0))
+                .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
 
         DivisionMasterEntity oldEntity = new DivisionMasterEntity();
         BeanUtils.copyProperties(entity, oldEntity);
 
-        entity.setDeleted(1);
+        entity.setDeleted("1");
         entity.setUpdatedBy(updatedBy);
         entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         divisionRepository.save(entity);
@@ -135,14 +133,14 @@ public class DivisionServiceImpl implements DivisionService {
         String key = id.toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        String oldValue = oldEntity.getDeleted() == null ? "0" : oldEntity.getDeleted().toString();
+        String oldValue = oldEntity.getDeleted() == null ? "0" : oldEntity.getDeleted();
         loggingService.logSimpleFieldChange(DivisionMasterEntity.class, docId, key, "deleted", oldValue, "1", "Division soft-deleted");
     }
 
     @Override
     public void activateDivision(Long id, String updatedBy) {
         DivisionMasterEntity entity = divisionRepository.findById(id)
-                .filter(e -> e.getDeleted() == null || e.getDeleted().equals(0))
+                .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
         entity.setActive("Y");
         entity.setUpdatedBy(updatedBy);
@@ -153,7 +151,7 @@ public class DivisionServiceImpl implements DivisionService {
     @Override
     public void deactivateDivision(Long id, String updatedBy) {
         DivisionMasterEntity entity = divisionRepository.findById(id)
-                .filter(e -> e.getDeleted() == null || e.getDeleted().equals(0))
+                .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
         entity.setActive("N");
         entity.setUpdatedBy(updatedBy);
@@ -162,7 +160,7 @@ public class DivisionServiceImpl implements DivisionService {
     }
 
     @Override
-    public boolean existsByDivisionCodeAndDeleted(String divisionCode, int deleted) {
+    public boolean existsByDivisionCodeAndDeleted(String divisionCode, String deleted) {
         return divisionRepository.existsByDivisionCodeAndDeleted(divisionCode, deleted);
     }
 
@@ -195,6 +193,11 @@ public class DivisionServiceImpl implements DivisionService {
         response.setUpdatedBy(entity.getUpdatedBy());
         response.setUpdatedAt(entity.getUpdatedAt());
         return response;
+    }
+
+    private boolean isNotDeleted(DivisionMasterEntity entity) {
+        String deleted = entity.getDeleted();
+        return deleted == null || deleted.equals("0");
     }
 }
 

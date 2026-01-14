@@ -49,8 +49,10 @@ public class AddressMasterService {
      * Get single Address Master with all department details (tabs).
      */
     public AddressMasterResponse getMasterWithDetails(Long poid) {
-        AddressMaster master = masterRepo.findById(poid)
-                .orElseThrow(() -> new NoSuchElementException("Address Master not found"));
+        AddressMaster master = masterRepo.findByAddressMasterPoid(poid);
+        if (master == null) {
+            throw new NoSuchElementException("Address Master not found");
+        }
 
         List<AddressDetails> details = detailsRepo.findByAddressMasterPoidOrderByAddressType(poid);
 
@@ -123,13 +125,9 @@ public class AddressMasterService {
         String key = saved.getAddressMasterPoid().toString();
         // CASE 1: CREATE
         if (oldMaster == null) {
-
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-            loggingService.logChanges(null, saved, AddressMaster.class, docId, key, LogDetailsEnum.CREATED, "ADDRESS_MASTER_POID");
-
         } else {
             // CASE 2: UPDATE
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldMaster, saved, AddressMaster.class, docId, key, LogDetailsEnum.MODIFIED, "ADDRESS_MASTER_POID");
         }
         return saved.getAddressMasterPoid();
@@ -219,7 +217,9 @@ public class AddressMasterService {
         master.setCrNumber(req.getCrNumber());
         master.setIsForwarder(Boolean.TRUE.equals(req.getIsForwarder()) ? "Y" : "N");
         master.setActive(req.getActive());
-        master.setSeqno(req.getSeqno());
+        if (req.getSeqno() != null) {
+            master.setSeqno(req.getSeqno());
+        }
         master.setLastModifiedBy(currentUser);
         master.setLastModifiedDate(LocalDateTime.now());
 
@@ -286,6 +286,13 @@ public class AddressMasterService {
                             // Address not found, treat as create
                             AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
                             toSave.add(detail);
+                        }
+                    }
+                    case "isdeleted" -> {
+                        // Delete the specific record from database
+                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
+                            AddressDetails recordToDelete = existingMap.get(dto.getAddressPoid());
+                            detailsRepo.delete(recordToDelete);
                         }
                     }
                     default -> {

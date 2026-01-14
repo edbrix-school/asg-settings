@@ -368,7 +368,6 @@ public class CompanyService {
         String key = newCompany.getCompanyPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new Company(), newCompany, Company.class, docId, key, LogDetailsEnum.CREATED, "COMPANY_POID");
 
         // Handle divisions for new company
         processDivisions(newCompany.getCompanyPoid(), company.getDivisions());
@@ -445,7 +444,6 @@ public class CompanyService {
             String docId = UserContext.getDocumentId();
             String key = existingCompany.getCompanyPoid().toString();
 
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldCompany, existingCompany, Company.class, docId, key, LogDetailsEnum.MODIFIED, "COMPANY_POID");
 
         } catch (DataIntegrityViolationException e) {
