@@ -54,7 +54,7 @@ public class DivisionServiceImpl implements DivisionService {
         entity.setDescription(request.getRemarks());  // remarks -> description
         entity.setSeqNo(request.getSeqNo());
         entity.setActive(request.getActive() != null ? request.getActive() : "N");
-        entity.setDeleted(null);
+        entity.setDeleted("N");
         entity.setCreatedBy(request.getCreatedBy());
         entity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
@@ -124,7 +124,7 @@ public class DivisionServiceImpl implements DivisionService {
         DivisionMasterEntity oldEntity = new DivisionMasterEntity();
         BeanUtils.copyProperties(entity, oldEntity);
 
-        entity.setDeleted("1");
+        entity.setDeleted("Y");
         entity.setUpdatedBy(updatedBy);
         entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         divisionRepository.save(entity);
@@ -133,8 +133,8 @@ public class DivisionServiceImpl implements DivisionService {
         String key = id.toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        String oldValue = oldEntity.getDeleted() == null ? "0" : oldEntity.getDeleted();
-        loggingService.logSimpleFieldChange(DivisionMasterEntity.class, docId, key, "deleted", oldValue, "1", "Division soft-deleted");
+        String oldValue = oldEntity.getDeleted() == null ? "N" : oldEntity.getDeleted();
+        loggingService.logSimpleFieldChange(DivisionMasterEntity.class, docId, key, "deleted", oldValue, "Y", "Division soft-deleted");
     }
 
     @Override
@@ -197,7 +197,7 @@ public class DivisionServiceImpl implements DivisionService {
 
     private boolean isNotDeleted(DivisionMasterEntity entity) {
         String deleted = entity.getDeleted();
-        return deleted == null || deleted.equals("0");
+        return deleted == null || deleted.equals("N");
     }
 }
 
