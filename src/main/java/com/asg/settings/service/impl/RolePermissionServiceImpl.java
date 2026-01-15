@@ -40,7 +40,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     private final UserRoleService userRoleService;
     private final UserRepository userRepository;
 
-
     @Override
     public UserRoleRightsDetDto getUserRoleRightsDetByRolePoid(Long userRolePoid) {
 
@@ -130,7 +129,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         List<UserRoleRightsEntity> userPermissionEntities = rightsRepo.findAllByIdUserRolePoid(userRolePoid);
         return userPermissionEntities.stream().map(this::getDto).toList();
     }
-
 
     private UserRoleRightsDto getDto(UserRoleRightsEntity entity) {
         UserRoleRightsDto dto = new UserRoleRightsDto();

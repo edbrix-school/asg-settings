@@ -1,10 +1,13 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.ApprovalActionRequest;
 import com.asg.settings.dto.DocumentDto;
 import com.asg.common.lib.dto.DropdownStringDto;
@@ -36,6 +39,8 @@ public class DocumentController {
 
     @Autowired
     private DocumentService documentService;
+    @Autowired
+    private LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
@@ -102,6 +107,7 @@ public class DocumentController {
     @GetMapping("/details")
     public ResponseEntity<?> getDocumentById(@RequestParam String docId) {
         DocumentDto document = documentService.getDocumentById(docId);
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
         return success("success", document);
     }
 
@@ -139,14 +145,15 @@ public class DocumentController {
 
     @DeleteMapping("/delete/{docId}")
     public ResponseEntity<?> deleteCompany(
-            @PathVariable("docId") String docId
+            @PathVariable("docId") String docId,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto
     ) {
         try {
             if (docId == null || docId.isBlank()) {
                 throw new ValidationException("Document Id is needed to delete");
             }
 
-            documentService.deleteDocument(docId);
+            documentService.deleteDocument(docId, deleteReasonDto);
 
             Map<String, Object> data = new HashMap<>();
             data.put("documentId", docId);
