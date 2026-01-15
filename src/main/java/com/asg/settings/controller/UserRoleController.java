@@ -2,8 +2,10 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.*;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.UserRoleRequestDto;
 import com.asg.settings.dto.request.LoadDefaultRightsRequest;
 import com.asg.settings.dto.request.RightsUpdateRequest;
@@ -47,6 +49,8 @@ public class UserRoleController {
     private final UserRoleService userRoleService;
 
     private final RolePermissionService userPermissionService;
+
+    private final LoggingService loggingService;
 
     @Operation(summary = "Fetch permissions")
     @ApiResponses(value = {
@@ -330,6 +334,7 @@ public class UserRoleController {
 
 
         UserRoleRightsDetDto userRoleRightsDetDto = userPermissionService.getUserRoleRightsDetByRolePoid(userRolePoid);
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), userRolePoid.toString());
         return success("Successfully fetched the User Roles Details", userRoleRightsDetDto);
     }
 

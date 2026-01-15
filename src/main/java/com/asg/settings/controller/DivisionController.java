@@ -2,7 +2,9 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.request.DivisionCreateRequest;
 import com.asg.settings.dto.request.DivisionUpdateRequest;
 import com.asg.settings.dto.response.DivisionResponse;
@@ -39,6 +41,8 @@ public class DivisionController {
 
     @Autowired
     private DivisionService divisionService;
+    @Autowired
+    private LoggingService loggingService;
 
     @Operation(
             summary = "Create Division (DocId: 000-017)",
@@ -167,6 +171,7 @@ public class DivisionController {
     public ResponseEntity<?> getDivisionById(@PathVariable @Parameter(description = "Division ID", required = true) Long id) {
         Optional<DivisionResponse> divisionOpt = divisionService.getDivisionById(id);
         if (divisionOpt.isPresent()) {
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), id.toString());
             return success("Division found", divisionOpt.get());
         } else {
             return notFound("Division not found");

@@ -44,12 +44,8 @@ public class AddressMasterService {
     private final AddressDetailsRepository detailsRepo;
     private final AddressProcedureRepository procRepo;
     private final DocumentSearchService documentService;
-
-    @Autowired
-    LoggingService loggingService;
-
-    @Autowired
-    DocumentDeleteService documentDeleteService;
+    private final LoggingService loggingService;
+    private final DocumentDeleteService documentDeleteService;
 
     /**
      * Get single Address Master with all department details (tabs).
@@ -150,7 +146,7 @@ public class AddressMasterService {
         
         documentDeleteService.deleteDocument(
                 addressMasterPoid,
-                "GLOB_ADDRESS_MASTER",
+                "GLOBAL_ADDRESS_MASTER",
                 "ADDRESS_MASTER_POID",
                 deleteReasonDto,
                 null

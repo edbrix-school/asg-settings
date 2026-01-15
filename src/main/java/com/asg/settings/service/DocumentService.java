@@ -205,8 +205,8 @@ public class DocumentService {
             
             documentDeleteService.deleteDocument(
                     document.getDocPoid().longValue(),
-                    "GLOB_DOC_MASTER",
-                    "DOC_POID",
+                    "GLOBAL_DOC_MASTER",
+                    "DOC_ID",
                     deleteReasonDto,
                     null
             );

@@ -3,11 +3,13 @@ package com.asg.settings.controller;
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.dto.response.AddressMasterResponse;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.service.AddressMasterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,6 +45,7 @@ import static com.asg.common.lib.dto.response.ApiResponse.*;
 public class AddressMasterController {
 
     private final AddressMasterService service;
+    private final LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
@@ -82,6 +85,7 @@ public class AddressMasterController {
     public ResponseEntity<?> getMaster(
             @PathVariable @Parameter(description = "Address Master POID", required = true) Long poid) {
         try {
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), poid.toString());
             AddressMasterResponse response = service.getMasterWithDetails(poid);
             return success("Address Master fetched successfully", response);
         } catch (Exception e) {

@@ -128,7 +128,7 @@ public class DivisionServiceImpl implements DivisionService {
         
         documentDeleteService.deleteDocument(
                 id,
-                "GLOB_DIVISION_MASTER",
+                "GLOBAL_DIVISION_MASTER",
                 "DIVISION_POID",
                 deleteReasonDto,
                 null

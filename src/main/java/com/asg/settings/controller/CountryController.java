@@ -2,8 +2,10 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.dto.CountryDto;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.service.CountryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,10 +30,12 @@ import static com.asg.common.lib.dto.response.ApiResponse.success;
 public class CountryController {
 
     private final CountryService countryService;
+    private final LoggingService loggingService;
 
     @Autowired
-    public CountryController(CountryService countryService) {
+    public CountryController(CountryService countryService, LoggingService loggingService) {
         this.countryService = countryService;
+        this.loggingService = loggingService;
     }
 
 
@@ -69,6 +73,7 @@ public class CountryController {
             @Parameter(description = "CountryPoid reference identifier", required = true)
             @PathVariable Long countryPoid) {
         CountryDto countryDto = countryService.getCountryById(countryPoid);
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), countryPoid.toString());
         return success("Task fetched successfully", countryDto);
 
     }

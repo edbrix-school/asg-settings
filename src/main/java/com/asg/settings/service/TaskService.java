@@ -172,7 +172,6 @@ public class TaskService {
 
         loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
 
-
         return existingTask.getTransactionPoid();
     }
 
@@ -307,7 +306,7 @@ public class TaskService {
         if (task == null) {
             throw new ValidationException("Task not found or already deleted");
         }
-        documentDeleteService.deleteDocument(taskPoid, "GLOB_TASK_MASTER", "TRANSACTION_POID", deleteReasonDto, null);
+        documentDeleteService.deleteDocument(taskPoid, "GLOBAL_TASK_HDR", "TRANSACTION_POID", deleteReasonDto, null);
     }
 
     public Map<String, Object> listTasks(String documentId, FilterRequestDto request, LocalDate startDateValue, LocalDate endDateValue, Pageable pageable) {

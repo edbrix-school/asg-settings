@@ -42,12 +42,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AlertConfigServiceImpl implements AlertConfigService {
 
-    @Autowired
-    private LoggingService loggingService;
-
-    @Autowired
-    private DocumentDeleteService documentDeleteService;
-
+    private final LoggingService loggingService;
+    private final DocumentDeleteService documentDeleteService;
     private final AlertConfigRepository alertConfigRepository;
     private final DocumentSearchService documentService;
     private final RoleRepository roleRepository;
@@ -259,7 +255,7 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         
         documentDeleteService.deleteDocument(
                 configPoid,
-                "GLOB_ALERT_CONFIG",
+                "GLOBAL_ALERT_CONFIG",
                 "CONFIG_POID",
                 deleteReasonDto,
                 null

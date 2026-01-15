@@ -144,7 +144,7 @@ public class CurrencyService {
         
         documentDeleteService.deleteDocument(
                 currencyPoid,
-                "GLOB_CURRENCY_MASTER",
+                "GLOBAL_CURRENCY_MASTER",
                 "CURRENCY_POID",
                 deleteReasonDto,
                 null

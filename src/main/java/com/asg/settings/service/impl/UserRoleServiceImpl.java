@@ -159,7 +159,7 @@ public class UserRoleServiceImpl implements UserRoleService {
         if (role == null) {
             throw new ResourceNotFoundException("User Role", "userRolePoid", userRolePoid);
         }
-        documentDeleteService.deleteDocument(userRolePoid, "GLOB_USER_ROLES", "USER_ROLE_POID", deleteReasonDto, null);
+        documentDeleteService.deleteDocument(userRolePoid, "GLOBAL_USER_ROLES", "USER_ROLE_POID", deleteReasonDto, null);
     }
 
     @Override

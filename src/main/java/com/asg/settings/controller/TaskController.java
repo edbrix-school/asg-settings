@@ -4,9 +4,11 @@ import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.LastTaskDto;
 import com.asg.settings.dto.TaskDto;
 import com.asg.settings.entity.Task;
@@ -39,6 +41,8 @@ public class TaskController {
 
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.CREATE)
     @Operation(
@@ -259,6 +263,7 @@ public class TaskController {
             @PathVariable String transactionPoid) {
         try {
             TaskDto task = taskService.getTaskByTransactionPoid(transactionPoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), transactionPoid);
             return success("Task fetched successfully", task);
         } catch (ValidationException ex) {
             return badRequest(ex.getMessage());
