@@ -1,5 +1,6 @@
 package com.asg.settings.controller;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.dto.CountryDto;
@@ -293,8 +294,9 @@ public class CountryController {
     @DeleteMapping("/{countryPoid}")
     public ResponseEntity<?> softDeleteCountry(
             @Parameter(description = "CountryPoid reference identifier", required = true)
-            @PathVariable Long countryPoid) {
-        countryService.softDeleteCountry(countryPoid);
+            @PathVariable Long countryPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
+        countryService.softDeleteCountry(countryPoid, deleteReasonDto);
         return success("Country has been soft deleted successfully");
     }
 }

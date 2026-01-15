@@ -1,11 +1,13 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -45,6 +47,9 @@ public class AddressMasterService {
 
     @Autowired
     LoggingService loggingService;
+
+    @Autowired
+    DocumentDeleteService documentDeleteService;
 
     /**
      * Get single Address Master with all department details (tabs).
@@ -139,19 +144,17 @@ public class AddressMasterService {
     }
 
     @Transactional
-    public void softDeleteAddressMaster(Long addressMasterPoid) {
+    public void softDeleteAddressMaster(Long addressMasterPoid, DeleteReasonDto deleteReasonDto) {
         AddressMaster master = masterRepo.findById(addressMasterPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Address Master", "addressMasterPoid", addressMasterPoid));
-
-        // Permanently delete all related AddressDetails
-        detailsRepo.deleteByAddressMasterPoid(addressMasterPoid);
-
-        // Soft delete the AddressMaster
-        master.setActive("N");
-        master.setDeleted("Y");
-        master.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        master.setLastModifiedDate(LocalDateTime.now());
-        masterRepo.save(master);
+        
+        documentDeleteService.deleteDocument(
+                addressMasterPoid,
+                "GLOB_ADDRESS_MASTER",
+                "ADDRESS_MASTER_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public String createAll(Long addressMasterPoid) {

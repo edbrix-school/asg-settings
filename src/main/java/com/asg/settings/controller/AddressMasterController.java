@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
@@ -383,9 +384,10 @@ public class AddressMasterController {
     )
     @DeleteMapping("/{addressMasterPoid}")
     public ResponseEntity<?> softDeleteAddressMaster(
-            @PathVariable @NotNull @Min(1) Long addressMasterPoid) {
+            @PathVariable @NotNull @Min(1) Long addressMasterPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            service.softDeleteAddressMaster(addressMasterPoid);
+            service.softDeleteAddressMaster(addressMasterPoid, deleteReasonDto);
             return success("Address Master marked as deleted and deactivated successfully", null);
         } catch (ResourceNotFoundException e) {
             log.error("Error deactivating address master with userPoid {}: {}", addressMasterPoid, e.getMessage());

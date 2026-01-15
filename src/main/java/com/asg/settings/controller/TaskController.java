@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
@@ -329,9 +330,9 @@ public class TaskController {
     @DeleteMapping("/{taskPoid}")
     public ResponseEntity<?> softDeleteTask(
             @PathVariable("taskPoid") Long taskPoid,
-            @RequestParam Long userPoid) {
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            taskService.softDeleteTask(taskPoid, userPoid.toString());
+            taskService.softDeleteTask(taskPoid, deleteReasonDto);
             return success("Task soft deleted successfully", null);
         } catch (ValidationException ex) {
             return badRequest(ex.getMessage());

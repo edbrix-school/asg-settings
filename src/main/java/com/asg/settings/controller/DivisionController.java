@@ -1,5 +1,6 @@
 package com.asg.settings.controller;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.request.DivisionCreateRequest;
@@ -221,8 +222,8 @@ public class DivisionController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> softDeleteDivision(@PathVariable
                                                 @Parameter(description = "Division ID", required = true) Long id,
-                                                @RequestParam @Parameter(description = "Updated by") String updatedBy) {
-        divisionService.softDeleteDivision(id, updatedBy);
+                                                @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
+        divisionService.softDeleteDivision(id, deleteReasonDto);
         return success("Division deleted successfully", Map.of("deleted", true));
     }
 

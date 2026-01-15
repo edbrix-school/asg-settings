@@ -1,10 +1,12 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -40,6 +42,9 @@ public class DivisionServiceImpl implements DivisionService {
 
     @Autowired
     private DocumentSearchService documentService;
+
+    @Autowired
+    private DocumentDeleteService documentDeleteService;
 
     @Override
     public DivisionResponse createDivision(DivisionCreateRequest request) {
@@ -116,25 +121,18 @@ public class DivisionServiceImpl implements DivisionService {
     }
 
     @Override
-    public void softDeleteDivision(Long id, String updatedBy) {
+    public void softDeleteDivision(Long id, DeleteReasonDto deleteReasonDto) {
         DivisionMasterEntity entity = divisionRepository.findById(id)
                 .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
-
-        DivisionMasterEntity oldEntity = new DivisionMasterEntity();
-        BeanUtils.copyProperties(entity, oldEntity);
-
-        entity.setDeleted("Y");
-        entity.setUpdatedBy(updatedBy);
-        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-        divisionRepository.save(entity);
-
-        String docId = UserContext.getDocumentId();
-        String key = id.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        String oldValue = oldEntity.getDeleted() == null ? "N" : oldEntity.getDeleted();
-        loggingService.logSimpleFieldChange(DivisionMasterEntity.class, docId, key, "deleted", oldValue, "Y", "Division soft-deleted");
+        
+        documentDeleteService.deleteDocument(
+                id,
+                "GLOB_DIVISION_MASTER",
+                "DIVISION_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     @Override

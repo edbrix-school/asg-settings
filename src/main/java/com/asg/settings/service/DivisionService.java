@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.settings.dto.request.DivisionCreateRequest;
 import com.asg.settings.dto.request.DivisionUpdateRequest;
@@ -19,7 +20,7 @@ public interface DivisionService {
 
     DivisionResponse updateDivision(Long id, DivisionUpdateRequest request);
 
-    void softDeleteDivision(Long id, String updatedBy);
+    void softDeleteDivision(Long id, DeleteReasonDto deleteReasonDto);
 
     void activateDivision(Long id, String updatedBy);
 

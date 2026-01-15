@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.LovGetListDto;
@@ -9,6 +10,7 @@ import com.asg.common.lib.enums.FrequencyTypeEnum;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -42,6 +44,9 @@ public class AlertConfigServiceImpl implements AlertConfigService {
 
     @Autowired
     private LoggingService loggingService;
+
+    @Autowired
+    private DocumentDeleteService documentDeleteService;
 
     private final AlertConfigRepository alertConfigRepository;
     private final DocumentSearchService documentService;
@@ -246,27 +251,19 @@ public class AlertConfigServiceImpl implements AlertConfigService {
 
     @Override
     @Transactional
-    public boolean softDeleteByconfigPoid(Long configPoid) {
+    public void softDeleteByconfigPoid(Long configPoid, DeleteReasonDto deleteReasonDto) {
         AlertConfigEntity entity = alertConfigRepository.findByConfigPoid(configPoid);
         if (entity == null) {
             throw new ResourceNotFoundException("Alert Config", "configPoid", configPoid);
         }
-        String oldActive = entity.getActive();
-        String oldDeleted = entity.getDeleted();
-
-        entity.setActive("N");
-        entity.setDeleted("Y");
-        entity.setLastModifiedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        alertConfigRepository.save(entity);
-
-        String docId = UserContext.getDocumentId();
-        String key = configPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(AlertConfigEntity.class, docId, key, "active", oldActive, "N", "AlertConfig soft-deleted");
-        loggingService.logSimpleFieldChange(AlertConfigEntity.class, docId, key, "deleted", oldDeleted, "Y", "AlertConfig soft-deleted");
-        return true;
+        
+        documentDeleteService.deleteDocument(
+                configPoid,
+                "GLOB_ALERT_CONFIG",
+                "CONFIG_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
 }

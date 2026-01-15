@@ -2,6 +2,7 @@ package com.asg.settings.controller;
 
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
@@ -175,8 +176,9 @@ public class TermsTemplateController {
 
     @Operation(summary = "Delete the Terms & Conditions Template By termsPoid", description = "Soft Delete the Terms & Conditions By termsPoid if its deleted then delete the associated Clauses")
     @DeleteMapping("/{termsPoid}")
-    public ResponseEntity<?> softDeleteTemplate(@Parameter(description = "Unique identifier of the terms template", required = true, example = "30") @PathVariable Long termsPoid) {
-        termsTemplateService.softDeleteByTermsPoid(termsPoid);
+    public ResponseEntity<?> softDeleteTemplate(@Parameter(description = "Unique identifier of the terms template", required = true, example = "30") @PathVariable Long termsPoid,
+                                                @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
+        termsTemplateService.softDeleteByTermsPoid(termsPoid, deleteReasonDto);
         return success("Terms & clauses deleted successfully ");
     }
 

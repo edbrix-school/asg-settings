@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
@@ -307,9 +308,10 @@ public class CurrencyController {
     )
     @DeleteMapping("/soft-delete")
     public ResponseEntity<?> softDeleteCurrency(
-            @RequestParam Long currencyPoid) {
+            @RequestParam Long currencyPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            currencyService.softDeleteCurrency(currencyPoid);
+            currencyService.softDeleteCurrency(currencyPoid, deleteReasonDto);
             return success("Currency soft deleted successfully", Map.of("currencyPoid", currencyPoid));
         } catch (Exception e) {
             return internalServerError("Failed to soft delete currency: " + e.getMessage());

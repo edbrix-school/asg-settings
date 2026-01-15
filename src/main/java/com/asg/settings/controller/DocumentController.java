@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ValidationException;
@@ -139,14 +140,15 @@ public class DocumentController {
 
     @DeleteMapping("/delete/{docId}")
     public ResponseEntity<?> deleteCompany(
-            @PathVariable("docId") String docId
+            @PathVariable("docId") String docId,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto
     ) {
         try {
             if (docId == null || docId.isBlank()) {
                 throw new ValidationException("Document Id is needed to delete");
             }
 
-            documentService.deleteDocument(docId);
+            documentService.deleteDocument(docId, deleteReasonDto);
 
             Map<String, Object> data = new HashMap<>();
             data.put("documentId", docId);

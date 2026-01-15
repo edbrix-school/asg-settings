@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
@@ -343,10 +344,11 @@ public class CompanyController {
     )
     @DeleteMapping("/{companyPoid}")
     public ResponseEntity<?> softDeleteCompany(
-            @PathVariable @NotNull @Min(1) Long companyPoid
+            @PathVariable @NotNull @Min(1) Long companyPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto
     ) {
         try {
-            companyService.softDeleteCompany(companyPoid);
+            companyService.softDeleteCompany(companyPoid, deleteReasonDto);
             return success("Company deleted successfully", null);
         } catch (ResourceNotFoundException e) {
             log.error("Error deactivating company with userPoid {}: {}", companyPoid, e.getMessage());

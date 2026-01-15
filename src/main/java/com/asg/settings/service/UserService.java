@@ -5,6 +5,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.AsgException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -83,6 +84,9 @@ public class UserService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private DocumentDeleteService documentDeleteService;
 
     public UserResponse getUserDetailsByRolePoid(Long userRolePoid) {
 
@@ -548,27 +552,17 @@ public class UserService {
     }
 
     @Transactional
-    public void softDeleteUser(Long userPoid) {
+    public void softDeleteUser(Long userPoid, DeleteReasonDto deleteReasonDto) {
         User user = userRepository.findById(userPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userPoid", userPoid));
-
-        // Soft delete user
-        user.setActive("N");
-        user.setDeleted("Y");
-        user.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        user.setLastModifiedDate(LocalDateTime.now());
-        userRepository.save(user);
-
-        // Insert summary log
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, "USER", userPoid.toString());
-
-        // Insert detail log
-        String tableName = User.class.getAnnotation(jakarta.persistence.Table.class).name();
-        String logDetail = String.format("KeyId = USER_POID:%s", userPoid);
-
-        loggingService.createLogDetailsEntry("USER", userPoid.toString(), "Active", "Y", "N", logDetail, tableName);
-
-        loggingService.createLogDetailsEntry("USER", userPoid.toString(), "Deleted", "N", "Y", logDetail, tableName);
+        
+        documentDeleteService.deleteDocument(
+                userPoid,
+                "GLOB_USER_MASTER",
+                "USER_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public Long getUserPoidByUserId(String userId) {

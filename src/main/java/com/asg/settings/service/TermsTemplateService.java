@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.settings.dto.TermsTemplateDtlDto;
 import com.asg.settings.dto.TermsTemplateDto;
@@ -13,7 +14,7 @@ public interface TermsTemplateService {
 
     TermsTemplateDto getTermsTemplateAndClauses(Long termsPoid);
 
-    void softDeleteByTermsPoid(Long termsPoid);
+    void softDeleteByTermsPoid(Long termsPoid, DeleteReasonDto deleteReasonDto);
 
     List<TermsTemplateDtlDto> softDeleteClause(Long termsPoid, String clause);
 

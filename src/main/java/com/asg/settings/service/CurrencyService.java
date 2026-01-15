@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -7,6 +8,7 @@ import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -48,6 +50,9 @@ public class CurrencyService {
 
     @Autowired
     LoggingService loggingService;
+
+    @Autowired
+    DocumentDeleteService documentDeleteService;
 
     public CurrencyService(CurrencyRepository currencyRepository,
                            CurrencyCreateRepository currencyCreateRepository) {
@@ -131,20 +136,21 @@ public class CurrencyService {
     }
 
     @Transactional
-    public void softDeleteCurrency(Long currencyPoid) {
+    public void softDeleteCurrency(Long currencyPoid, DeleteReasonDto deleteReasonDto) {
         CurrencyEntity currency = currencyRepository.getByCurrencyPoid(currencyPoid);
         if (currency == null) {
             throw new ResourceNotFoundException("Currency", "currencyPoid", currencyPoid.toString());
         }
-        currency.setDeleted("Y");
-        currency.setActive("N");
-        currency.setLastModifiedBy(getCurrentUser());
-        currency.setLastModifiedDate(java.time.OffsetDateTime.now());
-        currencyRepository.save(currency);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), currencyPoid.toString());
-        loggingService.logSimpleFieldChange(CurrencyEntity.class, UserContext.getDocumentId(), currencyPoid.toString(), "deleted", "N", "Y", "Currency soft deleted");
-
-
+        
+        documentDeleteService.deleteDocument(
+                currencyPoid,
+                "GLOB_CURRENCY_MASTER",
+                "CURRENCY_POID",
+                deleteReasonDto,
+                null
+        );
+        
+        // Delete related currency rates
         List<CurrencyRateEntity> rates = currencyRateRepository.findAllByCurrencyCode(currency.getCurrencyCode());
         if (!rates.isEmpty()) {
             currencyRateRepository.deleteAllInBatch(rates);

@@ -390,9 +390,10 @@ public class UserRoleController {
     )
     @DeleteMapping("/{userRolePoid}")
     public ResponseEntity<?> softDeleteUserRole(
-            @PathVariable Long userRolePoid) {
+            @PathVariable Long userRolePoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            userRoleService.softDeleteUserRole(userRolePoid);
+            userRoleService.softDeleteUserRole(userRolePoid, deleteReasonDto);
             return success("User Role soft deleted successfully", Map.of("userRolePoid", userRolePoid));
         } catch (Exception e) {
             return internalServerError("Failed to soft delete user role: " + e.getMessage());

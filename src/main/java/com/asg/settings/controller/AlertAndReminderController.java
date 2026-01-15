@@ -2,6 +2,7 @@ package com.asg.settings.controller;
 
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
@@ -278,8 +279,9 @@ public class AlertAndReminderController {
     @DeleteMapping("/{configPoid}")
     public ResponseEntity<?> softdeleteAlertConfig(
             @Parameter(description = "Alert configuration ID to delete", required = true, example = "1")
-            @PathVariable Long configPoid) {
-        alertConfigService.softDeleteByconfigPoid(configPoid);
+            @PathVariable Long configPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
+        alertConfigService.softDeleteByconfigPoid(configPoid, deleteReasonDto);
         return success("Alert configuration deleted successfully");
     }
 }
