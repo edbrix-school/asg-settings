@@ -75,7 +75,6 @@ public class DivisionServiceImpl implements DivisionService {
     @Override
     public Optional<DivisionResponse> getDivisionById(Long id) {
         return divisionRepository.findById(id)
-                .filter(this::isNotDeleted)
                 .map(this::mapToResponse);
     }
 
