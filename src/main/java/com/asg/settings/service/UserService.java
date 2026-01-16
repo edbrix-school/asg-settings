@@ -478,9 +478,9 @@ public class UserService {
             userRole.setId(userRolesEntityKey);
 
             userRoleRepository.save(userRole);
-            String docId = UserContext.getDocumentId();
-            String detail = String.format("KeyId = USER_POID:%s DET_ROW_ID:%s", finalUser.getUserId(), userRolesEntityKey.getDetRowId());
-            loggingService.logSimpleFieldChange(UserRolesEntity.class, docId, finalUser.getUserPoid().toString(), "UserRolePoid", null, role.userRolePoId().toString(), detail);
+//            String docId = UserContext.getDocumentId();
+//            String detail = String.format("KeyId = USER_POID:%s DET_ROW_ID:%s", finalUser.getUserId(), userRolesEntityKey.getDetRowId());
+//            loggingService.logSimpleFieldChange(UserRolesEntity.class, docId, finalUser.getUserPoid().toString(), "UserRolePoid", null, role.userRolePoId().toString(), detail);
 
         } else {
             throw new InputMismatchException("You are attempting to update the same role multiple times. Please review your selection. userRoleId -> " + role.userRoleId());
