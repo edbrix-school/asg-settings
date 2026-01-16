@@ -4,8 +4,10 @@ package com.asg.settings.controller;
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.TermsTemplateDtlDto;
 import com.asg.settings.dto.TermsTemplateDto;
 import com.asg.settings.dto.response.TemplateResponseDto;
@@ -40,6 +42,7 @@ import static com.asg.common.lib.dto.response.ApiResponse.success;
 public class TermsTemplateController {
 
     private final TermsTemplateService termsTemplateService;
+    private final LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(summary = "List Terms Templates with Search and Sort", description = "Provide search filters. Valid `searchField` values: GLOBALSEARCH or (TEMPLATE_ID, DOC_ID, TEMPLATE_NAME, TERMS_CATEGORY). Sorting default on termsPoid, desc." + "Will be searched in all available fields given in list_of_records_sql or main_table field in doc_master table." + "Sorting will be applied as specified in list_of_records_sql in doc_master table." + "Display fields for showing columns can be customized through list_of_display_columns_and_types field in doc_master.")
@@ -112,6 +115,7 @@ public class TermsTemplateController {
     public ResponseEntity<?> updateTemplateMetadata(@Parameter(description = "termsPoid identifier", example = "208", required = true) @PathVariable Long termsPoid, @Parameter(description = "loginUserPoid identifier", example = "3371", required = true) @RequestHeader("loginUserPoid") String loginUserPoid, @Valid @RequestBody TermsTemplateDto request) {
         try {
             TemplateResponseDto updatedTemplate = termsTemplateService.updateTemplateMetadata(termsPoid, request, loginUserPoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), termsPoid.toString());
             return success("Template updated successfully", updatedTemplate);
         } catch (Exception ex) {
             return internalServerError("Failed to update template: " + ex.getMessage());

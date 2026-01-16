@@ -127,7 +127,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         existingClause.setLastModifiedBy(loginUserPoid);
                         existingClause.setLastModifiedDate(LocalDateTime.now());
                         clausesToDelete.add(existingClause);
-                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
+//                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
                     }
 
                 } else if ("noChange".equalsIgnoreCase(actionType)) {

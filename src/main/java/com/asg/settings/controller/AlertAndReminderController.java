@@ -4,8 +4,10 @@ package com.asg.settings.controller;
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.AlertAndRemainderDto;
 import com.asg.settings.service.AlertConfigService;
 import com.nimbusds.oauth2.sdk.SuccessResponse;
@@ -36,10 +38,12 @@ import static com.asg.common.lib.dto.response.ApiResponse.success;
 public class AlertAndReminderController {
 
     private final AlertConfigService alertConfigService;
+    private final LoggingService loggingService;
 
     @Autowired
-    public AlertAndReminderController(AlertConfigService alertConfigService) {
+    public AlertAndReminderController(AlertConfigService alertConfigService, LoggingService loggingService) {
         this.alertConfigService = alertConfigService;
+        this.loggingService = loggingService;
     }
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
@@ -158,7 +162,7 @@ public class AlertAndReminderController {
                     return internalServerError("config Poid not found");
                 }
                 AlertAndRemainderDto alertAndRemainderDto = alertConfigService.getByAlertConfigId(configId);
-
+                loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), configId.toString());
                 return success("success", alertAndRemainderDto);
             } catch (Exception e) {
                 return internalServerError("Error fetching Alert Details: " + e.getMessage());

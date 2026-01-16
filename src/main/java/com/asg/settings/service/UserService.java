@@ -558,7 +558,7 @@ public class UserService {
         
         documentDeleteService.deleteDocument(
                 userPoid,
-                "GLOB_USER_MASTER",
+                "GLOBAL_USERS",
                 "USER_POID",
                 deleteReasonDto,
                 null

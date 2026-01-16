@@ -70,8 +70,7 @@ public class CompanyService {
 
     private final CurrencyService currencyService;
 
-    @Autowired
-    private DocumentDeleteService documentDeleteService;
+    private final DocumentDeleteService documentDeleteService;
 
     // Method to get User Companies mapped to User
     public List<UserCompanyDto> getUsersCompanies(Long userPoid) {
@@ -520,7 +519,7 @@ public class CompanyService {
         
         documentDeleteService.deleteDocument(
                 companyPoid,
-                "GLOB_COMPANY_MASTER",
+                "GLOBAL_COMPANY_MASTER",
                 "COMPANY_POID",
                 deleteReasonDto,
                 null

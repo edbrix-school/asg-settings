@@ -34,7 +34,6 @@ import java.util.Map;
 public class CountryServiceImpl implements CountryService {
 
     private final LoggingService loggingService;
-
     private final CountryRepository countryRepository;
     private final GroupRepository groupRepository;
     private final DocumentSearchService documentService;
@@ -200,7 +199,7 @@ public class CountryServiceImpl implements CountryService {
         
         documentDeleteService.deleteDocument(
                 countryPoid,
-                "GLOB_COUNTRY_MASTER",
+                "GLOBAL_COUNTRY_MASTER",
                 "COUNTRY_POID",
                 deleteReasonDto,
                 null
