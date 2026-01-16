@@ -284,7 +284,7 @@ public class AddressMasterService {
                     case "isupdated" -> {
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             AddressDetails detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                             toSave.add(detail);
                         } else {
                             // Address not found, treat as create
@@ -304,7 +304,7 @@ public class AddressMasterService {
                         AddressDetails detail;
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                         } else {
                             detail = buildDetail(dto, master, type, counter++, currentUser);
                         }
@@ -320,7 +320,8 @@ public class AddressMasterService {
         }
     }
 
-    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String currentUser) {
+    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String type, String currentUser) {
+        entity.setAddressType(type);
         entity.setContactPerson(dto.getContactPerson());
         entity.setDesignation(dto.getDesignation());
         entity.setOffTel1(dto.getOffTel1());
