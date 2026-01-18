@@ -118,6 +118,7 @@ public class TaskController {
         }catch (ValidationException ex) {
             throw ex;
         } catch (Exception ex) {
+            ex.printStackTrace();
             return internalServerError("Failed to create task: " + ex.getMessage());
         }
     }
