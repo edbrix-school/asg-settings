@@ -172,7 +172,11 @@ public class TaskService {
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();
 
-        loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
+        try {
+            loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
+        } catch (Exception e) {
+            log.warn("Failed to log task update: {}", e.getMessage());
+        }
 
         return existingTask.getTransactionPoid();
     }
