@@ -1,10 +1,13 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.entity.CurrencyEntity;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.CurrencyRateDto;
 import com.asg.settings.dto.request.CurrencyCreateRequest;
 import com.asg.settings.dto.request.CurrencyUpdateRequest;
@@ -37,6 +40,7 @@ public class CurrencyController {
 
     private final CurrencyService currencyService;
     private final CurrencyUploadService uploadService;
+    private final LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
@@ -95,6 +99,7 @@ public class CurrencyController {
             @RequestParam Long currencyPoid) {
         try {
             CurrencyRateDto data = currencyService.getAllCurrencyRates(currencyPoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), currencyPoid.toString());
             return success("Currency  fetched successfully", data);
         } catch (Exception ex) {
             return internalServerError("Failed to retrieve currency deails: " + ex.getMessage());
@@ -307,9 +312,10 @@ public class CurrencyController {
     )
     @DeleteMapping("/soft-delete")
     public ResponseEntity<?> softDeleteCurrency(
-            @RequestParam Long currencyPoid) {
+            @RequestParam Long currencyPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            currencyService.softDeleteCurrency(currencyPoid);
+            currencyService.softDeleteCurrency(currencyPoid, deleteReasonDto);
             return success("Currency soft deleted successfully", Map.of("currencyPoid", currencyPoid));
         } catch (Exception e) {
             return internalServerError("Failed to soft delete currency: " + e.getMessage());

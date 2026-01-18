@@ -1,9 +1,12 @@
 package com.asg.settings.controller;
 
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.TaskCategoryDto;
 import com.asg.settings.dto.TaskSubCategoryDto;
 import com.asg.settings.service.TaskCategoryService;
@@ -39,10 +42,12 @@ public class TaskCategoryController {
 
 
     private final TaskCategoryService taskCategoryService;
+    private final LoggingService loggingService;
 
     @Autowired
-    public TaskCategoryController(TaskCategoryService taskCategoryService) {
+    public TaskCategoryController(TaskCategoryService taskCategoryService, LoggingService loggingService) {
         this.taskCategoryService = taskCategoryService;
+        this.loggingService = loggingService;
     }
 
     /**
@@ -73,7 +78,7 @@ public class TaskCategoryController {
             @PathVariable Long categoryPoid) {
 
         TaskCategoryDto taskCategoryDto = taskCategoryService.getTaskCategory(categoryPoid);
-
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), categoryPoid.toString());
         return success("Task Category retrieved successfully", taskCategoryDto);
     }
 
@@ -91,9 +96,9 @@ public class TaskCategoryController {
     public ResponseEntity<?> softDeleteTaskCategory(
             @Parameter(description = "Task Category POID", required = true)
             @PathVariable Long catPoid,
-            Principal principal) {
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            return taskCategoryService.softDeleteTaskCategory(catPoid, principal.getName());
+            return taskCategoryService.softDeleteTaskCategory(catPoid, deleteReasonDto);
         } catch (Exception ex) {
             return internalServerError("Failed to delete Task Category: " + ex.getMessage());
         }

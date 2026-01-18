@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -11,6 +12,7 @@ import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.repository.TimeZoneDataRepository;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
@@ -26,6 +28,7 @@ import com.asg.settings.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -66,6 +69,8 @@ public class CompanyService {
     private final LovDataService lovDataService;
 
     private final CurrencyService currencyService;
+
+    private final DocumentDeleteService documentDeleteService;
 
     // Method to get User Companies mapped to User
     public List<UserCompanyDto> getUsersCompanies(Long userPoid) {
@@ -508,23 +513,17 @@ public class CompanyService {
     }
 
     @Transactional
-    public void softDeleteCompany(Long companyPoid) {
+    public void softDeleteCompany(Long companyPoid, DeleteReasonDto deleteReasonDto) {
         Company company = companyRepository.findById(companyPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "companyPoid", companyPoid));
-
-        company.setActive("N");
-        company.setDeleted("Y");
-        company.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        company.setLastModifiedDate(new java.util.Date(System.currentTimeMillis()));
-        companyRepository.save(company);
-
-        String docId = UserContext.getDocumentId();
-        String key = companyPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(Company.class, docId, key, "deleted", "N", "Y", "Company soft deleted");
-        loggingService.logSimpleFieldChange(Company.class, docId, key, "active", "Y", "N", "Company soft deleted");
-
+        
+        documentDeleteService.deleteDocument(
+                companyPoid,
+                "GLOBAL_COMPANY_MASTER",
+                "COMPANY_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public Long getNextDetRowIdForCompanyDivison(Long companyPoid) {

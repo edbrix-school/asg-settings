@@ -1,11 +1,13 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -42,9 +44,8 @@ public class AddressMasterService {
     private final AddressDetailsRepository detailsRepo;
     private final AddressProcedureRepository procRepo;
     private final DocumentSearchService documentService;
-
-    @Autowired
-    LoggingService loggingService;
+    private final LoggingService loggingService;
+    private final DocumentDeleteService documentDeleteService;
 
     /**
      * Get single Address Master with all department details (tabs).
@@ -139,19 +140,17 @@ public class AddressMasterService {
     }
 
     @Transactional
-    public void softDeleteAddressMaster(Long addressMasterPoid) {
+    public void softDeleteAddressMaster(Long addressMasterPoid, DeleteReasonDto deleteReasonDto) {
         AddressMaster master = masterRepo.findById(addressMasterPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Address Master", "addressMasterPoid", addressMasterPoid));
-
-        // Permanently delete all related AddressDetails
-        detailsRepo.deleteByAddressMasterPoid(addressMasterPoid);
-
-        // Soft delete the AddressMaster
-        master.setActive("N");
-        master.setDeleted("Y");
-        master.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        master.setLastModifiedDate(LocalDateTime.now());
-        masterRepo.save(master);
+        
+        documentDeleteService.deleteDocument(
+                addressMasterPoid,
+                "GLOBAL_ADDRESS_MASTER",
+                "ADDRESS_MASTER_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public String createAll(Long addressMasterPoid) {
@@ -285,7 +284,7 @@ public class AddressMasterService {
                     case "isupdated" -> {
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             AddressDetails detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                             toSave.add(detail);
                         } else {
                             // Address not found, treat as create
@@ -305,7 +304,7 @@ public class AddressMasterService {
                         AddressDetails detail;
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                         } else {
                             detail = buildDetail(dto, master, type, counter++, currentUser);
                         }
@@ -321,7 +320,8 @@ public class AddressMasterService {
         }
     }
 
-    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String currentUser) {
+    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String type, String currentUser) {
+        entity.setAddressType(type);
         entity.setContactPerson(dto.getContactPerson());
         entity.setDesignation(dto.getDesignation());
         entity.setOffTel1(dto.getOffTel1());

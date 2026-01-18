@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -8,6 +9,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -53,6 +55,9 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
     @Autowired
     DocumentSearchService documentService;
+
+    @Autowired
+    DocumentDeleteService documentDeleteService;
 
     public Map<String, Object> listTerms(String docId, FilterRequestDto request, Pageable pageable) {
 
@@ -122,7 +127,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         existingClause.setLastModifiedBy(loginUserPoid);
                         existingClause.setLastModifiedDate(LocalDateTime.now());
                         clausesToDelete.add(existingClause);
-                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
+//                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
                     }
 
                 } else if ("noChange".equalsIgnoreCase(actionType)) {
@@ -257,21 +262,11 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
     @Transactional
     @Override
-    public void softDeleteByTermsPoid(Long termsPoid) {
-        TermsTemplateEntity termsTemplateEntity = termsTemplateRepository.findByTermsPoid(termsPoid).orElseThrow(() -> new ResourceNotFoundException("Terms & Conditions", "termsPoid", termsPoid));
+    public void softDeleteByTermsPoid(Long termsPoid, DeleteReasonDto deleteReasonDto) {
+        TermsTemplateEntity termsTemplateEntity = termsTemplateRepository.findByTermsPoid(termsPoid)
+                .orElseThrow(() -> new ResourceNotFoundException("Terms & Conditions", "termsPoid", termsPoid));
 
-        termsTemplateEntity.setActive("N");
-        termsTemplateEntity.setDeleted("Y");
-        termsTemplateEntity.setLastModifiedDate(LocalDateTime.now());
-        termsTemplateEntity.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-
-        termsTemplateRepository.save(termsTemplateEntity);
-        String docId = UserContext.getDocumentId();
-        String key = termsPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(TermsTemplateEntity.class, docId, key, "deleted", "N", "Y", "Template soft deleted");
-        loggingService.logSimpleFieldChange(TermsTemplateEntity.class, docId, key, "active", "Y", "N", "Template soft deleted");
+        documentDeleteService.deleteDocument(termsPoid, "GLOB_TERMS_TEMPLATE", "TERMS_POID", deleteReasonDto, null);
         deleteClausesByTermsPoid(termsPoid);
     }
 
