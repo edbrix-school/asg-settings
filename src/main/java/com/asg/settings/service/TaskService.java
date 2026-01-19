@@ -134,13 +134,7 @@ public class TaskService {
         String docId = task.getRefDocId();
         String key = newTask.getTransactionPoid().toString();
 
-        try {
-            Task emptyOldTask = new Task(); // empty object
-            loggingService.logChanges(emptyOldTask, newTask, Task.class, docId, key,
-                    LogDetailsEnum.CREATED, "TASK");
-        } catch (Exception e) {
-            log.warn("Failed to log task creation: {}", e.getMessage());
-        }
+        loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
         return newTask.getTransactionPoid();
     }
 
