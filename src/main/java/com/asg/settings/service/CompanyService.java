@@ -297,6 +297,7 @@ public class CompanyService {
             key.setDetRowId(getNextDetRowIdForCompanyDivison(companyPoid));
 
             companyDivision.setId(key);
+
             companyDivisionRepository.saveAndFlush(companyDivision);
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. Please review your selection. divisionId -> " + division.getDivPoid());
@@ -307,12 +308,18 @@ public class CompanyService {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
                 .findById_CompanyPoidAndDivPoid(companyPoid, division.getDivPoid());
 
+
+        CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
+        BeanUtils.copyProperties(existingDivision, oldCompanyData);
+
         if (existingDivision != null) {
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
+            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getDivPoid());
+            loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
             throw new ValidationException("Cannot update a division that is not assigned to the company, divisionId -> " + division.getDivPoid());

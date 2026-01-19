@@ -96,9 +96,9 @@ public class UserRoleServiceImpl implements UserRoleService {
         entity.setUserRoleName2(dto.getUserRoleName2());
         entity.setActive(dto.getActive() != null ? dto.getActive() : "Y");
         entity.setSeqNo(dto.getSeqNo());
-        entity.setCreatedBy(""); // TODO: Set actual user
+        entity.setCreatedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
         entity.setCreatedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(""); // TODO: Set actual user
+        entity.setLastModifiedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
         entity.setLastModifiedDate(LocalDateTime.now());
         entity.setCompanyPoid(dto.getCompanyPoid());
         entity.setDeleted("N");
