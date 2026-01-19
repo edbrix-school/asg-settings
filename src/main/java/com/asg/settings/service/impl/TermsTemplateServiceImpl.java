@@ -266,7 +266,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         TermsTemplateEntity termsTemplateEntity = termsTemplateRepository.findByTermsPoid(termsPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Terms & Conditions", "termsPoid", termsPoid));
 
-        documentDeleteService.deleteDocument(termsPoid, "GLOB_TERMS_TEMPLATE", "TERMS_POID", deleteReasonDto, null);
+        documentDeleteService.deleteDocument(termsPoid, "GLOBAL_TERMS_TEMPLATE_MASTER", "TERMS_POID", deleteReasonDto, null);
         deleteClausesByTermsPoid(termsPoid);
     }
 
