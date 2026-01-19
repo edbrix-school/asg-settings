@@ -1,6 +1,7 @@
 package com.asg.settings.service.impl;
 
 import com.asg.common.lib.dto.*;
+import com.asg.common.lib.dto.request.LogRequestDto;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceAlreadyExistsException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
@@ -257,15 +258,19 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
     }
 
     private void processSubCategories(Long categoryPoid, List<TaskCategoryDtlDto> subCategories) {
+        String docId = UserContext.getDocumentId();
+        String docKeyPoid = categoryPoid.toString();
+
         List<TaskCategoryDTLEntity> entitiesToDelete = new ArrayList<>();
         List<TaskCategoryDTLEntity> entitiesToSave = new ArrayList<>();
+        List<LogRequestDto<TaskCategoryDTLEntity>> logRequests = new ArrayList<>();
 
         for (TaskCategoryDtlDto dto : subCategories) {
             String action = StringUtils.isBlank(dto.getActionType()) ? "" : dto.getActionType().toLowerCase();
 
             switch (action) {
                 case "isdeleted" -> handleDeleteAction(categoryPoid, dto, entitiesToDelete);
-                case "iscreated", "isupdated" -> handleCreateOrUpdateAction(categoryPoid, dto, entitiesToSave);
+                case "iscreated", "isupdated" -> handleCreateOrUpdateAction(categoryPoid, dto, entitiesToSave, logRequests, docId, docKeyPoid);
                 default -> log.warn("Unknown actionType '{}' for detRowId={}", dto.getActionType(), dto.getDetRowId());
             }
         }
@@ -274,6 +279,9 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         }
         if (!entitiesToSave.isEmpty()) {
             taskCategoryDTLRepository.saveAll(entitiesToSave);
+        }
+        if (!logRequests.isEmpty()) {
+            loggingService.createLogBatch(logRequests);
         }
     }
 
@@ -290,11 +298,14 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         }
     }
 
-    private void handleCreateOrUpdateAction(Long categoryPoid, TaskCategoryDtlDto subCategoryDto, List<TaskCategoryDTLEntity> entitiesToSave) {
+    private void handleCreateOrUpdateAction(Long categoryPoid, TaskCategoryDtlDto subCategoryDto, 
+                                            List<TaskCategoryDTLEntity> entitiesToSave,
+                                            List<LogRequestDto<TaskCategoryDTLEntity>> logRequests,
+                                            String docId, String docKeyPoid) {
         if (subCategoryDto.getDetRowId() != null) {
             taskCategoryDTLRepository.findByCategoryPoidAndDetRowId(categoryPoid, subCategoryDto.getDetRowId())
                     .ifPresentOrElse(
-                            existingEntity -> updateExistingEntity(existingEntity, subCategoryDto, entitiesToSave),
+                            existingEntity -> updateExistingEntity(existingEntity, subCategoryDto, entitiesToSave, logRequests, docId, docKeyPoid),
                             () -> createNewEntity(categoryPoid, subCategoryDto, entitiesToSave)
                     );
         } else {
@@ -302,11 +313,20 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         }
     }
 
-    private void updateExistingEntity(TaskCategoryDTLEntity entity, TaskCategoryDtlDto dto, List<TaskCategoryDTLEntity> entitiesToSave) {
+    private void updateExistingEntity(TaskCategoryDTLEntity entity, TaskCategoryDtlDto dto, 
+                                      List<TaskCategoryDTLEntity> entitiesToSave,
+                                      List<LogRequestDto<TaskCategoryDTLEntity>> logRequests,
+                                      String docId, String docKeyPoid) {
+        TaskCategoryDTLEntity oldEntity = new TaskCategoryDTLEntity();
+        BeanUtils.copyProperties(entity, oldEntity);
+
         entity.setSubCategoryDescription(dto.getSubCategoryDescription());
         entity.setLastModifiedBy(getCurrentUser());
         entity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(entity);
+
+        String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,dto.getDetRowId());
+        logRequests.add(new LogRequestDto<>(oldEntity, entity, TaskCategoryDTLEntity.class, docId, docKeyPoid, logDetail));
     }
 
     private void createNewEntity(Long categoryPoid, TaskCategoryDtlDto dto, List<TaskCategoryDTLEntity> entitiesToSave) {

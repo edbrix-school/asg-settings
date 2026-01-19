@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +21,11 @@ public class AddressMaster {
             allocationSize = 1
     )
     @Column(name = "ADDRESS_MASTER_POID")
+    @AuditIgnore
     private Long addressMasterPoid;
 
     @Column(name = "GROUP_POID", nullable = false)
+    @AuditIgnore
     private Long groupPoid;
 
     @Column(name = "ADDRESS_NAME", length = 100)
@@ -63,24 +66,30 @@ public class AddressMaster {
     private String active;
 
     @Column(name = "SEQNO")
+    @AuditIgnore
     private Long seqno;
 
     @Column(name = "CREATED_BY", length = 20)
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private LocalDateTime createdDate;
 
     @Column(name = "LASTMODIFIED_BY", length = 20)
+    @AuditIgnore
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "OLD_ACCTNO", length = 20)
     private String oldAcctNo;
 
     @Column(name = "DELETED", length = 1)
+    @AuditIgnore
     private String deleted;
 
     @Column(name = "IS_FORWARDER", length = 1)

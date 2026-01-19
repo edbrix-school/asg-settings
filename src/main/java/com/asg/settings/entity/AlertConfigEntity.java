@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Size;
@@ -17,6 +18,7 @@ public class AlertConfigEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "alert_config_seq")
     @SequenceGenerator(name = "alert_config_seq", sequenceName = "GLOBAL_ALERT_CONFIG_SEQ", allocationSize = 1)
     @Column(name = "CONFIG_POID", nullable = false)
+    @AuditIgnore
     private Long configPoid;
 
     @Column(name = "ALERT_NAME", length = 100, nullable = false)
@@ -48,15 +50,19 @@ public class AlertConfigEntity {
     private Integer seqNo;
 
     @Column(name = "CREATED_BY", length = 20)
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private LocalDateTime createdDate;
 
     @Column(name = "LASTMODIFIED_BY", length = 20)
+    @AuditIgnore
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "ALERT_CHECK_TYPE", length = 20)
@@ -72,6 +78,7 @@ public class AlertConfigEntity {
     private String escalateUserRolesPoid;
 
     @Column(name = "DELETED", length = 1)
+    @AuditIgnore
     private String deleted;
 
     @Column(name = "ALERT_ESCALATE_FREQUENCY")
@@ -83,17 +90,21 @@ public class AlertConfigEntity {
     private Integer alertNotifyFrequency = 1;
 
     @Column(name = "ESCALATE_ALERT_SEND_MAIL_DATE")
+    @AuditIgnore
     private Date escalateAlertSendMailDate;
 
     @Column(name = "NOTIFY_ALERT_SEND_MAIL_DATE")
+    @AuditIgnore
     private Date notifyAlertSendMailDate;
 
     @Column(name = "DAILY_RECURRENCE")
     @Digits(integer = 1, fraction = 0)
+    @AuditIgnore
     private Integer dailyRecurrence;
 
     @Column(name = "FREQUENCY_TYPE", length = 20)
     @Size(max = 20)
+    @AuditIgnore
     private String frequencyType = "DAY";
 }
 

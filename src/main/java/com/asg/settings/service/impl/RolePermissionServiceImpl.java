@@ -1,7 +1,10 @@
 package com.asg.settings.service.impl;
 
 import com.asg.common.lib.dto.*;
+import com.asg.common.lib.dto.request.LogRequestDto;
 import com.asg.common.lib.exception.ResourceNotFoundException;
+import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.*;
 import com.asg.settings.dto.request.RightsUpdateRequest;
 import com.asg.settings.dto.request.RolePermissionEntry;
@@ -39,6 +42,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     private final RoleRightsCustomRepository procRepo;
     private final UserRoleService userRoleService;
     private final UserRepository userRepository;
+    private final LoggingService loggingService;
 
     @Override
     public UserRoleRightsDetDto getUserRoleRightsDetByRolePoid(Long userRolePoid) {
@@ -189,6 +193,10 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             return new RolePermissionResponse("FAILURE", "Failed to update role permissions.", errors);
         }
 
+        String docId = UserContext.getDocumentId();
+        String docKeyPoid = roleId.toString();
+        List<LogRequestDto<UserRoleRightsEntity>> logRequests = new ArrayList<>();
+
         for (RightUpdateEntry entry : request.getRightsUpdateList()) {
             Optional<UserRoleRightsEntity> optional = rightsRepo.findByIdUserRolePoidAndIdDetRowIdAndDocId(
                     roleId, entry.getDetRowId(), entry.getDocId());
@@ -207,11 +215,21 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             } else {
                 // Update existing record
                 UserRoleRightsEntity entity = optional.get();
+                UserRoleRightsEntity oldEntity = new UserRoleRightsEntity();
+                BeanUtils.copyProperties(entity, oldEntity);
+
                 entity.setRights(entry.getRights());
-                entity.setLastModifiedBy(entry.getLastModifiedBy());
+                entity.setLastModifiedBy(UserContext.getUserId());
                 entity.setLastModifiedDate(LocalDateTime.now());
                 rightsRepo.save(entity);
+
+                String logDetail = String.format("KeyId = DET_ROW_ID:%s", entry.getDetRowId());
+                logRequests.add(new LogRequestDto<>(oldEntity, entity, UserRoleRightsEntity.class, docId, docKeyPoid, logDetail));
             }
+        }
+
+        if (!logRequests.isEmpty()) {
+            loggingService.createLogBatch(logRequests);
         }
 
         return new RolePermissionResponse("SUCCESS", "Role permissions updated successfully.", Collections.emptyList());
