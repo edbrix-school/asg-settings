@@ -134,11 +134,7 @@ public class TaskService {
         String docId = task.getRefDocId();
         String key = newTask.getTransactionPoid().toString();
 
-        try {
-            loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        } catch (Exception e) {
-            log.warn("Failed to log task creation: {}", e.getMessage());
-        }
+        loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
         return newTask.getTransactionPoid();
     }
 
@@ -172,11 +168,7 @@ public class TaskService {
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();
 
-        try {
-            loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
-        } catch (Exception e) {
-            log.warn("Failed to log task update: {}", e.getMessage());
-        }
+        loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
 
         return existingTask.getTransactionPoid();
     }
