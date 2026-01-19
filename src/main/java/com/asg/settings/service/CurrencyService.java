@@ -105,10 +105,7 @@ public class CurrencyService {
 
         //       CREATE CASE
         if (oldEntity == null) {
-
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-
-
         } else {
             //         UPDATE CASE
             loggingService.logChanges(oldEntity, saved, CurrencyEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CURRENCY_POID");

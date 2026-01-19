@@ -622,6 +622,8 @@ public class CompanyService {
         }
         CompanyDivisionDto dto = new CompanyDivisionDto();
 
+        dto.setDetRowId(entity.getId().getDetRowId());
+        dto.setCompanyPoid(entity.getId().getCompanyPoid());
         dto.setDivPoid(entity.getDivPoid());
         dto.setRemarks(entity.getRemarks());
         dto.setCreatedBy(entity.getCreatedBy());
