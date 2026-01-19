@@ -55,12 +55,12 @@ public class TaskDto {
     private String createdBy;
 
     @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
-    private LocalDateTime createdDate;
+    private Date createdDate;
 
     private String lastModifiedBy;
 
     @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
-    private LocalDateTime lastModifiedDate;
+    private Date lastModifiedDate;
 
     private Long faPoid;
     private Long taskReportedBy;

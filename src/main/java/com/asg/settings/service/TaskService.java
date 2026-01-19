@@ -387,9 +387,11 @@ public class TaskService {
         dto.setAutoTask(task.getAutoTask());
         dto.setDeleted(task.getDeleted());
         dto.setCreatedBy(task.getCreatedBy());
-        dto.setCreatedDate(task.getCreatedDate());
+        dto.setCreatedDate(task.getCreatedDate() != null ?
+            Timestamp.valueOf(task.getCreatedDate()) : null);
         dto.setLastModifiedBy(task.getLastModifiedBy());
-        dto.setLastModifiedDate(task.getLastModifiedDate());
+        dto.setLastModifiedDate(task.getLastModifiedDate() != null ?
+            Timestamp.valueOf(task.getLastModifiedDate()) : null);
         dto.setFaPoid(task.getFaPoid());
         dto.setTaskReportedBy(task.getTaskReportedBy());
         if (task.getTaskReportedBy() != null) {
