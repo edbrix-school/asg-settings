@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.settings.dto.AlertAndRemainderDto;
 import org.springframework.data.domain.Pageable;
@@ -18,5 +19,5 @@ public interface AlertConfigService {
 
     List<AlertAndRemainderDto> getInactiveAndDeletedAlerts();
 
-    boolean softDeleteByconfigPoid(Long configPoid);
+    void softDeleteByconfigPoid(Long configPoid, DeleteReasonDto deleteReasonDto);
 }

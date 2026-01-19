@@ -1,13 +1,11 @@
 package com.asg.settings.service.impl;
 
-import com.asg.common.lib.dto.FilterDto;
-import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.common.lib.dto.LovGetListDto;
-import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceAlreadyExistsException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -56,6 +54,9 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
     @Autowired
     private LoggingService loggingService;
+
+    @Autowired
+    private DocumentDeleteService documentDeleteService;
 
     @Override
     public TaskCategoryDto getTaskCategory(Long categoryPoid) {
@@ -124,15 +125,19 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryDto.setActive(taskCategoryEntity.getActive());
         taskCategoryDto.setSeqNo(taskCategoryEntity.getSeqNo());
         taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
-        taskCategoryDto.setDeleted(taskCategoryEntity.getDeleted());
         taskCategoryDto.setCategoryCode(taskCategoryEntity.getCategoryCode());
+
+        taskCategoryDto.setCreatedBy(taskCategoryEntity.getCreatedBy());
+        taskCategoryDto.setCreatedDate(taskCategoryEntity.getCreatedDate());
+        taskCategoryDto.setLastModifiedBy(taskCategoryEntity.getLastModifiedBy());
+        taskCategoryDto.setLastModifiedDate(taskCategoryEntity.getLastModifiedDate());
 
         return taskCategoryDto;
     }
 
     @Override
     @Transactional
-    public ResponseEntity<?> softDeleteTaskCategory(Long categoryPoid, String updatedBy) {
+    public ResponseEntity<?> softDeleteTaskCategory(Long categoryPoid, DeleteReasonDto deleteReasonDto) {
 
         // Fetch the header category
         TaskCategoryEntity category = taskCategoryRepository.findByCategoryPoid(categoryPoid);
@@ -145,20 +150,14 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         if ("N".equalsIgnoreCase(category.getActive())) {
             return success("Task Category already soft-deleted");
         }
-        // Save old values for logging
-        String oldActive = category.getActive();
-        String oldDeleted = category.getDeleted();
 
-        // Soft-delete header only
-        category.setActive("N");
-        category.setDeleted("Y");
-        category.setLastModifiedBy(updatedBy);
-        category.setLastModifiedDate(now);
-        taskCategoryRepository.save(category);
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), categoryPoid.toString());
-        loggingService.logSimpleFieldChange(TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), "active", oldActive, "N", "Task Category soft-deleted");
-        loggingService.logSimpleFieldChange(TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), "deleted", oldDeleted, "Y", "Task Category soft-deleted");
+        documentDeleteService.deleteDocument(
+                categoryPoid,
+                "GLOBAL_TASK_CATEGORY",
+                "CATEGORY_POID",
+                deleteReasonDto,
+                null
+        );
 
         return success("Task Category soft-deleted successfully");
     }
@@ -220,7 +219,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         String docId = UserContext.getDocumentId();
         String key = savedEntity.getCategoryPoid().toString();
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new TaskCategoryEntity(), savedEntity, TaskCategoryEntity.class, docId, key, LogDetailsEnum.CREATED, "CATEGORY_POID");
 
         return getTaskCategory(categoryPoid);
     }
@@ -254,7 +252,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         if (taskCategoryDto.getSubCategories() != null && !taskCategoryDto.getSubCategories().isEmpty()) {
             processSubCategories(categoryPoid, taskCategoryDto.getSubCategories());
         }
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), categoryPoid.toString());
         loggingService.logChanges(oldEntity, taskCategoryEntity, TaskCategoryEntity.class, UserContext.getDocumentId(), categoryPoid.toString(), LogDetailsEnum.MODIFIED, "CATEGORY_POID");
         return getTaskCategory(categoryPoid);
     }

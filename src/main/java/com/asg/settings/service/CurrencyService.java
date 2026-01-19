@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -7,6 +8,7 @@ import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -49,6 +51,9 @@ public class CurrencyService {
     @Autowired
     LoggingService loggingService;
 
+    @Autowired
+    DocumentDeleteService documentDeleteService;
+
     public CurrencyService(CurrencyRepository currencyRepository,
                            CurrencyCreateRepository currencyCreateRepository) {
         this.currencyRepository = currencyRepository;
@@ -84,13 +89,17 @@ public class CurrencyService {
         return currencyRateDto;
     }
 
-    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest req, Long groupPoid, Long userPoid) {
+    public CurrencyEntity createOrUpdateCurrency(CurrencyCreateRequest req, Long groupPoid, String userId) {
         // Existing record (for update case)
         CurrencyEntity oldEntity = null;
         if (req.getCurrencyPoid() != null) {
-            oldEntity = currencyRepository.findById(req.getCurrencyPoid()).orElse(null);
+            CurrencyEntity existing = currencyRepository.findById(req.getCurrencyPoid()).orElse(null);
+            if (existing != null) {
+                oldEntity = new CurrencyEntity();
+                BeanUtils.copyProperties(existing, oldEntity);
+            }
         }
-        CurrencyEntity saved = currencyCreateRepository.createOrUpdateCurrency(req, groupPoid, userPoid);
+        CurrencyEntity saved = currencyCreateRepository.createOrUpdateCurrency(req, groupPoid, userId);
         String docId = UserContext.getDocumentId();
         String key = saved.getCurrencyPoid().toString();
 
@@ -99,12 +108,9 @@ public class CurrencyService {
 
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
 
-            loggingService.logChanges(null, saved, CurrencyEntity.class, docId, key, LogDetailsEnum.CREATED, "CURRENCY_POID");
 
         } else {
             //         UPDATE CASE
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
-
             loggingService.logChanges(oldEntity, saved, CurrencyEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CURRENCY_POID");
         } return saved;
     }
@@ -130,20 +136,21 @@ public class CurrencyService {
     }
 
     @Transactional
-    public void softDeleteCurrency(Long currencyPoid) {
+    public void softDeleteCurrency(Long currencyPoid, DeleteReasonDto deleteReasonDto) {
         CurrencyEntity currency = currencyRepository.getByCurrencyPoid(currencyPoid);
         if (currency == null) {
             throw new ResourceNotFoundException("Currency", "currencyPoid", currencyPoid.toString());
         }
-        currency.setDeleted("Y");
-        currency.setActive("N");
-        currency.setLastModifiedBy(getCurrentUser());
-        currency.setLastModifiedDate(java.time.OffsetDateTime.now());
-        currencyRepository.save(currency);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), currencyPoid.toString());
-        loggingService.logSimpleFieldChange(CurrencyEntity.class, UserContext.getDocumentId(), currencyPoid.toString(), "deleted", "N", "Y", "Currency soft deleted");
-
-
+        
+        documentDeleteService.deleteDocument(
+                currencyPoid,
+                "GLOBAL_CURRENCY_MASTER",
+                "CURRENCY_POID",
+                deleteReasonDto,
+                null
+        );
+        
+        // Delete related currency rates
         List<CurrencyRateEntity> rates = currencyRateRepository.findAllByCurrencyCode(currency.getCurrencyCode());
         if (!rates.isEmpty()) {
             currencyRateRepository.deleteAllInBatch(rates);

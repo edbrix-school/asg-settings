@@ -1,11 +1,13 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -22,6 +24,7 @@ import com.asg.settings.repository.CountryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -41,16 +44,17 @@ public class AddressMasterService {
     private final AddressDetailsRepository detailsRepo;
     private final AddressProcedureRepository procRepo;
     private final DocumentSearchService documentService;
-
-    @Autowired
-    LoggingService loggingService;
+    private final LoggingService loggingService;
+    private final DocumentDeleteService documentDeleteService;
 
     /**
      * Get single Address Master with all department details (tabs).
      */
     public AddressMasterResponse getMasterWithDetails(Long poid) {
-        AddressMaster master = masterRepo.findById(poid)
-                .orElseThrow(() -> new NoSuchElementException("Address Master not found"));
+        AddressMaster master = masterRepo.findByAddressMasterPoid(poid);
+        if (master == null) {
+            throw new NoSuchElementException("Address Master not found");
+        }
 
         List<AddressDetails> details = detailsRepo.findByAddressMasterPoidOrderByAddressType(poid);
 
@@ -105,7 +109,11 @@ public class AddressMasterService {
         AddressMaster oldMaster = null;
         // If UPDATE → fetch old copy for logging
         if (req.getAddressMasterPoid() != null) {
-            oldMaster = masterRepo.findById(req.getAddressMasterPoid()).orElse(null);
+            AddressMaster existing = masterRepo.findById(req.getAddressMasterPoid()).orElse(null);
+            if (existing != null) {
+                oldMaster = new AddressMaster();
+                BeanUtils.copyProperties(existing, oldMaster);
+            }
         }
 
         AddressMaster master = buildOrUpdateMaster(req, currentUser);
@@ -123,32 +131,26 @@ public class AddressMasterService {
         String key = saved.getAddressMasterPoid().toString();
         // CASE 1: CREATE
         if (oldMaster == null) {
-
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-            loggingService.logChanges(null, saved, AddressMaster.class, docId, key, LogDetailsEnum.CREATED, "ADDRESS_MASTER_POID");
-
         } else {
             // CASE 2: UPDATE
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldMaster, saved, AddressMaster.class, docId, key, LogDetailsEnum.MODIFIED, "ADDRESS_MASTER_POID");
         }
         return saved.getAddressMasterPoid();
     }
 
     @Transactional
-    public void softDeleteAddressMaster(Long addressMasterPoid) {
+    public void softDeleteAddressMaster(Long addressMasterPoid, DeleteReasonDto deleteReasonDto) {
         AddressMaster master = masterRepo.findById(addressMasterPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Address Master", "addressMasterPoid", addressMasterPoid));
-
-        // Permanently delete all related AddressDetails
-        detailsRepo.deleteByAddressMasterPoid(addressMasterPoid);
-
-        // Soft delete the AddressMaster
-        master.setActive("N");
-        master.setDeleted("Y");
-        master.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        master.setLastModifiedDate(LocalDateTime.now());
-        masterRepo.save(master);
+        
+        documentDeleteService.deleteDocument(
+                addressMasterPoid,
+                "GLOBAL_ADDRESS_MASTER",
+                "ADDRESS_MASTER_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public String createAll(Long addressMasterPoid) {
@@ -219,7 +221,9 @@ public class AddressMasterService {
         master.setCrNumber(req.getCrNumber());
         master.setIsForwarder(Boolean.TRUE.equals(req.getIsForwarder()) ? "Y" : "N");
         master.setActive(req.getActive());
-        master.setSeqno(req.getSeqno());
+        if (req.getSeqno() != null) {
+            master.setSeqno(req.getSeqno());
+        }
         master.setLastModifiedBy(currentUser);
         master.setLastModifiedDate(LocalDateTime.now());
 
@@ -280,7 +284,7 @@ public class AddressMasterService {
                     case "isupdated" -> {
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             AddressDetails detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                             toSave.add(detail);
                         } else {
                             // Address not found, treat as create
@@ -288,12 +292,19 @@ public class AddressMasterService {
                             toSave.add(detail);
                         }
                     }
+                    case "isdeleted" -> {
+                        // Delete the specific record from database
+                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
+                            AddressDetails recordToDelete = existingMap.get(dto.getAddressPoid());
+                            detailsRepo.delete(recordToDelete);
+                        }
+                    }
                     default -> {
                         // Default behavior for backward compatibility
                         AddressDetails detail;
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
                             detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, currentUser);
+                            updateDetail(detail, dto, type, currentUser);
                         } else {
                             detail = buildDetail(dto, master, type, counter++, currentUser);
                         }
@@ -309,7 +320,8 @@ public class AddressMasterService {
         }
     }
 
-    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String currentUser) {
+    private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String type, String currentUser) {
+        entity.setAddressType(type);
         entity.setContactPerson(dto.getContactPerson());
         entity.setDesignation(dto.getDesignation());
         entity.setOffTel1(dto.getOffTel1());

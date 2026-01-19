@@ -1,11 +1,14 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.LastTaskDto;
 import com.asg.settings.dto.TaskDto;
 import com.asg.settings.entity.Task;
@@ -38,6 +41,8 @@ public class TaskController {
 
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.CREATE)
     @Operation(
@@ -113,6 +118,7 @@ public class TaskController {
         }catch (ValidationException ex) {
             throw ex;
         } catch (Exception ex) {
+            ex.printStackTrace();
             return internalServerError("Failed to create task: " + ex.getMessage());
         }
     }
@@ -258,6 +264,7 @@ public class TaskController {
             @PathVariable String transactionPoid) {
         try {
             TaskDto task = taskService.getTaskByTransactionPoid(transactionPoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), transactionPoid);
             return success("Task fetched successfully", task);
         } catch (ValidationException ex) {
             return badRequest(ex.getMessage());
@@ -329,9 +336,9 @@ public class TaskController {
     @DeleteMapping("/{taskPoid}")
     public ResponseEntity<?> softDeleteTask(
             @PathVariable("taskPoid") Long taskPoid,
-            @RequestParam Long userPoid) {
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            taskService.softDeleteTask(taskPoid, userPoid.toString());
+            taskService.softDeleteTask(taskPoid, deleteReasonDto);
             return success("Task soft deleted successfully", null);
         } catch (ValidationException ex) {
             return badRequest(ex.getMessage());

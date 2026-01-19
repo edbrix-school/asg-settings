@@ -1,13 +1,16 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.dto.CompanyDto;
 import com.asg.common.lib.entity.Company;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.service.CompanyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,6 +40,7 @@ import static com.asg.common.lib.dto.response.ApiResponse.*;
 public class CompanyController {
 
     private final CompanyService companyService;
+    private final LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
@@ -101,6 +105,7 @@ public class CompanyController {
         try {
             // Process company with divisions having individual action types
             CompanyDto company = companyService.getCompany(companyPoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), companyPoid.toString());
             return success("Company details fetched successfully", company);
         } catch (Exception ex) {
             return internalServerError("Failed to fetch company: " + ex.getMessage());
@@ -343,10 +348,11 @@ public class CompanyController {
     )
     @DeleteMapping("/{companyPoid}")
     public ResponseEntity<?> softDeleteCompany(
-            @PathVariable @NotNull @Min(1) Long companyPoid
+            @PathVariable @NotNull @Min(1) Long companyPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto
     ) {
         try {
-            companyService.softDeleteCompany(companyPoid);
+            companyService.softDeleteCompany(companyPoid, deleteReasonDto);
             return success("Company deleted successfully", null);
         } catch (ResourceNotFoundException e) {
             log.error("Error deactivating company with userPoid {}: {}", companyPoid, e.getMessage());

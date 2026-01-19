@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -7,6 +8,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceAlreadyExistsException;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
@@ -32,10 +34,10 @@ import java.util.Map;
 public class CountryServiceImpl implements CountryService {
 
     private final LoggingService loggingService;
-
     private final CountryRepository countryRepository;
     private final GroupRepository groupRepository;
     private final DocumentSearchService documentService;
+    private final DocumentDeleteService documentDeleteService;
 
     @Override
     public CountryDto getCountryById(Long countryPoid) {
@@ -88,8 +90,6 @@ public class CountryServiceImpl implements CountryService {
         String key = savedCountry.getCountryPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new Country(), savedCountry, Country.class, docId, key, LogDetailsEnum.CREATED, "COUNTRY_POID");
-
         return this.convertToDto(savedCountry);
     }
 
@@ -175,7 +175,6 @@ public class CountryServiceImpl implements CountryService {
         String docId = UserContext.getDocumentId();
         String key = updatedCountry.getCountryPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldCountry, updatedCountry, Country.class, docId, key, LogDetailsEnum.MODIFIED, "COUNTRY_POID");
 
         CountryDto responseDto = new CountryDto();
@@ -194,22 +193,17 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     @Transactional
-    public void softDeleteCountry(Long countryPoid) {
+    public void softDeleteCountry(Long countryPoid, DeleteReasonDto deleteReasonDto) {
         Country existingCountry = countryRepository.findById(countryPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Country", "countryPoid", countryPoid));
-
-        existingCountry.setDeleted("Y");
-        existingCountry.setActive("N");
-        existingCountry.setLastModifiedDate(LocalDateTime.now());
-        existingCountry.setLastModifiedBy(getCurrentUser());
-        countryRepository.save(existingCountry);
-        String docId = UserContext.getDocumentId();
-        String key = countryPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-
-        loggingService.logSimpleFieldChange(Country.class, docId, key, "deleted", "N", "Y", "Country soft deleted");
-        loggingService.logSimpleFieldChange(Country.class, docId, key, "active", "Y", "N", "Country soft deleted");
+        
+        documentDeleteService.deleteDocument(
+                countryPoid,
+                "GLOBAL_COUNTRY_MASTER",
+                "COUNTRY_POID",
+                deleteReasonDto,
+                null
+        );
     }
     private String getCurrentUser() {
         return UserContext.getUserId() != null ? String.valueOf(UserContext.getUserId()) : "SYSTEM";

@@ -1,11 +1,13 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.LovGetListDto;
 import com.asg.common.lib.dto.RawSearchResult;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
@@ -70,6 +72,9 @@ public class TaskService {
     @Autowired
     LoggingService loggingService;
 
+    @Autowired
+    DocumentDeleteService documentDeleteService;
+
     private static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     @Transactional
@@ -81,8 +86,13 @@ public class TaskService {
         Long updatedTaskId;
 
         // Adding validation for startdate ahead of enddate for update common for create also
-        if (task.getStartDate() != null && !task.getStartDate().before(task.getDueDate())) {
-            throw new ValidationException("Start Date cannot be ahead of Due Date");
+        if (task.getStartDate() != null && task.getDueDate() != null) {
+            if (task.getStartDate().after(task.getDueDate())) {
+                throw new ValidationException("Start Date cannot be after Due Date");
+            }
+            if (task.getStartDate().equals(task.getDueDate())) {
+                throw new ValidationException("Start Date cannot be equal to Due Date");
+            }
         }
 
         if (!isExistingTask) {
@@ -124,9 +134,13 @@ public class TaskService {
         String docId = task.getRefDocId();
         String key = newTask.getTransactionPoid().toString();
 
-        Task emptyOldTask = new Task(); // empty object
-        loggingService.logChanges(emptyOldTask, newTask, Task.class, docId, key,
-                LogDetailsEnum.CREATED, "TASK");
+        try {
+            Task emptyOldTask = new Task(); // empty object
+            loggingService.logChanges(emptyOldTask, newTask, Task.class, docId, key,
+                    LogDetailsEnum.CREATED, "TASK");
+        } catch (Exception e) {
+            log.warn("Failed to log task creation: {}", e.getMessage());
+        }
         return newTask.getTransactionPoid();
     }
 
@@ -160,9 +174,7 @@ public class TaskService {
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldTask, existingTask, Task.class, docId, key, LogDetailsEnum.MODIFIED, "TASK");
-
 
         return existingTask.getTransactionPoid();
     }
@@ -293,21 +305,12 @@ public class TaskService {
     }
 
     @Transactional
-    public void softDeleteTask(Long taskPoid, String userPoid) {
-        // Fetch old task for logging BEFORE delete
-        Task oldTask = taskRepository.findByTransactionPoid(taskPoid);
-        if (oldTask == null) {
+    public void softDeleteTask(Long taskPoid, DeleteReasonDto deleteReasonDto) {
+        Task task = taskRepository.findByTransactionPoid(taskPoid);
+        if (task == null) {
             throw new ValidationException("Task not found or already deleted");
         }
-        int updated = taskRepository.softDeleteTask(taskPoid, userPoid, LocalDateTime.now());
-        if (updated == 0) {
-            throw new ValidationException("Task not found or already deleted");
-        }
-        String docId = oldTask.getRefDocId();
-        String key = oldTask.getTransactionPoid().toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(Task.class, docId, key, "deleted", oldTask.getDeleted(), "Y", "Task soft deleted");
+        documentDeleteService.deleteDocument(taskPoid, "GLOBAL_TASK_HDR", "TRANSACTION_POID", deleteReasonDto, null);
     }
 
     public Map<String, Object> listTasks(String documentId, FilterRequestDto request, LocalDate startDateValue, LocalDate endDateValue, Pageable pageable) {

@@ -28,8 +28,8 @@ public class DivisionMasterEntity {
     @Column(name = "ACTIVE")
     private String active;
 
-    @Column(name = "DELETED")
-    private Integer deleted = 0;
+    @Column(name = "DELETED", length = 1)
+    private String deleted;
 
     @Column(name = "CREATED_BY")
     private String createdBy;

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -35,4 +36,10 @@ public class TaskCategoryDto {
     private String categoryCode;
     @Valid
     private List<TaskCategoryDtlDto> subCategories;
+    
+
+    private String createdBy;
+    private LocalDateTime createdDate;
+    private String lastModifiedBy;
+    private LocalDateTime lastModifiedDate;
 }

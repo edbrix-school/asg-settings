@@ -40,7 +40,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     private final UserRoleService userRoleService;
     private final UserRepository userRepository;
 
-
     @Override
     public UserRoleRightsDetDto getUserRoleRightsDetByRolePoid(Long userRolePoid) {
 
@@ -58,9 +57,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         response.setActive(roleEntity.getActive());
         
         // Set audit fields
-        response.setCreatedBy(roleEntity.getCreatedBy());
+        response.setCreatedBy(roleEntity.getCreatedBy() != null ? roleEntity.getCreatedBy() : "");
         response.setCreatedDate(roleEntity.getCreatedDate() != null ? roleEntity.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
-        response.setLastModifiedBy(roleEntity.getLastModifiedBy());
+        response.setLastModifiedBy(roleEntity.getLastModifiedBy() != null ? roleEntity.getLastModifiedBy() : "");
         response.setLastModifiedDate(roleEntity.getLastModifiedDate() != null ? roleEntity.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
 
         // NEW: fetch all docs + module + existing rights for this role
@@ -130,7 +129,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         List<UserRoleRightsEntity> userPermissionEntities = rightsRepo.findAllByIdUserRolePoid(userRolePoid);
         return userPermissionEntities.stream().map(this::getDto).toList();
     }
-
 
     private UserRoleRightsDto getDto(UserRoleRightsEntity entity) {
         UserRoleRightsDto dto = new UserRoleRightsDto();
