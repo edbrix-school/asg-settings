@@ -4,6 +4,8 @@ import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.request.LogRequestDto;
+import com.asg.common.lib.entity.CompanyDivisionEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
@@ -233,6 +235,9 @@ public class AddressMasterService {
     private void saveAllDetails(AddressTypeMapDTO typeMap, AddressMaster master, String currentUser) {
         if (typeMap == null) return;
 
+        String docId = UserContext.getDocumentId();
+        String docKeyPoid = master.getAddressMasterPoid().toString();
+
         // Fetch existing details
         List<AddressDetails> existingDetails =
                 detailsRepo.findByAddressMasterPoidOrderByAddressType(master.getAddressMasterPoid());
@@ -241,6 +246,7 @@ public class AddressMasterService {
                 .collect(Collectors.toMap(AddressDetails::getAddressPoid, d -> d));
 
         List<AddressDetails> toSave = new ArrayList<>();
+        List<LogRequestDto<AddressDetails>> logRequests = new ArrayList<>();
 
         // --- MOST IMPORTANT FIX ---
         // Find the MAX used suffix for this addressMasterPoid
@@ -283,9 +289,15 @@ public class AddressMasterService {
                     }
                     case "isupdated" -> {
                         if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
-                            AddressDetails detail = existingMap.get(dto.getAddressPoid());
-                            updateDetail(detail, dto, type, currentUser);
-                            toSave.add(detail);
+                            AddressDetails oldDetail = existingMap.get(dto.getAddressPoid());
+                            AddressDetails oldCopy = new AddressDetails();
+                            BeanUtils.copyProperties(oldDetail, oldCopy);
+                            
+                            updateDetail(oldDetail, dto, type, currentUser);
+                            toSave.add(oldDetail);
+                            
+                            String logDetail = String.format("KeyId: ADDRESS_MASTER_POID:%s ADDRESS_POID:%s", oldDetail.getAddressMasterPoid() , oldDetail.getAddressPoid());
+                            logRequests.add(new LogRequestDto<>(oldCopy, oldDetail, AddressDetails.class, docId, docKeyPoid, logDetail));
                         } else {
                             // Address not found, treat as create
                             AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
@@ -317,6 +329,11 @@ public class AddressMasterService {
         //  Save updated and new details
         if (!toSave.isEmpty()) {
             detailsRepo.saveAll(toSave);
+        }
+
+        // Create logs for all updates
+        if (!logRequests.isEmpty()) {
+            loggingService.createLogBatch(logRequests);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,9 +14,11 @@ public class DivisionMasterEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "DIVISION_POID")
+    @AuditIgnore
     private Long divisionId;
 
     @Column(name = "DIVISION_CODE", unique = true, nullable = false)
+    @AuditIgnore
     private String divisionCode;
 
     @Column(name = "DIVISION_NAME", nullable = false)
@@ -29,18 +32,23 @@ public class DivisionMasterEntity {
     private String active;
 
     @Column(name = "DELETED", length = 1)
+    @AuditIgnore
     private String deleted;
 
     @Column(name = "CREATED_BY")
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private Timestamp createdAt;
 
     @Column(name = "LASTMODIFIED_BY")
+    @AuditIgnore
     private String updatedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private Timestamp updatedAt;
 
     @Column(name = "SEQNO")

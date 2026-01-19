@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -16,9 +17,11 @@ public class AddressDetails {
 
     @Id
     @Column(name = "ADDRESS_POID")
+    @AuditIgnore
     private String addressPoid;// use String, not Long because Oracle stores them like 53394.1, 53394.2 (decimal). Long cannot hold the decimal part. Used String to preserve uniqueness.
 
     @Column(name = "ADDRESS_MASTER_POID", nullable = false)
+    @AuditIgnore
     private Long addressMasterPoid;
 
     @Column(name = "ADDRESS_TYPE", length = 20)
@@ -80,30 +83,39 @@ public class AddressDetails {
     private String landMark;
 
     @Column(name = "CREATED_BY", length = 20)
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private LocalDateTime createdDate;
 
     @Column(name = "LASTMODIFIED_BY", length = 20)
+    @AuditIgnore
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "OLD_ACCNO_REF", length = 20)
+    @AuditIgnore
     private String oldAccnoRef;
 
     @Column(name = "OLD_GL_ACCTNO", length = 20)
+    @AuditIgnore
     private String oldGlAcctno;
 
     @Column(name = "OLD_GL_ACCTNO_SUPPLIER", length = 20)
+    @AuditIgnore
     private String oldGlAcctnoSupplier;
 
     @Column(name = "VERIFIED", length = 1)
+    @AuditIgnore
     private String verified;
 
     @Column(name = "VERIFIED_BY", length = 100)
+    @AuditIgnore
     private String verifiedBy;
 
     @Column(name = "VERIFIED_DATE")
@@ -120,6 +132,5 @@ public class AddressDetails {
 
     @Column(name = "FACEBOOK", length = 100)
     private String facebook;
-
 
 }
