@@ -240,7 +240,12 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                 TermsTemplateDtlEntity termsTemplateDtlEntity = new TermsTemplateDtlEntity();
                 TermsTemplateDtlKey keyDtl = new TermsTemplateDtlKey();
                 keyDtl.setTermsPoid(savedTemplate.getTermsPoid());
-                keyDtl.setDetRowId(clause.getDetRowId() != null ? clause.getDetRowId() : currentId++);
+                Long detRowId = clause.getDetRowId();
+                if (detRowId == null || detRowId <= 0) {
+                    keyDtl.setDetRowId(currentId++);
+                } else {
+                    keyDtl.setDetRowId(detRowId);
+                }
                 termsTemplateDtlEntity.setId(keyDtl);
                 termsTemplateDtlEntity.setClauseNo(clause.getClauseNo());
                 termsTemplateDtlEntity.setClauseDetails(clause.getClauseDetails());
