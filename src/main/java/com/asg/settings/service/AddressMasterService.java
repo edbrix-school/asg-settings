@@ -229,21 +229,23 @@ public class AddressMasterService {
     private void saveAllDetails(AddressTypeMapDTO typeMap, AddressMaster master, String currentUser) {
         if (typeMap == null) return;
 
-        // Fetch existing details
         List<AddressDetails> existingDetails =
                 detailsRepo.findByAddressMasterPoidOrderByAddressType(master.getAddressMasterPoid());
 
-        Map<String, AddressDetails> existingMap = existingDetails.stream()
+        Map<String, AddressDetails> existingByPoid = existingDetails.stream()
+                .filter(d -> d.getAddressPoid() != null)
                 .collect(Collectors.toMap(AddressDetails::getAddressPoid, d -> d));
 
+        Map<String, AddressDetails> existingByType = existingDetails.stream()
+                .collect(Collectors.toMap(
+                        AddressDetails::getAddressType,
+                        d -> d,
+                        (a, b) -> a
+                ));
+
         List<AddressDetails> toSave = new ArrayList<>();
-
-        // --- MOST IMPORTANT FIX ---
-        // Find the MAX used suffix for this addressMasterPoid
         int counter = getNextCounter(existingDetails, String.valueOf(master.getAddressMasterPoid()));
-        // ---------------------------------------------
 
-        // Combine all tabs
         Map<String, List<AddressDetailsDTO>> typedLists = new LinkedHashMap<>();
         if (typeMap.getMAIN() != null) typedLists.put("MAIN", typeMap.getMAIN());
         if (typeMap.getFINANCE() != null) typedLists.put("FINANCE", typeMap.getFINANCE());
@@ -258,41 +260,67 @@ public class AddressMasterService {
 
         for (Map.Entry<String, List<AddressDetailsDTO>> entry : typedLists.entrySet()) {
             String type = entry.getKey();
+
+            boolean mainProcessed = false;
+
             for (AddressDetailsDTO dto : entry.getValue()) {
+
+                if ("MAIN".equalsIgnoreCase(type)) {
+                    if (mainProcessed) break;
+
+                    boolean hasMobile = dto.getMobile() != null && !dto.getMobile().isBlank();
+                    boolean hasEmail = dto.getEmail() != null && !dto.getEmail().isEmpty();
+                    if (!hasMobile || !hasEmail) {
+                        throw new IllegalArgumentException("MAIN contact must have both Mobile and Email");
+                    }
+
+                    AddressDetails existingMain = existingByType.get("MAIN");
+                    if (existingMain != null) {
+                        updateDetail(existingMain, dto, currentUser);
+                        toSave.add(existingMain);
+                    } else {
+                        AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
+                        toSave.add(detail);
+                    }
+
+                    mainProcessed = true;
+                    continue;
+                }
+
                 String actionType = StringUtils.isBlank(dto.getActionType()) ? null : dto.getActionType();
 
-                // Handle backward compatibility: if actionType is null, determine from addressPoid
                 if (actionType == null) {
-                    actionType = (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid()))
+                    actionType = (dto.getAddressPoid() != null && existingByPoid.containsKey(dto.getAddressPoid()))
                             ? "isUpdated"
                             : "isCreated";
                 }
 
                 switch (actionType.toLowerCase()) {
                     case "nochange" -> {
-                        // Skip processing
-                        continue;
+                        if (dto.getAddressPoid() != null && existingByPoid.containsKey(dto.getAddressPoid())) {
+                            AddressDetails detail = existingByPoid.get(dto.getAddressPoid());
+                            updateDetail(detail, dto, currentUser);
+                            toSave.add(detail);
+                        }
                     }
                     case "iscreated" -> {
                         AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
                         toSave.add(detail);
                     }
                     case "isupdated" -> {
-                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
-                            AddressDetails detail = existingMap.get(dto.getAddressPoid());
+                        if (dto.getAddressPoid() != null && existingByPoid.containsKey(dto.getAddressPoid())) {
+                            AddressDetails detail = existingByPoid.get(dto.getAddressPoid());
                             updateDetail(detail, dto, currentUser);
                             toSave.add(detail);
                         } else {
-                            // Address not found, treat as create
                             AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
                             toSave.add(detail);
                         }
                     }
                     default -> {
-                        // Default behavior for backward compatibility
                         AddressDetails detail;
-                        if (dto.getAddressPoid() != null && existingMap.containsKey(dto.getAddressPoid())) {
-                            detail = existingMap.get(dto.getAddressPoid());
+                        if (dto.getAddressPoid() != null && existingByPoid.containsKey(dto.getAddressPoid())) {
+                            detail = existingByPoid.get(dto.getAddressPoid());
                             updateDetail(detail, dto, currentUser);
                         } else {
                             detail = buildDetail(dto, master, type, counter++, currentUser);
@@ -303,11 +331,11 @@ public class AddressMasterService {
             }
         }
 
-        //  Save updated and new details
         if (!toSave.isEmpty()) {
             detailsRepo.saveAll(toSave);
         }
     }
+
 
     private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String currentUser) {
         entity.setContactPerson(dto.getContactPerson());
