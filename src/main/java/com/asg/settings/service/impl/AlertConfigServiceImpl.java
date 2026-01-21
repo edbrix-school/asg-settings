@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.LovGetListDto;
@@ -9,6 +10,7 @@ import com.asg.common.lib.enums.FrequencyTypeEnum;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -40,9 +42,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AlertConfigServiceImpl implements AlertConfigService {
 
-    @Autowired
-    private LoggingService loggingService;
-
+    private final LoggingService loggingService;
+    private final DocumentDeleteService documentDeleteService;
     private final AlertConfigRepository alertConfigRepository;
     private final DocumentSearchService documentService;
     private final RoleRepository roleRepository;
@@ -71,7 +72,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String key = alertConfigEntity.getConfigPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new AlertConfigEntity(), alertConfigEntity, AlertConfigEntity.class, docId, key, LogDetailsEnum.CREATED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(alertConfigEntity);
     }
 
@@ -205,16 +205,14 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         BeanUtils.copyProperties(existingConfig, oldEntity);
 
         existingConfig.setAlertName(request.getAlertName());
-        existingConfig.setAlertCheckType(request.getAlertCheckType().name());
+        existingConfig.setAlertCheckType(request.getAlertCheckType() != null ? request.getAlertCheckType().getValue() : null);
         existingConfig.setSqlQuery(request.getSqlQuery());
         existingConfig.setExpiryDateField(request.getExpiryDateField());
         existingConfig.setNotifyDays(request.getNotifyDays());
         existingConfig.setFrequencyType(request.getFrequencyType().name());
-        existingConfig.setAlertNotifyFrequency(request.getAlertEscalateFrequency());
+        existingConfig.setAlertNotifyFrequency(request.getAlertNotifyFrequency());
         existingConfig.setEscalateDays(request.getEscalateDays());
-        if (request.getAlertEscalateFrequency() != null) {
-            existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
-        }
+        existingConfig.setAlertEscalateFrequency(request.getAlertEscalateFrequency());
         existingConfig.setNotifyUserRolesPoid(ASGHelperUtils.convertListToString(request.getNotifyUserRolesPoid()));
         existingConfig.setEscalateUserRolesPoid(ASGHelperUtils.convertListToString(request.getEscalationUserRolesPoid()));
 
@@ -231,7 +229,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         String docId = UserContext.getDocumentId();
         String key = updatedConfig.getConfigPoid().toString();
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
         loggingService.logChanges(oldEntity, updatedConfig,
                 AlertConfigEntity.class, docId, key, LogDetailsEnum.MODIFIED, "CONFIG_POID");
         return convertFromAlertEntityToAlertDto(updatedConfig);
@@ -250,27 +247,19 @@ public class AlertConfigServiceImpl implements AlertConfigService {
 
     @Override
     @Transactional
-    public boolean softDeleteByconfigPoid(Long configPoid) {
+    public void softDeleteByconfigPoid(Long configPoid, DeleteReasonDto deleteReasonDto) {
         AlertConfigEntity entity = alertConfigRepository.findByConfigPoid(configPoid);
         if (entity == null) {
             throw new ResourceNotFoundException("Alert Config", "configPoid", configPoid);
         }
-        String oldActive = entity.getActive();
-        String oldDeleted = entity.getDeleted();
-
-        entity.setActive("N");
-        entity.setDeleted("Y");
-        entity.setLastModifiedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        alertConfigRepository.save(entity);
-
-        String docId = UserContext.getDocumentId();
-        String key = configPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(AlertConfigEntity.class, docId, key, "active", oldActive, "N", "AlertConfig soft-deleted");
-        loggingService.logSimpleFieldChange(AlertConfigEntity.class, docId, key, "deleted", oldDeleted, "Y", "AlertConfig soft-deleted");
-        return true;
+        
+        documentDeleteService.deleteDocument(
+                configPoid,
+                "GLOBAL_ALERT_CONFIG",
+                "CONFIG_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
 }

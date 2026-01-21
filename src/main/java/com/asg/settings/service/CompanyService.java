@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -11,6 +12,7 @@ import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.repository.TimeZoneDataRepository;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
@@ -26,6 +28,7 @@ import com.asg.settings.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -66,6 +69,8 @@ public class CompanyService {
     private final LovDataService lovDataService;
 
     private final CurrencyService currencyService;
+
+    private final DocumentDeleteService documentDeleteService;
 
     // Method to get User Companies mapped to User
     public List<UserCompanyDto> getUsersCompanies(Long userPoid) {
@@ -292,6 +297,7 @@ public class CompanyService {
             key.setDetRowId(getNextDetRowIdForCompanyDivison(companyPoid));
 
             companyDivision.setId(key);
+
             companyDivisionRepository.saveAndFlush(companyDivision);
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. Please review your selection. divisionId -> " + division.getDivPoid());
@@ -302,12 +308,18 @@ public class CompanyService {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
                 .findById_CompanyPoidAndDivPoid(companyPoid, division.getDivPoid());
 
+
+        CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
+        BeanUtils.copyProperties(existingDivision, oldCompanyData);
+
         if (existingDivision != null) {
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
+            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getDivPoid());
+            loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
             throw new ValidationException("Cannot update a division that is not assigned to the company, divisionId -> " + division.getDivPoid());
@@ -368,7 +380,6 @@ public class CompanyService {
         String key = newCompany.getCompanyPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(new Company(), newCompany, Company.class, docId, key, LogDetailsEnum.CREATED, "COMPANY_POID");
 
         // Handle divisions for new company
         processDivisions(newCompany.getCompanyPoid(), company.getDivisions());
@@ -445,7 +456,6 @@ public class CompanyService {
             String docId = UserContext.getDocumentId();
             String key = existingCompany.getCompanyPoid().toString();
 
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldCompany, existingCompany, Company.class, docId, key, LogDetailsEnum.MODIFIED, "COMPANY_POID");
 
         } catch (DataIntegrityViolationException e) {
@@ -510,23 +520,17 @@ public class CompanyService {
     }
 
     @Transactional
-    public void softDeleteCompany(Long companyPoid) {
+    public void softDeleteCompany(Long companyPoid, DeleteReasonDto deleteReasonDto) {
         Company company = companyRepository.findById(companyPoid)
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "companyPoid", companyPoid));
-
-        company.setActive("N");
-        company.setDeleted("Y");
-        company.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-        company.setLastModifiedDate(new java.util.Date(System.currentTimeMillis()));
-        companyRepository.save(company);
-
-        String docId = UserContext.getDocumentId();
-        String key = companyPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(Company.class, docId, key, "deleted", "N", "Y", "Company soft deleted");
-        loggingService.logSimpleFieldChange(Company.class, docId, key, "active", "Y", "N", "Company soft deleted");
-
+        
+        documentDeleteService.deleteDocument(
+                companyPoid,
+                "GLOBAL_COMPANY_MASTER",
+                "COMPANY_POID",
+                deleteReasonDto,
+                null
+        );
     }
 
     public Long getNextDetRowIdForCompanyDivison(Long companyPoid) {
@@ -618,6 +622,8 @@ public class CompanyService {
         }
         CompanyDivisionDto dto = new CompanyDivisionDto();
 
+        dto.setDetRowId(entity.getId().getDetRowId());
+        dto.setCompanyPoid(entity.getId().getCompanyPoid());
         dto.setDivPoid(entity.getDivPoid());
         dto.setRemarks(entity.getRemarks());
         dto.setCreatedBy(entity.getCreatedBy());

@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 
 import com.asg.common.lib.dto.RoleDto;
@@ -17,7 +18,7 @@ public interface UserRoleService {
     RoleEntity getUserRoleByRolePoid(Long userRolePoid);
     UserRolesDto updateUserRoleByUserRolePoId(Long userRolePoid, UserRoleRequestDto userRoleRequestDto);
     Map<String, Object> listRoles(String docId, FilterRequestDto request, Pageable pageable);
-    void softDeleteUserRole(Long userRolePoid);
+    void softDeleteUserRole(Long userRolePoid, DeleteReasonDto deleteReasonDto);
     boolean existsByRoleId(String roleId, Long excludePoid);
     boolean existsByRoleName(String roleName, Long excludePoid);
     RoleDto getUserRoleById(Long userRolePoid);

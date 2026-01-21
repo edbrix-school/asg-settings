@@ -1,5 +1,6 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
@@ -7,6 +8,7 @@ import com.asg.common.lib.dto.RoleDto;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.PrintService;
@@ -54,6 +56,9 @@ public class UserRoleServiceImpl implements UserRoleService {
     @Autowired
     DataSource dataSource;
 
+    @Autowired
+    DocumentDeleteService documentDeleteService;
+
     public RoleEntity getUserRoleByRolePoid(Long userRolePoid) {
         return roleRepository.findByUserRolePoid(userRolePoid);
     }
@@ -72,7 +77,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         RoleEntity entity = mapToEntity(userRoleRequestDto);
         RoleEntity savedEntity = roleRepository.save(entity);
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, UserContext.getDocumentId(), savedEntity.getUserRolePoid().toString());
-        loggingService.logChanges(new RoleEntity(), savedEntity, RoleEntity.class, UserContext.getDocumentId(), savedEntity.getUserRolePoid().toString(), LogDetailsEnum.CREATED, "USER_ROLE_POID");
 
         UserRolesDto userRolesDto = this.mapToDto(savedEntity);
         return userRolesDto;
@@ -92,9 +96,9 @@ public class UserRoleServiceImpl implements UserRoleService {
         entity.setUserRoleName2(dto.getUserRoleName2());
         entity.setActive(dto.getActive() != null ? dto.getActive() : "Y");
         entity.setSeqNo(dto.getSeqNo());
-        entity.setCreatedBy(""); // TODO: Set actual user
+        entity.setCreatedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
         entity.setCreatedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(""); // TODO: Set actual user
+        entity.setLastModifiedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
         entity.setLastModifiedDate(LocalDateTime.now());
         entity.setCompanyPoid(dto.getCompanyPoid());
         entity.setDeleted("N");
@@ -126,7 +130,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         roleEntity.setLastModifiedDate(LocalDateTime.now());
         RoleEntity updatedEntity = roleRepository.save(roleEntity);
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString());
         loggingService.logChanges(oldRole, updatedEntity, RoleEntity.class, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString(), LogDetailsEnum.MODIFIED, "USER_ROLE_POID");
 
         UserRolesDto responseDto = new UserRolesDto();
@@ -151,18 +154,12 @@ public class UserRoleServiceImpl implements UserRoleService {
 
     @Transactional
     @Override
-    public void softDeleteUserRole(Long userRolePoid) {
+    public void softDeleteUserRole(Long userRolePoid, DeleteReasonDto deleteReasonDto) {
         RoleEntity role = roleRepository.findByUserRolePoid(userRolePoid);
         if (role == null) {
             throw new ResourceNotFoundException("User Role", "userRolePoid", userRolePoid);
         }
-        role.setDeleted("Y");
-        role.setActive("N");
-        role.setLastModifiedBy(getCurrentUser().getUserName());
-        role.setLastModifiedDate(LocalDateTime.now());
-        roleRepository.save(role);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), userRolePoid.toString());
-        loggingService.logSimpleFieldChange(RoleEntity.class, UserContext.getDocumentId(), userRolePoid.toString(), "deleted", "N", "Y", "User role soft deleted");
+        documentDeleteService.deleteDocument(userRolePoid, "GLOBAL_USER_ROLES", "USER_ROLE_POID", deleteReasonDto, null);
     }
 
     @Override

@@ -1,13 +1,16 @@
 package com.asg.settings.service.impl;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.request.LogRequestDto;
 import com.asg.common.lib.entity.DocumentEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
@@ -54,6 +57,9 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
     @Autowired
     DocumentSearchService documentService;
 
+    @Autowired
+    DocumentDeleteService documentDeleteService;
+
     public Map<String, Object> listTerms(String docId, FilterRequestDto request, Pageable pageable) {
 
         String operator = documentService.resolveOperator(request);
@@ -95,13 +101,12 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
         String headerKey = updatedTemplate.getTermsPoid().toString();
 
-        // HEADER LOG
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, headerKey);
         loggingService.logChanges(oldTemplate, updatedTemplate, TermsTemplateEntity.class, docId, headerKey, LogDetailsEnum.MODIFIED, "TERMS_POID");
 
         if (request.getClauses() != null && !request.getClauses().isEmpty()) {
             List<TermsTemplateDtlEntity> clausesToSave = new ArrayList<>();
             List<TermsTemplateDtlEntity> clausesToDelete = new ArrayList<>();
+            List<LogRequestDto<TermsTemplateDtlEntity>> logRequests = new ArrayList<>();
 
             for (TermsTemplateDtlDto clauseDto : request.getClauses()) {
                 String actionType = clauseDto.getActionType();
@@ -124,7 +129,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         existingClause.setLastModifiedBy(loginUserPoid);
                         existingClause.setLastModifiedDate(LocalDateTime.now());
                         clausesToDelete.add(existingClause);
-                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
+//                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
                     }
 
                 } else if ("noChange".equalsIgnoreCase(actionType)) {
@@ -149,7 +154,12 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                     } else {
                         // UPDATE existing clause (isUpdated)
                         key.setDetRowId(clauseDto.getDetRowId());
-                        oldClause = termsTemplateDtlRepository.findById(key).orElse(null);
+                        TermsTemplateDtlEntity existingClause = termsTemplateDtlRepository.findById(key).orElse(null);
+                        if (existingClause != null) {
+                            oldClause = new TermsTemplateDtlEntity();
+                            clause.setClauseDetails(clauseDto.getClauseDetails());
+                            BeanUtils.copyProperties(existingClause, oldClause);
+                        }
                         clause.setLastModifiedBy(loginUserPoid);
                         clause.setLastModifiedDate(LocalDateTime.now());
                     }
@@ -159,7 +169,9 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                     clause.setClauseDetails(clauseDto.getClauseDetails());
                     clause.setActive(clauseDto.getActive());
                     clausesToSave.add(clause);
-                    loggingService.logChanges(oldClause, clause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + key.getDetRowId(), isCreate ? LogDetailsEnum.CREATED : LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
+                    
+                    String logDetail = String.format("KeyId = DET_ROW_ID:%s", key.getDetRowId());
+                    logRequests.add(new LogRequestDto<>(oldClause, clause, TermsTemplateDtlEntity.class, docId, headerKey, logDetail));
                 }
             }
             // Save all CREATE/UPDATE operations
@@ -170,6 +182,11 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
             // Save all DELETE operations (mark as inactive)
             if (!clausesToDelete.isEmpty()) {
                 termsTemplateDtlRepository.saveAll(clausesToDelete);
+            }
+            
+            // Batch log all changes
+            if (!logRequests.isEmpty()) {
+                loggingService.createLogBatch(logRequests);
             }
         }
         TemplateResponseDto response = new TemplateResponseDto();
@@ -202,7 +219,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         template.setActive(templateRequestDto.getActive() != null ? templateRequestDto.getActive() : "N");
         template.setSeqNo(templateRequestDto.getSeqNo());
         template.setRemarks(templateRequestDto.getRemarks());
-        template.setCreatedBy(loginUserPoid);
+        template.setCreatedBy(UserContext.getUserId());
         template.setCreatedDate(LocalDateTime.now());
         template.setTermsCategory(templateRequestDto.getTermsCategory());
         template.setDeleted("N");
@@ -212,7 +229,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         String key = savedTemplate.getTermsPoid().toString();
 
         loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-        loggingService.logChanges(null, savedTemplate, TermsTemplateEntity.class, docId, key, LogDetailsEnum.CREATED, "TERMS_POID");
 
         if (templateRequestDto.getClauses() != null && !templateRequestDto.getClauses().isEmpty()) {
             Long nextAvailableId = termsTemplateDtlRepository.getNextDetRowId(savedTemplate.getTermsPoid());
@@ -234,7 +250,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                 termsTemplateDtlEntity.setClauseNo(clause.getClauseNo());
                 termsTemplateDtlEntity.setClauseDetails(clause.getClauseDetails());
                 termsTemplateDtlEntity.setActive(clause.getActive());
-                termsTemplateDtlEntity.setCreatedBy(loginUserPoid);
+                termsTemplateDtlEntity.setCreatedBy(UserContext.getUserId());
                 termsTemplateDtlEntity.setCreatedDate(LocalDateTime.now());
 
                 listOfClauses.add(termsTemplateDtlEntity);
@@ -265,21 +281,11 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
 
     @Transactional
     @Override
-    public void softDeleteByTermsPoid(Long termsPoid) {
-        TermsTemplateEntity termsTemplateEntity = termsTemplateRepository.findByTermsPoid(termsPoid).orElseThrow(() -> new ResourceNotFoundException("Terms & Conditions", "termsPoid", termsPoid));
+    public void softDeleteByTermsPoid(Long termsPoid, DeleteReasonDto deleteReasonDto) {
+        TermsTemplateEntity termsTemplateEntity = termsTemplateRepository.findByTermsPoid(termsPoid)
+                .orElseThrow(() -> new ResourceNotFoundException("Terms & Conditions", "termsPoid", termsPoid));
 
-        termsTemplateEntity.setActive("N");
-        termsTemplateEntity.setDeleted("Y");
-        termsTemplateEntity.setLastModifiedDate(LocalDateTime.now());
-        termsTemplateEntity.setLastModifiedBy(ASGHelperUtils.getCurrentUser());
-
-        termsTemplateRepository.save(termsTemplateEntity);
-        String docId = UserContext.getDocumentId();
-        String key = termsPoid.toString();
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, docId, key);
-        loggingService.logSimpleFieldChange(TermsTemplateEntity.class, docId, key, "deleted", "N", "Y", "Template soft deleted");
-        loggingService.logSimpleFieldChange(TermsTemplateEntity.class, docId, key, "active", "Y", "N", "Template soft deleted");
+        documentDeleteService.deleteDocument(termsPoid, "GLOBAL_TERMS_TEMPLATE_MASTER", "TERMS_POID", deleteReasonDto, null);
         deleteClausesByTermsPoid(termsPoid);
     }
 

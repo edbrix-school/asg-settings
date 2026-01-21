@@ -1,6 +1,7 @@
 package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.enums.LogDetailsEnum;
@@ -508,10 +509,10 @@ public class UserController {
     )
     @DeleteMapping("/{userPoid}")
     public ResponseEntity<?> softDeleteUser(
-            @PathVariable @NotNull @Min(1) Long userPoid) {
+            @PathVariable @NotNull @Min(1) Long userPoid,
+            @RequestBody(required = false) DeleteReasonDto deleteReasonDto) {
         try {
-            userService.softDeleteUser(userPoid);
-            loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, null, userPoid.toString());
+            userService.softDeleteUser(userPoid, deleteReasonDto);
             return success("User marked as deleted and deactivated successfully", null);
         } catch (ResourceNotFoundException e) {
             log.error("Error deactivating user with userPoid {}: {}", userPoid, e.getMessage());

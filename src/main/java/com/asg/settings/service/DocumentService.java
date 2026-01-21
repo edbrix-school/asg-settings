@@ -1,5 +1,6 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.dto.DeleteReasonDto;
 import com.asg.common.lib.dto.DropdownStringDto;
 import com.asg.common.lib.dto.FilterDto;
 import com.asg.common.lib.dto.FilterRequestDto;
@@ -10,6 +11,7 @@ import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.repository.TableMetaRepository;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
@@ -92,6 +94,9 @@ public class DocumentService {
 
     @Autowired
     DocumentSearchService documentSearchService;
+
+    @Autowired
+    DocumentDeleteService documentDeleteService;
 
     public DocumentDto getDocumentById(String docId) {
         DocumentEntity document = documentRepository.findByDocId(docId);
@@ -184,8 +189,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public void deleteDocument(String docId) {
-
+    public void deleteDocument(String docId, DeleteReasonDto deleteReasonDto) {
         // Check if a document exists
         Map<String, Map<String, Boolean>> userRights = loadUserRights(getUserId());
         DocumentEntity document = documentRepository.findByDocId(docId);
@@ -198,16 +202,14 @@ public class DocumentService {
             if ("Y".equalsIgnoreCase(document.getDeleted())) {
                 throw new ValidationException("Document with id " + docId + " is already deleted.");
             }
-            DocumentEntity oldDocument = new DocumentEntity();
-            BeanUtils.copyProperties(document, oldDocument);
-            document.setActive("N");
-            document.setDeleted("Y");
-            document.setLastModifiedDate(Timestamp.valueOf(LocalDateTime.now()));
-            // Soft Delete the document
-            documentRepository.save(document);
-
-            loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), document.getDocId());
-            loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.DELETED, "DOC_ID");
+            
+            documentDeleteService.deleteDocument(
+                    document.getDocPoid().longValue(),
+                    "GLOBAL_DOC_MASTER",
+                    "DOC_ID",
+                    deleteReasonDto,
+                    null
+            );
         }
     }
 
@@ -543,7 +545,6 @@ public class DocumentService {
         // Save updated document
         documentRepository.save(document);
 
-        loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, UserContext.getDocumentId(), document.getDocId());
         loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.MODIFIED, "DOC_ID");
 
 
