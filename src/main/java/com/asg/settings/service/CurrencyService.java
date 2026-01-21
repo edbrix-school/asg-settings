@@ -146,11 +146,6 @@ public class CurrencyService {
                 deleteReasonDto,
                 null
         );
-        
-        // Delete related currency rates
-        List<CurrencyRateEntity> rates = currencyRateRepository.findAllByCurrencyCode(currency.getCurrencyCode());
-        if (!rates.isEmpty()) {
-            currencyRateRepository.deleteAllInBatch(rates);
-        }
+
     }
 }
