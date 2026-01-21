@@ -245,6 +245,13 @@ public class AddressMasterService {
         Map<String, AddressDetails> existingMap = existingDetails.stream()
                 .collect(Collectors.toMap(AddressDetails::getAddressPoid, d -> d));
 
+        Map<String, AddressDetails> existingByType = existingDetails.stream()
+                .collect(Collectors.toMap(
+                        AddressDetails::getAddressType,
+                        d -> d,
+                        (a, b) -> a
+                ));
+
         List<AddressDetails> toSave = new ArrayList<>();
         List<LogRequestDto<AddressDetails>> logRequests = new ArrayList<>();
 
@@ -268,6 +275,35 @@ public class AddressMasterService {
 
         for (Map.Entry<String, List<AddressDetailsDTO>> entry : typedLists.entrySet()) {
             String type = entry.getKey();
+            if ("MAIN".equalsIgnoreCase(type)) {
+                AddressDetailsDTO dto = entry.getValue().get(0);
+
+                boolean hasMobile = StringUtils.isNotBlank(dto.getMobile());
+                boolean hasEmail = dto.getEmail() != null && !dto.getEmail().isEmpty();
+                if (!hasMobile || !hasEmail) {
+                    throw new IllegalArgumentException("MAIN contact must have Mobile and Email");
+                }
+
+                AddressDetails existingMain = existingByType.get("MAIN");
+
+                if (existingMain != null) {
+                    AddressDetails oldCopy = new AddressDetails();
+                    BeanUtils.copyProperties(existingMain, oldCopy);
+
+                    updateDetail(existingMain, dto, type, currentUser);
+                    toSave.add(existingMain);
+
+                    String logDetail = "KeyId: ADDRESS_MASTER_POID:" + docKeyPoid +
+                            " ADDRESS_POID:" + existingMain.getAddressPoid();
+
+                    logRequests.add(new LogRequestDto<>(
+                            oldCopy, existingMain, AddressDetails.class, docId, docKeyPoid, logDetail));
+                } else {
+                    AddressDetails detail = buildDetail(dto, master, "MAIN", counter++, currentUser);
+                    toSave.add(detail);
+                }
+                continue;
+            }
             for (AddressDetailsDTO dto : entry.getValue()) {
                 String actionType = StringUtils.isBlank(dto.getActionType()) ? null : dto.getActionType();
 
