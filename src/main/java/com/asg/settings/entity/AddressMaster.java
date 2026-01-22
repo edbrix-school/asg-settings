@@ -66,7 +66,6 @@ public class AddressMaster {
     private String active;
 
     @Column(name = "SEQNO")
-    @AuditIgnore
     private Long seqno;
 
     @Column(name = "CREATED_BY", length = 20)

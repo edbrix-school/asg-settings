@@ -104,7 +104,6 @@ public class AlertConfigEntity {
 
     @Column(name = "FREQUENCY_TYPE", length = 20)
     @Size(max = 20)
-    @AuditIgnore
     private String frequencyType = "DAY";
 }
 

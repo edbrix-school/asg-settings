@@ -298,6 +298,9 @@ public class AddressMasterService {
 
                     logRequests.add(new LogRequestDto<>(
                             oldCopy, existingMain, AddressDetails.class, docId, docKeyPoid, logDetail));
+
+                    loggingService.createLogSummaryEntry(UserContext.getDocumentId(), oldCopy.getAddressPoid(), logDetail);
+
                 } else {
                     AddressDetails detail = buildDetail(dto, master, "MAIN", counter++, currentUser);
                     toSave.add(detail);
@@ -333,6 +336,7 @@ public class AddressMasterService {
                             toSave.add(oldDetail);
                             
                             String logDetail = String.format("KeyId: ADDRESS_MASTER_POID:%s ADDRESS_POID:%s", oldDetail.getAddressMasterPoid() , oldDetail.getAddressPoid());
+                            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), oldCopy.getAddressPoid(), logDetail);
                             logRequests.add(new LogRequestDto<>(oldCopy, oldDetail, AddressDetails.class, docId, docKeyPoid, logDetail));
                         } else {
                             // Address not found, treat as create

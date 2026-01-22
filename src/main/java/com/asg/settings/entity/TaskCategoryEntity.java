@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ public class TaskCategoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CATEGORY_POID", nullable = false)
+    @AuditIgnore
     private Long categoryPoid;
 
     @Column(name = "CATEGORY_CODE", length = 30)
@@ -34,18 +36,23 @@ public class TaskCategoryEntity {
     private Integer seqNo;
 
     @Column(name = "DELETED", length = 1)
+    @AuditIgnore
     private String deleted = "N";
 
     @Column(name = "CREATED_BY", length = 20)
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private LocalDateTime createdDate;
 
     @Column(name = "LASTMODIFIED_BY", length = 20)
+    @AuditIgnore
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private LocalDateTime lastModifiedDate;
 
 }
