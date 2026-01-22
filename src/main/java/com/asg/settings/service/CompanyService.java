@@ -299,7 +299,7 @@ public class CompanyService {
             companyDivision.setId(key);
 
             companyDivisionRepository.saveAndFlush(companyDivision);
-            String logDetail = String.format("Row Created on Company Division with DetRowId %s ", existingDivision.getId().getDetRowId());
+            String logDetail = String.format("Row Created on Company Division with DetRowId %s ", companyDivision.getId().getDetRowId());
             loggingService.createLogSummaryEntry(UserContext.getDocumentId(), companyPoid.toString(), logDetail);
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. Please review your selection. divisionId -> " + division.getDivPoid());
