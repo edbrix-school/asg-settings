@@ -334,7 +334,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         entity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(entity);
 
-        String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,dto.getDetRowId());
+        String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,oldEntity.getDetRowId());
         logRequests.add(new LogRequestDto<>(oldEntity, entity, TaskCategoryDTLEntity.class, docId, docKeyPoid, logDetail));
     }
 
