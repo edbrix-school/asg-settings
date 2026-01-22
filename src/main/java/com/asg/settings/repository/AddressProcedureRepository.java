@@ -1,5 +1,7 @@
 package com.asg.settings.repository;
 
+import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 public class AddressProcedureRepository {
 
     private final EntityManager entityManager;
+    private final LoggingService loggingService;
 
     public String createAllTypes(Long groupPoid, Long userPoid, Long companyPoid, Long addressPoid) {
         StoredProcedureQuery query = entityManager
@@ -24,6 +27,8 @@ public class AddressProcedureRepository {
                 .setParameter("P_LOGIN_USER_POID", userPoid)
                 .setParameter("P_LOGIN_COMPANY_POID", companyPoid)
                 .setParameter("P_ADDRESS_POID", addressPoid);
+
+        loggingService.createLogSummaryEntry(UserContext.getDocumentId(), addressPoid.toString(), "Created all address types from address master...");
 
         query.execute();
         return (String) query.getOutputParameterValue("P_STATUS");
@@ -41,7 +46,7 @@ public class AddressProcedureRepository {
                 .setParameter("P_LOGIN_USER_POID", userPoid)
                 .setParameter("P_LOGIN_COMPANY_POID", companyPoid)
                 .setParameter("P_ADDRESS_POID", targetPoid);
-
+        loggingService.createLogSummaryEntry(UserContext.getDocumentId(), targetPoid.toString(), "Copied all address types from first address...");
         query.execute();
         return (String) query.getOutputParameterValue("P_STATUS");
     }

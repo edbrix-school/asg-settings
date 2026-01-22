@@ -129,7 +129,7 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         existingClause.setLastModifiedBy(loginUserPoid);
                         existingClause.setLastModifiedDate(LocalDateTime.now());
                         clausesToDelete.add(existingClause);
-//                        loggingService.logChanges(oldClause, existingClause, TermsTemplateDtlEntity.class, docId, headerKey + "-" + clauseDto.getDetRowId(), LogDetailsEnum.MODIFIED, "TERMS_TEMPLATE_DTL");
+                        loggingService.logDelete(existingClause, UserContext.getDocumentId(), termsPoid.toString());
                     }
 
                 } else if ("noChange".equalsIgnoreCase(actionType)) {
@@ -150,6 +150,9 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         key.setDetRowId(nextAvailableId);
                         clause.setCreatedBy(loginUserPoid);
                         clause.setCreatedDate(LocalDateTime.now());
+
+                        String logDetail = String.format("Row Created on Term Clause with DetRowId %s ", nextAvailableId);
+                        loggingService.createLogSummaryEntry(UserContext.getDocumentId(), termsPoid.toString(), logDetail);
 
                     } else {
                         // UPDATE existing clause (isUpdated)
@@ -254,9 +257,13 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                 termsTemplateDtlEntity.setCreatedDate(LocalDateTime.now());
 
                 listOfClauses.add(termsTemplateDtlEntity);
-                loggingService.logChanges(null, termsTemplateDtlEntity, TermsTemplateDtlEntity.class, docId, key + "-" + keyDtl.getDetRowId(), LogDetailsEnum.CREATED, "TERMS_TEMPLATE_DTL");
             }
             termsTemplateDtlRepository.saveAll(listOfClauses);
+
+            listOfClauses.forEach(cat -> {
+                String logDetail = String.format("Row Created on Term Clause with DetRowId %s ", cat.getId().getDetRowId());
+                loggingService.createLogSummaryEntry(UserContext.getDocumentId(), savedTemplate.getTermsPoid().toString(), logDetail);
+            });
         }
         TemplateResponseDto response = new TemplateResponseDto();
         response.setTermsPoid(savedTemplate.getTermsPoid());
