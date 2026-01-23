@@ -264,7 +264,7 @@ public class CompanyService {
                 } else if (IS_UPDATED.equalsIgnoreCase(division.actionType)) {
                     updateDivision(companyPoid, division);
                 } else if (IS_DELETED.equalsIgnoreCase(division.actionType)) {
-                    deleteDivision(companyPoid, division.getDivPoid());
+                    deleteDivision(companyPoid, division);
                 }
             });
         }
@@ -327,15 +327,15 @@ public class CompanyService {
         }
     }
 
-    private void deleteDivision(Long companyPoid, Long divPoid) {
+    private void deleteDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndDivPoid(companyPoid, divPoid);
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
 
         if (existingDivision != null) {
-            companyDivisionRepository.deleteById_CompanyPoidAndDivPoid(companyPoid, divPoid);
+            companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
             loggingService.logDelete(existingDivision, UserContext.getDocumentId() , companyPoid.toString());
         } else {
-            throw new ValidationException("Cannot delete a division that is not assigned to the company, divisionId -> " + divPoid);
+            throw new ValidationException("Cannot delete a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
         }
     }
 

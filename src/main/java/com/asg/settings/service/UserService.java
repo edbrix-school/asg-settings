@@ -305,7 +305,7 @@ public class UserService {
 
         try {
             insertUserToTable(userDetails, user);
-            loggingService.logChanges(oldUser, user, User.class, null, user.getUserPoid().toString(),
+            loggingService.logChanges(oldUser, user, User.class, UserContext.getDocumentId(), user.getUserPoid().toString(),
                     LogDetailsEnum.MODIFIED, "USER_POID");
             return user.getUserPoid().toString();
         } catch (DataIntegrityViolationException e) {
@@ -439,7 +439,7 @@ public class UserService {
             userCompany.setId(companyEntityKey);
             usersCompanyRepository.save(userCompany);
             String logDetail = String.format("Row Created on User Company with DetRowId %s ", userCompany.getId().getDetRowId());
-            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), finalUser.getUserId(), logDetail);
+            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), finalUser.getUserPoid().toString(), logDetail);
 
         } else {
             throw new InputMismatchException("You are attempting to update the same company multiple times. Please review your selection. companyId ->" + company.companyId());
@@ -450,7 +450,7 @@ public class UserService {
         UsersCompanyEntity companyPresent = usersCompanyRepository.findById_UserPoidAndId_CompanyPoid(finalUser.getUserPoid(), company.companyId());
         if (null != company) {
             usersCompanyRepository.deleteById_UserPoidAndId_CompanyPoid(finalUser.getUserPoid(), company.companyId());
-            loggingService.logDelete(companyPresent, UserContext.getDocumentId(), finalUser.getUserId());
+            loggingService.logDelete(companyPresent, UserContext.getDocumentId(), finalUser.getUserPoid().toString());
         } else {
             throw new InputMismatchException("Cannot delete a company that  is not assigned to the user, companyId  -> " + company.companyId());
         }
@@ -481,7 +481,7 @@ public class UserService {
 
             userRoleRepository.save(userRole);
             String logDetail = String.format("Row Created on User Role with DetRowId %s ", userRole.getId().getDetRowId());
-            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), finalUser.getUserId(), logDetail);
+            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), finalUser.getUserPoid().toString(), logDetail);
 
         } else {
             throw new InputMismatchException("You are attempting to update the same role multiple times. Please review your selection. userRoleId -> " + role.userRoleId());
@@ -493,7 +493,7 @@ public class UserService {
         UserRolesEntity rolePresent = userRoleRepository.getUserRolesEntitiesById_UserPoidAndUserRolePoid(finalUser.getUserPoid(), role.userRolePoId());
         if (null != rolePresent) {
             userRoleRepository.deleteByUserRolePoidAndId_UserPoid(role.userRolePoId(), finalUser.getUserPoid());
-            loggingService.logDelete(rolePresent, UserContext.getDocumentId(), finalUser.getUserId());
+            loggingService.logDelete(rolePresent, UserContext.getDocumentId(), finalUser.getUserPoid().toString());
         } else {
             throw new InputMismatchException("Cannot delete a role that  is not assigned to the user, userRoleId  -> " + role.userRoleId());
         }
