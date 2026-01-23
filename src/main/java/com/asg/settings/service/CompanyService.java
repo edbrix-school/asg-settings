@@ -308,23 +308,22 @@ public class CompanyService {
 
     private void updateDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndDivPoid(companyPoid, division.getDivPoid());
-
-
-        CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
-        BeanUtils.copyProperties(existingDivision, oldCompanyData);
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
 
         if (existingDivision != null) {
+            CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
+            BeanUtils.copyProperties(existingDivision, oldCompanyData);
+
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
-            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getDivPoid());
+            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getId().getDetRowId());
             loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
-            throw new ValidationException("Cannot update a division that is not assigned to the company, divisionId -> " + division.getDivPoid());
+            throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
         }
     }
 

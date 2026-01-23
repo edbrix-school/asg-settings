@@ -16,6 +16,9 @@ public interface CompanyDivisionRepository extends JpaRepository<CompanyDivision
     // Find by companyPoid and divPoid
     CompanyDivisionEntity findById_CompanyPoidAndDivPoid(Long companyPoid, Long divPoid);
 
+    // Find by companyPoid and detRowId
+    CompanyDivisionEntity findById_CompanyPoidAndId_DetRowId(Long companyPoid, Long detRowId);
+
     //  Delete by companyPoid and divPoid
     void deleteById_CompanyPoidAndDivPoid(Long companyPoid, Long divPoid);
 
