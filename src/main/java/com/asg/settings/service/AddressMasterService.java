@@ -430,11 +430,14 @@ public class AddressMasterService {
     private AddressDetails buildDetail(AddressDetailsDTO dto, AddressMaster master, String type, int counter, String currentUser) {
         AddressDetails detail = new AddressDetails();
 
+        String suffix = String.format("%03d", counter); // 001, 010, 011
+
         detail.setAddressPoid(
                 dto.getAddressPoid() == null
-                        ? master.getAddressMasterPoid() + "." + counter
+                        ? master.getAddressMasterPoid() + "." + suffix
                         : String.valueOf(dto.getAddressPoid())
         );
+
         detail.setAddressMasterPoid(master.getAddressMasterPoid());
         detail.setAddressType(type);
         detail.setContactPerson(dto.getContactPerson());
@@ -610,10 +613,11 @@ public class AddressMasterService {
         for (AddressDetails d : existingDetails) {
             String poid = d.getAddressPoid();
             if (poid != null && poid.startsWith(masterPoid + ".")) {
-                try {
-                    int num = Integer.parseInt(poid.substring(poid.indexOf('.') + 1));
-                    if (num > max) max = num;
-                } catch (Exception ignored) {}
+                String suffix = poid.substring(poid.indexOf('.') + 1).trim();
+                if (suffix.matches("\\d+")) {
+                    int num = Integer.parseInt(suffix);
+                    max = Math.max(max, num);
+                }
             }
         }
 
