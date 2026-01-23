@@ -308,7 +308,7 @@ public class CompanyService {
 
     private void updateDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
 
         if (existingDivision != null) {
             CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
@@ -319,7 +319,7 @@ public class CompanyService {
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
-            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getId().getDetRowId());
+            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId());
             loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
@@ -329,10 +329,10 @@ public class CompanyService {
 
     private void deleteDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
 
         if (existingDivision != null) {
-            companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, division.getId().getDetRowId());
+            companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
             loggingService.logDelete(existingDivision, UserContext.getDocumentId() , companyPoid.toString());
         } else {
             throw new ValidationException("Cannot delete a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
