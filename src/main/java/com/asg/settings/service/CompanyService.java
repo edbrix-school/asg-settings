@@ -323,7 +323,7 @@ public class CompanyService {
             loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
-            throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
+            throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getDetRowId());
         }
     }
 
@@ -335,7 +335,7 @@ public class CompanyService {
             companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
             loggingService.logDelete(existingDivision, UserContext.getDocumentId() , companyPoid.toString());
         } else {
-            throw new ValidationException("Cannot delete a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
+            throw new ValidationException("Cannot delete a division that is not assigned to the company, detRowId -> " + division.getDetRowId());
         }
     }
 
