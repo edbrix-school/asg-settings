@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -308,6 +309,7 @@ public class AddressMasterService {
                 continue;
             }
             for (AddressDetailsDTO dto : entry.getValue()) {
+
                 String actionType = StringUtils.isBlank(dto.getActionType()) ? null : dto.getActionType();
 
                 // Handle backward compatibility: if actionType is null, determine from addressPoid
@@ -378,6 +380,7 @@ public class AddressMasterService {
     }
 
     private void updateDetail(AddressDetails entity, AddressDetailsDTO dto, String type, String currentUser) {
+
         entity.setAddressType(type);
         entity.setContactPerson(dto.getContactPerson());
         entity.setDesignation(dto.getDesignation());
@@ -412,25 +415,36 @@ public class AddressMasterService {
 
         entity.setState(dto.getState() != null && !dto.getState().isEmpty()
                 ? String.join(",", dto.getState())
-                : null
-        );
+                : null);
+
         entity.setLandMark(dto.getLandMark());
-        entity.setVerified(dto.getVerified());
-        entity.setVerifiedBy(dto.getVerifiedBy());
-        entity.setVerifiedDate(dto.getVerifiedDate());
+
+        entity.setVerified(Boolean.TRUE.equals(dto.getVerified()) ? "Y" : "N");
+
+
+        if ("FINANCE".equalsIgnoreCase(type)
+                && Boolean.TRUE.equals(dto.getVerified())
+                && entity.getVerifiedBy() == null) {
+
+            entity.setVerifiedBy(UserContext.getUserName());
+            entity.setVerifiedDate(LocalDate.now());
+        }
+
         entity.setLastModifiedBy(currentUser);
         entity.setLastModifiedDate(LocalDateTime.now());
         entity.setWhatsappNo(dto.getWhatsappNo());
         entity.setLinkedin(dto.getLinkedIn());
         entity.setInstagram(dto.getInstagram());
         entity.setFacebook(dto.getFacebook());
-
     }
 
-    private AddressDetails buildDetail(AddressDetailsDTO dto, AddressMaster master, String type, int counter, String currentUser) {
+
+    private AddressDetails buildDetail(AddressDetailsDTO dto, AddressMaster master, String type,
+                                       int counter, String currentUser) {
+
         AddressDetails detail = new AddressDetails();
 
-        String suffix = String.format("%03d", counter); // 001, 010, 011
+        String suffix = String.format("%03d", counter);
 
         detail.setAddressPoid(
                 dto.getAddressPoid() == null
@@ -472,13 +486,19 @@ public class AddressMasterService {
 
         detail.setState(dto.getState() != null && !dto.getState().isEmpty()
                 ? String.join(",", dto.getState())
-                : null
-        );
+                : null);
 
         detail.setLandMark(dto.getLandMark());
-        detail.setVerified(dto.getVerified());
-        detail.setVerifiedBy(dto.getVerifiedBy());
-        detail.setVerifiedDate(dto.getVerifiedDate());
+
+        detail.setVerified(Boolean.TRUE.equals(dto.getVerified()) ? "Y" : "N");
+
+        if ("FINANCE".equalsIgnoreCase(type)
+                && Boolean.TRUE.equals(dto.getVerified())) {
+
+            detail.setVerifiedBy(UserContext.getUserName());
+            detail.setVerifiedDate(LocalDate.now());
+        }
+
         detail.setCreatedBy(currentUser);
         detail.setCreatedDate(LocalDateTime.now());
         detail.setLastModifiedBy(currentUser);
@@ -490,6 +510,7 @@ public class AddressMasterService {
 
         return detail;
     }
+
 
     // --- Stored procedure calls (unchanged) ---
 
