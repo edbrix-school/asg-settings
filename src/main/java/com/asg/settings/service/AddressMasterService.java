@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -319,9 +320,40 @@ public class AddressMasterService {
 
                 switch (actionType.toLowerCase()) {
                     case "nochange" -> {
-                        // Skip processing
+
+                        if ("FINANCE".equalsIgnoreCase(type)
+                                && StringUtils.isNotBlank(dto.getVerified())) {
+
+                            AddressDetails existing = existingMap.get(dto.getAddressPoid());
+                            if (existing != null) {
+
+                                // Toggle ON
+                                if ("Y".equalsIgnoreCase(dto.getVerified())
+                                        && !"Y".equalsIgnoreCase(existing.getVerified())) {
+
+                                    existing.setVerified("Y");
+                                    existing.setVerifiedBy(
+                                            UserContext.getUserName() != null
+                                                    ? UserContext.getUserName()
+                                                    : UserContext.getUserId()
+                                    );
+                                    existing.setVerifiedDate(LocalDate.now());
+                                    toSave.add(existing);
+                                }
+
+                                // Toggle OFF
+                                if ("N".equalsIgnoreCase(dto.getVerified())) {
+                                    existing.setVerified("N");
+                                    existing.setVerifiedBy(null);
+                                    existing.setVerifiedDate(null);
+                                    toSave.add(existing);
+                                }
+                            }
+                        }
                         continue;
                     }
+
+
                     case "iscreated" -> {
                         AddressDetails detail = buildDetail(dto, master, type, counter++, currentUser);
                         toSave.add(detail);
@@ -331,10 +363,27 @@ public class AddressMasterService {
                             AddressDetails oldDetail = existingMap.get(dto.getAddressPoid());
                             AddressDetails oldCopy = new AddressDetails();
                             BeanUtils.copyProperties(oldDetail, oldCopy);
-                            
+
+                            // Capture old verified value BEFORE update
+                            String oldVerified = oldDetail.getVerified();
+
                             updateDetail(oldDetail, dto, type, currentUser);
+                            // VERIFIED handling (FINANCE only)
+                            if ("FINANCE".equalsIgnoreCase(type)
+                                    && "Y".equalsIgnoreCase(dto.getVerified())
+                                    && (oldDetail.getVerifiedBy() == null || oldDetail.getVerifiedDate() == null)) {
+
+                                oldDetail.setVerified("Y");
+                                oldDetail.setVerifiedBy(
+                                        UserContext.getUserName() != null
+                                                ? UserContext.getUserName()
+                                                : UserContext.getUserId()
+                                );
+                                oldDetail.setVerifiedDate(LocalDate.now());
+                            }
+
                             toSave.add(oldDetail);
-                            
+
                             String logDetail = String.format("KeyId: ADDRESS_MASTER_POID:%s ADDRESS_POID:%s", oldDetail.getAddressMasterPoid() , oldDetail.getAddressPoid());
                             loggingService.createLogSummaryEntry(UserContext.getDocumentId(), oldCopy.getAddressPoid(), logDetail);
                             logRequests.add(new LogRequestDto<>(oldCopy, oldDetail, AddressDetails.class, docId, docKeyPoid, logDetail));
@@ -415,9 +464,9 @@ public class AddressMasterService {
                 : null
         );
         entity.setLandMark(dto.getLandMark());
-        entity.setVerified(dto.getVerified());
-        entity.setVerifiedBy(dto.getVerifiedBy());
-        entity.setVerifiedDate(dto.getVerifiedDate());
+        if (StringUtils.isNotBlank(dto.getVerified())) {
+            entity.setVerified(dto.getVerified());
+        }
         entity.setLastModifiedBy(currentUser);
         entity.setLastModifiedDate(LocalDateTime.now());
         entity.setWhatsappNo(dto.getWhatsappNo());
@@ -476,9 +525,10 @@ public class AddressMasterService {
         );
 
         detail.setLandMark(dto.getLandMark());
-        detail.setVerified(dto.getVerified());
-        detail.setVerifiedBy(dto.getVerifiedBy());
-        detail.setVerifiedDate(dto.getVerifiedDate());
+        // VERIFIED fields must be backend-controlled
+        detail.setVerified("N");
+        detail.setVerifiedBy(null);
+        detail.setVerifiedDate(null);
         detail.setCreatedBy(currentUser);
         detail.setCreatedDate(LocalDateTime.now());
         detail.setLastModifiedBy(currentUser);
