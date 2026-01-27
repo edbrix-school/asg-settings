@@ -374,11 +374,7 @@ public class AddressMasterService {
                                     && (oldDetail.getVerifiedBy() == null || oldDetail.getVerifiedDate() == null)) {
 
                                 oldDetail.setVerified("Y");
-                                oldDetail.setVerifiedBy(
-                                        UserContext.getUserName() != null
-                                                ? UserContext.getUserName()
-                                                : UserContext.getUserId()
-                                );
+                                oldDetail.setVerifiedBy(UserContext.getUserId());
                                 oldDetail.setVerifiedDate(LocalDate.now());
                             }
 
