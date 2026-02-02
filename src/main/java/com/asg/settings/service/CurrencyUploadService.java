@@ -1,5 +1,10 @@
 package com.asg.settings.service;
 
+import com.asg.common.lib.entity.CurrencyEntity;
+import com.asg.common.lib.exception.ResourceNotFoundException;
+import com.asg.common.lib.exception.ValidationException;
+import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.CurrencyRateDto;
 import com.asg.settings.dto.request.CurrencyUpdateRequest;
 import com.asg.settings.repository.CurrencyRateTempRepository;
@@ -22,12 +27,15 @@ public class CurrencyUploadService {
 
     private final CurrencyUploadRepository procRepo;
 
+    private final LoggingService loggingService;
+
     private static final Logger log = LoggerFactory.getLogger(CurrencyUploadService.class);
 
-    public CurrencyUploadService(CurrencyRateTempRepository tempRepo, CurrencyRepository getAllCurrencyCodes, CurrencyUploadRepository procRepo) {
+    public CurrencyUploadService(CurrencyRateTempRepository tempRepo, CurrencyRepository getAllCurrencyCodes, CurrencyUploadRepository procRepo, LoggingService loggingService) {
         this.tempRepo = tempRepo;
         this.currencyRepository = getAllCurrencyCodes;
         this.procRepo = procRepo;
+        this.loggingService = loggingService;
     }
 
     public String uploadCurrencyRates(MultipartFile file, Long groupPoid, Long companyPoid, Long userPoid) throws Exception {
@@ -65,6 +73,10 @@ public class CurrencyUploadService {
     public String updateCurrencyRates(CurrencyUpdateRequest currencyUpdateRequest) throws Exception {
         try {
 
+            CurrencyEntity currencyEntity = currencyRepository.findByCurrencyCodeIgnoreCase(currencyUpdateRequest.currencyCode())
+                    .orElseThrow(() -> new ResourceNotFoundException("Currency", "Code", currencyUpdateRequest.currencyCode()));
+
+
             String status = procRepo.callCurrencyUpdateProc(currencyUpdateRequest.groupPOID(), currencyUpdateRequest.currencyCode(),
                     currencyUpdateRequest.rateChangeDate(), currencyUpdateRequest.buyRate(), currencyUpdateRequest.sellRate());
 
@@ -72,6 +84,14 @@ public class CurrencyUploadService {
                 log.warn("Stored procedure returned error: {}", status);
                 return status;
             }
+
+
+            loggingService.createLogSummaryEntry(
+                    UserContext.getDocumentId(),
+                    String.valueOf(currencyEntity.getCurrencyPoid()),
+                    String.format("Currency Rate Changed for " + currencyEntity.getCurrencyCode() + " Buy Rate :" +
+                            currencyUpdateRequest.buyRate() + " Sell Rate:" + currencyUpdateRequest.sellRate())
+            );
 
             log.info("Stored procedure executed successfully: {}", status);
             return status;

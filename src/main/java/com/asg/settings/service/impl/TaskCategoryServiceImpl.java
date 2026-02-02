@@ -216,6 +216,10 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
                 subCategoriesToSave.add(subCategoryEntity);
             }
             taskCategoryDTLRepository.saveAll(subCategoriesToSave);
+            subCategoriesToSave.forEach(cat -> {
+                String logDetail = String.format("Row Created on Task Category with DetRowId %s ", categoryPoid.toString());
+                loggingService.createLogSummaryEntry(UserContext.getDocumentId(),categoryPoid.toString(), logDetail);
+            });
         }
         String docId = UserContext.getDocumentId();
         String key = savedEntity.getCategoryPoid().toString();
@@ -263,6 +267,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
         List<TaskCategoryDTLEntity> entitiesToDelete = new ArrayList<>();
         List<TaskCategoryDTLEntity> entitiesToSave = new ArrayList<>();
+        List<TaskCategoryDTLEntity> entitiesToUpdate = new ArrayList<>();
         List<LogRequestDto<TaskCategoryDTLEntity>> logRequests = new ArrayList<>();
 
         for (TaskCategoryDtlDto dto : subCategories) {
@@ -270,19 +275,29 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
             switch (action) {
                 case "isdeleted" -> handleDeleteAction(categoryPoid, dto, entitiesToDelete);
-                case "iscreated", "isupdated" -> handleCreateOrUpdateAction(categoryPoid, dto, entitiesToSave, logRequests, docId, docKeyPoid);
+                case "iscreated", "isupdated" -> handleCreateOrUpdateAction(categoryPoid, dto, entitiesToSave, entitiesToUpdate ,logRequests, docId, docKeyPoid);
                 default -> log.warn("Unknown actionType '{}' for detRowId={}", dto.getActionType(), dto.getDetRowId());
             }
         }
         if (!entitiesToDelete.isEmpty()) {
             taskCategoryDTLRepository.deleteAll(entitiesToDelete);
+            entitiesToDelete.forEach( entity -> loggingService.logDelete(entity, UserContext.getDocumentId() , categoryPoid.toString()));
         }
         if (!entitiesToSave.isEmpty()) {
             taskCategoryDTLRepository.saveAll(entitiesToSave);
+            entitiesToSave.forEach(cat -> {
+                String logDetail = String.format("Row Created on Task Category with DetRowId %s ", cat.getDetRowId());
+                loggingService.createLogSummaryEntry(UserContext.getDocumentId(), cat.getCategoryPoid().toString(), logDetail);
+            });
         }
-        if (!logRequests.isEmpty()) {
-            loggingService.createLogBatch(logRequests);
+
+        if (!entitiesToUpdate.isEmpty()) {
+            taskCategoryDTLRepository.saveAll(entitiesToUpdate);
+            if (!logRequests.isEmpty()) {
+                loggingService.createLogBatch(logRequests);
+            }
         }
+
     }
 
     private void handleDeleteAction(Long categoryPoid, TaskCategoryDtlDto subCategoryDto, List<TaskCategoryDTLEntity> entitiesToDelete) {
@@ -300,12 +315,13 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
 
     private void handleCreateOrUpdateAction(Long categoryPoid, TaskCategoryDtlDto subCategoryDto, 
                                             List<TaskCategoryDTLEntity> entitiesToSave,
+                                            List<TaskCategoryDTLEntity> entitiesToUpdate,
                                             List<LogRequestDto<TaskCategoryDTLEntity>> logRequests,
                                             String docId, String docKeyPoid) {
         if (subCategoryDto.getDetRowId() != null) {
             taskCategoryDTLRepository.findByCategoryPoidAndDetRowId(categoryPoid, subCategoryDto.getDetRowId())
                     .ifPresentOrElse(
-                            existingEntity -> updateExistingEntity(existingEntity, subCategoryDto, entitiesToSave, logRequests, docId, docKeyPoid),
+                            existingEntity -> updateExistingEntity(existingEntity, subCategoryDto, entitiesToUpdate, logRequests, docId, docKeyPoid),
                             () -> createNewEntity(categoryPoid, subCategoryDto, entitiesToSave)
                     );
         } else {
@@ -325,7 +341,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         entity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(entity);
 
-        String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,dto.getDetRowId());
+        String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,oldEntity.getDetRowId());
         logRequests.add(new LogRequestDto<>(oldEntity, entity, TaskCategoryDTLEntity.class, docId, docKeyPoid, logDetail));
     }
 
@@ -341,6 +357,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         newEntity.setLastModifiedBy(getCurrentUser());
         newEntity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(newEntity);
+
     }
 
     private String getCurrentUser() {

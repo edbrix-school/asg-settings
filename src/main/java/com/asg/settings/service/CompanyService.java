@@ -264,7 +264,7 @@ public class CompanyService {
                 } else if (IS_UPDATED.equalsIgnoreCase(division.actionType)) {
                     updateDivision(companyPoid, division);
                 } else if (IS_DELETED.equalsIgnoreCase(division.actionType)) {
-                    deleteDivision(companyPoid, division.getDivPoid());
+                    deleteDivision(companyPoid, division);
                 }
             });
         }
@@ -299,6 +299,8 @@ public class CompanyService {
             companyDivision.setId(key);
 
             companyDivisionRepository.saveAndFlush(companyDivision);
+            String logDetail = String.format("Row Created on Company Division with DetRowId %s ", companyDivision.getId().getDetRowId());
+            loggingService.createLogSummaryEntry(UserContext.getDocumentId(), companyPoid.toString(), logDetail);
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. Please review your selection. divisionId -> " + division.getDivPoid());
         }
@@ -306,34 +308,34 @@ public class CompanyService {
 
     private void updateDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndDivPoid(companyPoid, division.getDivPoid());
-
-
-        CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
-        BeanUtils.copyProperties(existingDivision, oldCompanyData);
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
 
         if (existingDivision != null) {
+            CompanyDivisionEntity oldCompanyData = new CompanyDivisionEntity();
+            BeanUtils.copyProperties(existingDivision, oldCompanyData);
+
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
             existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
-            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, existingDivision.getDivPoid());
+            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId());
             loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
             companyDivisionRepository.saveAndFlush(existingDivision);
         } else {
-            throw new ValidationException("Cannot update a division that is not assigned to the company, divisionId -> " + division.getDivPoid());
+            throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
         }
     }
 
-    private void deleteDivision(Long companyPoid, Long divPoid) {
+    private void deleteDivision(Long companyPoid, CompanyDivisionEntity division) {
         CompanyDivisionEntity existingDivision = companyDivisionRepository
-                .findById_CompanyPoidAndDivPoid(companyPoid, divPoid);
+                .findById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
 
         if (existingDivision != null) {
-            companyDivisionRepository.deleteById_CompanyPoidAndDivPoid(companyPoid, divPoid);
+            companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, division.getDetRowId());
+            loggingService.logDelete(existingDivision, UserContext.getDocumentId() , companyPoid.toString());
         } else {
-            throw new ValidationException("Cannot delete a division that is not assigned to the company, divisionId -> " + divPoid);
+            throw new ValidationException("Cannot delete a division that is not assigned to the company, detRowId -> " + division.getId().getDetRowId());
         }
     }
 
