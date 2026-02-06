@@ -500,7 +500,7 @@ public class UserService {
     }
 
     private void updateUserRole(UserRoleDto role, User finalUser) {
-        UserRolesEntity rolePresent = userRoleRepository.getUserRolesEntitiesById_UserPoidAndUserRolePoid(finalUser.getUserPoid(), role.userRolePoId());
+        UserRolesEntity rolePresent = userRoleRepository.findById_UserPoidAndId_DetRowId(finalUser.getUserPoid(), role.detRowId());
         if (null != rolePresent) {
             Date oldExpiryDate = rolePresent.getExpiryDate();
             rolePresent.setExpiryDate(role.expiryDate());

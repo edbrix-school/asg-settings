@@ -42,7 +42,8 @@ public class RoleService {
                                     userRole.getExpiryDate(),
                                     role.getDeleted(),
                                     role.getActive(),
-                                    ""
+                                    "",
+                                    userRole.getId().getDetRowId()
                             );
                         }
                         return null;
