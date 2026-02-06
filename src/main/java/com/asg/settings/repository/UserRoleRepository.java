@@ -22,6 +22,8 @@ public interface UserRoleRepository extends JpaRepository<UserRolesEntity, Long>
 
     UserRolesEntity getUserRolesEntitiesById_UserPoidAndUserRolePoid(Long userPoid, Long aLong);
     
+    UserRolesEntity findById_UserPoidAndId_DetRowId(Long userPoid, Long detRowId);
+    
     @Query("SELECT ur FROM UserRolesEntity ur WHERE ur.userRolePoid = :userRolePoid")
     List<UserRolesEntity> findAllByUserRolePoid(@Param("userRolePoid") Long userRolePoid);
     
