@@ -155,7 +155,21 @@ public class CompanyService {
             }
             String countryCode = getCountryCodeForCompany(company.getCompanyPoid());
             company.setCountryCode(countryCode);
-            company.setDivisions(companyDivisionRepository.findById_CompanyPoid(company.getCompanyPoid()));
+
+            List<CompanyDivisionEntity> divisions = companyDivisionRepository.findById_CompanyPoid(company.getCompanyPoid());
+            if (divisions != null && !divisions.isEmpty()) {
+                List<Long> divPoids = divisions.stream().map(CompanyDivisionEntity::getDivPoid).filter(Objects::nonNull).toList();
+                if (!divPoids.isEmpty()) {
+                    Map<Long, String> divisionNames = divisionRepository.findAllById(divPoids).stream()
+                        .collect(Collectors.toMap(DivisionMasterEntity::getDivisionId, DivisionMasterEntity::getDivisionName));
+                    divisions.forEach(div -> {
+                        if (div.getDivPoid() != null) {
+                            div.setDivisionName(divisionNames.get(div.getDivPoid()));
+                        }
+                    });
+                }
+            }
+            company.setDivisions(divisions);
 
             if (company.getCountryId() != null && company.getStateId() != null) {
                 State state = getStateForCompany(company.getCountryId(), company.getStateId());
