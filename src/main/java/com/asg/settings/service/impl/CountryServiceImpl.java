@@ -51,9 +51,9 @@ public class CountryServiceImpl implements CountryService {
 
         // Set audit fields
         countryDto.setCreatedBy(country.getCreatedBy());
-        countryDto.setCreatedDate(country.getCreatedDate() != null ? country.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        countryDto.setCreatedDate(country.getCreatedDate());
         countryDto.setLastModifiedBy(country.getLastModifiedBy());
-        countryDto.setLastModifiedDate(country.getLastModifiedDate() != null ? country.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        countryDto.setLastModifiedDate(country.getLastModifiedDate());
 
         return countryDto;
     }
@@ -80,8 +80,6 @@ public class CountryServiceImpl implements CountryService {
 
         country.setActive(countryDto.getActive() != null ? countryDto.getActive() : "Y");
         country.setSeqNo(countryDto.getSeqNo());
-        country.setCreatedBy(getCurrentUser());
-        country.setCreatedDate(LocalDateTime.now());
         country.setDeleted("N");
         country.setCountryTicketRate(countryDto.getCountryTicketRate());
 
@@ -107,9 +105,9 @@ public class CountryServiceImpl implements CountryService {
 
         // Set audit fields
         responseDto.setCreatedBy(savedCountry.getCreatedBy());
-        responseDto.setCreatedDate(savedCountry.getCreatedDate() != null ? savedCountry.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        responseDto.setCreatedDate(savedCountry.getCreatedDate());
         responseDto.setLastModifiedBy(savedCountry.getLastModifiedBy());
-        responseDto.setLastModifiedDate(savedCountry.getLastModifiedDate() != null ? savedCountry.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        responseDto.setLastModifiedDate(savedCountry.getLastModifiedDate());
 
         return responseDto;
     }
@@ -169,7 +167,7 @@ public class CountryServiceImpl implements CountryService {
         if (countryDto.getSeqNo() != null) {
             existingCountry.setSeqNo(countryDto.getSeqNo());
         }
-        existingCountry.setLastModifiedDate(LocalDateTime.now());
+        existingCountry.setLastModifiedBy(getCurrentUser());
 
         Country updatedCountry = countryRepository.save(existingCountry);
         String docId = UserContext.getDocumentId();
@@ -184,9 +182,9 @@ public class CountryServiceImpl implements CountryService {
 
         // Set audit fields
         responseDto.setCreatedBy(updatedCountry.getCreatedBy());
-        responseDto.setCreatedDate(updatedCountry.getCreatedDate() != null ? updatedCountry.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        responseDto.setCreatedDate(updatedCountry.getCreatedDate());
         responseDto.setLastModifiedBy(updatedCountry.getLastModifiedBy());
-        responseDto.setLastModifiedDate(updatedCountry.getLastModifiedDate() != null ? updatedCountry.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        responseDto.setLastModifiedDate(updatedCountry.getLastModifiedDate());
 
         return responseDto;
     }
