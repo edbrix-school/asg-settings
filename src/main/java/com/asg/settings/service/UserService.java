@@ -37,6 +37,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -182,9 +183,9 @@ public class UserService {
                 user.getUserLockedReason(),
                 user.getResetPasswordNextLogin(),
                 user.getCreatedBy(),
-                user.getCreatedDate() != null ? new Date(user.getCreatedDate().getTime()) : null,
+                user.getCreatedDate(),
                 user.getLastModifiedBy(),
-                user.getLastModifiedDate() != null ? Timestamp.valueOf(user.getLastModifiedDate()) : null
+                user.getLastModifiedDate()
         );
     }
 
@@ -374,15 +375,9 @@ public class UserService {
         String currentUser = ASGHelperUtils.getCurrentUser();
 
         if (user.getUserPoid() == null) {
-            // --- Creating new user ---
-            user.setCreatedBy(currentUser);
-            user.setCreatedDate(now);
-            user.setLastModifiedBy(currentUser);
-            user.setLastModifiedDate(now.toLocalDateTime());
+            // --- Creating new user - BaseEntity handles audit fields ---
         } else {
-            // --- Updating existing user ---
-            user.setLastModifiedBy(currentUser);
-            user.setLastModifiedDate(now.toLocalDateTime());
+            // --- Updating existing user - BaseEntity handles audit fields ---
         }
         boolean isNewUser = user.getUserPoid() == null;
         user = userRepository.saveAndFlush(user);
@@ -502,7 +497,7 @@ public class UserService {
     private void updateUserRole(UserRoleDto role, User finalUser) {
         UserRolesEntity rolePresent = userRoleRepository.findById_UserPoidAndId_DetRowId(finalUser.getUserPoid(), role.detRowId());
         if (null != rolePresent) {
-            Date oldExpiryDate = rolePresent.getExpiryDate();
+            LocalDate oldExpiryDate = rolePresent.getExpiryDate();
             rolePresent.setExpiryDate(role.expiryDate());
             userRoleRepository.save(rolePresent);
 

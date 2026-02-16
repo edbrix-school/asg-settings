@@ -1,15 +1,14 @@
 package com.asg.settings.entity;
 
 
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "GLOBAL_USER_ROLES")
-public class RoleEntity {
+public class RoleEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_role_seq")
@@ -34,18 +33,6 @@ public class RoleEntity {
 
     @Column(name = "SEQNO")
     private Integer seqNo;
-
-    @Column(name = "CREATED_BY")
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
     @Column(name = "COMPANY_POID")
     private Long companyPoid;

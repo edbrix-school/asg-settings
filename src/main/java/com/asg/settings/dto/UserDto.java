@@ -2,7 +2,8 @@ package com.asg.settings.dto;
 
 import com.asg.common.lib.dto.DetailsDto;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public record UserDto(String userId,
@@ -12,7 +13,7 @@ public record UserDto(String userId,
                       Long value,
                       Long groupPoid,
                       DetailsDto defaultCompany,
-                      Date joinedDate,
+                      LocalDateTime joinedDate,
                       // List<UserRoleDto> roles,
                       List<UserAuthRoleDto> roles,
                       List<UserCompanyDto> companies,
@@ -20,7 +21,7 @@ public record UserDto(String userId,
                       String mobileNumber,
                       String emailId,
                       DetailsDto defaultLocation,
-                      Date autoInactiveDate,
+                      LocalDate autoInactiveDate,
                       Integer seqNo,
                       String active,
                       String authenticationMethod,
@@ -28,9 +29,9 @@ public record UserDto(String userId,
                       String lockedReason,
                       String resetPasswordForNextLogin,
                       String createdBy,
-                      Date createdDate,
+                      LocalDateTime createdDate,
                       String modifiedBy,
-                      Date modifiedDate) {
+                      LocalDateTime modifiedDate) {
 
     public UserDto {
         if (userId != null) {

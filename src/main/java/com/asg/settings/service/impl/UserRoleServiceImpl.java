@@ -96,10 +96,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         entity.setUserRoleName2(dto.getUserRoleName2());
         entity.setActive(dto.getActive() != null ? dto.getActive() : "Y");
         entity.setSeqNo(dto.getSeqNo());
-        entity.setCreatedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
-        entity.setCreatedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(UserContext.getUserId() != null ? UserContext.getUserId() : "SYSTEM");
-        entity.setLastModifiedDate(LocalDateTime.now());
         entity.setCompanyPoid(dto.getCompanyPoid());
         entity.setDeleted("N");
         return entity;
@@ -127,7 +123,6 @@ public class UserRoleServiceImpl implements UserRoleService {
         roleEntity.setActive(userRoleRequestDto.getActive());
         roleEntity.setSeqNo(userRoleRequestDto.getSeqNo());
         roleEntity.setCompanyPoid(userRoleRequestDto.getCompanyPoid());
-        roleEntity.setLastModifiedDate(LocalDateTime.now());
         RoleEntity updatedEntity = roleRepository.save(roleEntity);
 
         loggingService.logChanges(oldRole, updatedEntity, RoleEntity.class, UserContext.getDocumentId(), updatedEntity.getUserRolePoid().toString(), LogDetailsEnum.MODIFIED, "USER_ROLE_POID");

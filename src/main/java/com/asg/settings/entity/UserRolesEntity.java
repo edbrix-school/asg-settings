@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.UserRolesEntityKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -8,12 +9,13 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "GLOBAL_USERS_AUTH_ROLES_DTL")
 @Data
-public class UserRolesEntity {
+public class UserRolesEntity extends BaseEntity {
 
     @EmbeddedId
     private UserRolesEntityKey id;
@@ -22,17 +24,6 @@ public class UserRolesEntity {
     private Long userRolePoid;
 
     @Column(name = "EXPIRY_DATE")
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
-    @Column(name = "CREATED_BY")
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 }

@@ -1,16 +1,15 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "GLOBAL_USERS")
 @Data
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_POID", nullable = false)
@@ -61,21 +60,9 @@ public class User {
     @Column(name = "SEQNO")
     private Integer seqno;
 
-    @Column(name = "CREATED_DATE")
-    private Timestamp createdDate;
-
     @Column(name = "EXPIRY_DATE")
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
     @Column(name = "ALLOW_OFFICE365_LOGIN", length = 1)
     private String authenticationMethod = "N";
-
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
 }
