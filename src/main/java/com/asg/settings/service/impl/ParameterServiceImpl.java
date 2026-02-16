@@ -59,7 +59,7 @@ public class ParameterServiceImpl implements ParameterService {
                         param.getParameterPoid(),
                         param.getParameterKeyId(),
                         updateStatus,
-                        updateStatus == ParameterUpdateStatus.SUCCESS ? null : "Unknown error"
+                        updateStatus == ParameterUpdateStatus.SUCCESS ? null : status
                 ));
 
             } catch (Exception ex) {
