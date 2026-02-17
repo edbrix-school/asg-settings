@@ -152,6 +152,14 @@ public class DocumentService {
         return documentDto;
     }
 
+    public DocumentDto getDocumentByIdPublic(String docId) {
+        DocumentDto documentDto = getDocumentById(docId);
+        // Hide sensitive SQL fields for public API
+        documentDto.setListOfRecordsSql(null);
+        documentDto.setDocInfoFieldsSql(null);
+        return documentDto;
+    }
+
     // Used by search method for filtering
     public List<String> getSearchableFieldNames(DocumentEntity doc) {
         String sql = doc.getListOfRecordsSql();

@@ -112,6 +112,20 @@ public class DocumentController {
     }
 
     @Operation(
+            summary = "Get Document Details (Public - Without SQL)",
+            description = """
+                        Fetch Document details by `docId` without sensitive SQL fields.
+                        Use this endpoint for public/external access.
+                    """
+    )
+    @GetMapping("/public-details")
+    public ResponseEntity<?> getDocumentByIdPublic(@RequestParam String docId) {
+        DocumentDto document = documentService.getDocumentByIdPublic(docId);
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
+        return success("success", document);
+    }
+
+    @Operation(
             summary = "Get searchable fields ",
             description = """
                     to get searchable fields for given document Id.
