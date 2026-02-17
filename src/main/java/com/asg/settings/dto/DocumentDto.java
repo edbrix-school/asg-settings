@@ -57,7 +57,6 @@ public class DocumentDto {
     private String mainTableName;
     private String editableOnSameDay;
     private String hideInMainMenu;
-    @com.fasterxml.jackson.annotation.JsonIgnore
     private String listOfRecordsSql;
     private String docKeyField;
     private String docReturnFields;
