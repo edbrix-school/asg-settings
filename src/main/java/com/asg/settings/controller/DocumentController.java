@@ -101,26 +101,16 @@ public class DocumentController {
     @Operation(
             summary = "Get Document Details",
             description = """
-                        Fetch Document details by `docId`
+                        Fetch Document details by `docId`.
+                        Use `includeSql=true` to include SQL fields (for internal/admin use).
+                        Default is `false` (SQL fields hidden for security).
                     """
     )
     @GetMapping("/details")
-    public ResponseEntity<?> getDocumentById(@RequestParam String docId) {
-        DocumentDto document = documentService.getDocumentById(docId);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
-        return success("success", document);
-    }
-
-    @Operation(
-            summary = "Get Document Details (Public - Without SQL)",
-            description = """
-                        Fetch Document details by `docId` without sensitive SQL fields.
-                        Use this endpoint for public/external access.
-                    """
-    )
-    @GetMapping("/public-details")
-    public ResponseEntity<?> getDocumentByIdPublic(@RequestParam String docId) {
-        DocumentDto document = documentService.getDocumentByIdPublic(docId);
+    public ResponseEntity<?> getDocumentById(
+            @RequestParam String docId,
+            @RequestParam(required = false, defaultValue = "false") Boolean includeSql) {
+        DocumentDto document = documentService.getDocumentById(docId, includeSql);
         loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
         return success("success", document);
     }

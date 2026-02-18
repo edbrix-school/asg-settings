@@ -98,7 +98,7 @@ public class DocumentService {
     @Autowired
     DocumentDeleteService documentDeleteService;
 
-    public DocumentDto getDocumentById(String docId) {
+    public DocumentDto getDocumentById(String docId, Boolean includeSql) {
         DocumentEntity document = documentRepository.findByDocId(docId);
         if (document == null) {
             throw new ResourceNotFoundException("Document", "docId", docId);
@@ -149,14 +149,12 @@ public class DocumentService {
         documentDto.setDocumentApprovalDetails(docMasterApprovalDtlDtos);
         documentDto.setDocumentAuthDetails(docAuthDtl);
 
-        return documentDto;
-    }
+        // Hide SQL fields if includeSql is false
+        if (!Boolean.TRUE.equals(includeSql)) {
+            documentDto.setListOfRecordsSql(null);
+            documentDto.setDocInfoFieldsSql(null);
+        }
 
-    public DocumentDto getDocumentByIdPublic(String docId) {
-        DocumentDto documentDto = getDocumentById(docId);
-        // Hide sensitive SQL fields for public API
-        documentDto.setListOfRecordsSql(null);
-        documentDto.setDocInfoFieldsSql(null);
         return documentDto;
     }
 
