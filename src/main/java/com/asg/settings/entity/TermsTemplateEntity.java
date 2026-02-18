@@ -1,16 +1,15 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
-import java.time.LocalDateTime;
-
 @Data
 @Entity
 @Table(name="GLOBAL_TERMS_TEMPLATE_MASTER")
-public class TermsTemplateEntity {
+public class TermsTemplateEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,18 +40,6 @@ public class TermsTemplateEntity {
 
     @Column(name="REMARKS")
     private String remarks;
-
-    @Column(name="CREATED_BY")
-    private String createdBy;
-
-    @Column(name="CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name="LASTMODIFIED_BY")
-    private String lastModifiedBy;
-
-    @Column(name="LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
     @Column(name="TERMS_CATEGORY")
     private String termsCategory;

@@ -1,12 +1,12 @@
 package com.asg.settings.dto;
 
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 public record CurrencyUpdateRequest(
      Long groupPOID,
      String currencyCode,
-     Date rateChangeDate,
+     LocalDate rateChangeDate,
      BigDecimal buyRate,
      BigDecimal sellRate
 

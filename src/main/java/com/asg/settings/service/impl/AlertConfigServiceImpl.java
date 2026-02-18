@@ -1,10 +1,6 @@
 package com.asg.settings.service.impl;
 
-import com.asg.common.lib.dto.DeleteReasonDto;
-import com.asg.common.lib.dto.FilterDto;
-import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.common.lib.dto.LovGetListDto;
-import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.enums.AlertCheckTypeEnum;
 import com.asg.common.lib.enums.FrequencyTypeEnum;
 import com.asg.common.lib.enums.LogDetailsEnum;
@@ -14,6 +10,7 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
+import com.asg.common.lib.utility.DateUtil;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.AlertAndRemainderDto;
 import com.asg.settings.entity.AlertConfigEntity;
@@ -25,7 +22,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -99,10 +94,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         entity.setNotifyUserRolesPoid(ASGHelperUtils.convertListToString(dto.getNotifyUserRolesPoid()));
         entity.setActive(StringUtils.isBlank(dto.getActive()) ? "Y" : dto.getActive());
         entity.setSeqNo(dto.getSeqNo());
-        entity.setCreatedBy(getCurrentUser());
-        entity.setCreatedDate(LocalDateTime.now());
-        entity.setLastModifiedBy(getCurrentUser());
-        entity.setLastModifiedDate(LocalDateTime.now());
         entity.setAlertCheckType(dto.getAlertCheckType() != null ? dto.getAlertCheckType().getValue() : null);
         entity.setFrequencyType(dto.getFrequencyType() != null ? dto.getFrequencyType().name() : FrequencyTypeEnum.DAY.name());
         entity.setEscalateDays(dto.getEscalateDays());
@@ -110,8 +101,8 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         entity.setDeleted(StringUtils.isBlank(dto.getDeleted()) ? "N" : dto.getDeleted());
         entity.setAlertEscalateFrequency(dto.getAlertEscalateFrequency() != null ? dto.getAlertEscalateFrequency() : 1);
         entity.setAlertNotifyFrequency(dto.getAlertNotifyFrequency() != null ? dto.getAlertNotifyFrequency() : 1);
-        entity.setEscalateAlertSendMailDate(dto.getEscalateAlertSendMailDate() == null ? new Date() : dto.getEscalateAlertSendMailDate());
-        entity.setNotifyAlertSendMailDate(dto.getNotifyAlertSendMailDate() == null ? new Date() : dto.getNotifyAlertSendMailDate());
+        entity.setEscalateAlertSendMailDate(dto.getEscalateAlertSendMailDate() == null ? DateUtil.getCurrentDateInUserTimeZone() : dto.getEscalateAlertSendMailDate());
+        entity.setNotifyAlertSendMailDate(dto.getNotifyAlertSendMailDate() == null ? DateUtil.getCurrentDateInUserTimeZone() : dto.getNotifyAlertSendMailDate());
         entity.setDailyRecurrence(dto.getDailyRecurrence());
 
         return entity;
@@ -152,9 +143,9 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         dto.setActive(entity.getActive());
         dto.setSeqNo(entity.getSeqNo());
         dto.setCreatedBy(entity.getCreatedBy());
-        dto.setCreatedDate(entity.getCreatedDate() != null ? java.sql.Timestamp.valueOf(entity.getCreatedDate()) : null);
+        dto.setCreatedDate(entity.getCreatedDate());
         dto.setLastModifiedBy(entity.getLastModifiedBy());
-        dto.setLastModifiedDate(entity.getLastModifiedDate() != null ? java.sql.Timestamp.valueOf(entity.getLastModifiedDate()) : null);
+        dto.setLastModifiedDate(entity.getLastModifiedDate());
 
         dto.setAlertCheckType(AlertCheckTypeEnum.fromDbValue(entity.getAlertCheckType()));
         dto.setFrequencyType(FrequencyTypeEnum.fromDbValue(entity.getFrequencyType()));
@@ -219,11 +210,6 @@ public class AlertConfigServiceImpl implements AlertConfigService {
         existingConfig.setSeqNo(request.getSeqNo());
         existingConfig.setDeleted(request.getDeleted());
         existingConfig.setActive(request.getActive());
-        existingConfig.setLastModifiedDate(LocalDateTime.now());
-
-        existingConfig.setLastModifiedDate(LocalDateTime.now());
-
-        existingConfig.setLastModifiedBy(getCurrentUser());
 
         AlertConfigEntity updatedConfig = alertConfigRepository.save(existingConfig);
         String docId = UserContext.getDocumentId();

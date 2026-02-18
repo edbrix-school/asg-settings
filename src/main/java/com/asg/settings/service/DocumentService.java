@@ -42,9 +42,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
-import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -286,9 +284,7 @@ public class DocumentService {
         dto.setIsoDocument(entity.getIsoDocument());
         dto.setDocRevision(entity.getDocRevision());
 
-        if (entity.getDocRevisionDate() != null) {
-            dto.setDocRevisionDate(new Date(entity.getDocRevisionDate().getTime()));
-        }
+        dto.setDocRevisionDate(entity.getDocRevisionDate());
 
         dto.setDocIcon(entity.getDocIcon());
         dto.setDocDetails(entity.getDocDetails());
@@ -470,8 +466,7 @@ public class DocumentService {
             document.setDocRevision(new BigDecimal(request.getDocRevision()));
         if (StringUtils.isNotBlank(request.getDocRevisionDate())) {
             try {
-                LocalDate parsedDate = LocalDate.parse(request.getDocRevisionDate(), DateTimeFormatter.ISO_LOCAL_DATE);
-                document.setDocRevisionDate(Date.valueOf(parsedDate));
+                document.setDocRevisionDate(LocalDate.parse(request.getDocRevisionDate(), DateTimeFormatter.ISO_LOCAL_DATE));
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Invalid docRevisionDate format: " + request.getDocRevisionDate());
             }
@@ -537,10 +532,6 @@ public class DocumentService {
                 }
             });
         }
-
-        // Set audit fields (original requirement)
-        document.setLastModifiedBy(getUserId()); // UpdatedBy from authenticated user
-        document.setLastModifiedDate(Timestamp.valueOf(LocalDateTime.now())); // UpdatedDate as SYSTIMESTAMP
 
         // Save updated document
         documentRepository.save(document);

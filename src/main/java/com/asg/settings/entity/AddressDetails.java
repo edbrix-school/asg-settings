@@ -1,6 +1,7 @@
 package com.asg.settings.entity;
 
 import com.asg.common.lib.annotation.AuditIgnore;
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,12 +9,11 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "GLOBAL_ADDRESS_DETAILS")
 @Data
-public class AddressDetails {
+public class AddressDetails extends BaseEntity {
 
     @Id
     @Column(name = "ADDRESS_POID")
@@ -81,22 +81,6 @@ public class AddressDetails {
 
     @Column(name = "LAND_MARK", length = 250)
     private String landMark;
-
-    @Column(name = "CREATED_BY", length = 20)
-    @AuditIgnore
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    @AuditIgnore
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    @AuditIgnore
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    @AuditIgnore
-    private LocalDateTime lastModifiedDate;
 
     @Column(name = "OLD_ACCNO_REF", length = 20)
     @AuditIgnore

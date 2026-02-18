@@ -8,7 +8,6 @@ import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
-import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.common.lib.utility.ValidationUtil;
 import com.asg.settings.dto.*;
@@ -34,11 +33,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -369,10 +364,6 @@ public class UserService {
        /* user.setCreatedDate(Timestamp.from(Instant.now()));
         Timestamp now = Timestamp.from(Instant.now());
         user = userRepository.saveAndFlush(user);*/
-
-
-        Timestamp now = Timestamp.from(Instant.now());
-        String currentUser = ASGHelperUtils.getCurrentUser();
 
         if (user.getUserPoid() == null) {
             // --- Creating new user - BaseEntity handles audit fields ---

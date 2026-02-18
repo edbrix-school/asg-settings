@@ -95,8 +95,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         existingTemplate.setSeqNo(request.getSeqNo());
         existingTemplate.setRemarks(request.getRemarks());
         existingTemplate.setDocId(request.getDocId());
-        existingTemplate.setLastModifiedBy(loginUserPoid);
-        existingTemplate.setLastModifiedDate(LocalDateTime.now());
         TermsTemplateEntity updatedTemplate = termsTemplateRepository.save(existingTemplate);
 
         String headerKey = updatedTemplate.getTermsPoid().toString();
@@ -126,8 +124,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         BeanUtils.copyProperties(existingClause, oldClause);
 
                         existingClause.setActive("N"); // Mark as inactive
-                        existingClause.setLastModifiedBy(loginUserPoid);
-                        existingClause.setLastModifiedDate(LocalDateTime.now());
                         clausesToDelete.add(existingClause);
                         loggingService.logDelete(existingClause, UserContext.getDocumentId(), termsPoid.toString());
                     }
@@ -148,8 +144,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                         // CREATE new clause (isCreated)
                         Long nextAvailableId = termsTemplateDtlRepository.getNextDetRowId(termsPoid);
                         key.setDetRowId(nextAvailableId);
-                        clause.setCreatedBy(loginUserPoid);
-                        clause.setCreatedDate(LocalDateTime.now());
 
                         String logDetail = String.format("Row Created on Term Clause with DetRowId %s ", nextAvailableId);
                         loggingService.createLogSummaryEntry(UserContext.getDocumentId(), termsPoid.toString(), logDetail);
@@ -163,8 +157,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                             clause.setClauseDetails(clauseDto.getClauseDetails());
                             BeanUtils.copyProperties(existingClause, oldClause);
                         }
-                        clause.setLastModifiedBy(loginUserPoid);
-                        clause.setLastModifiedDate(LocalDateTime.now());
                     }
 
                     clause.setId(key);
@@ -222,8 +214,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         template.setActive(templateRequestDto.getActive() != null ? templateRequestDto.getActive() : "N");
         template.setSeqNo(templateRequestDto.getSeqNo());
         template.setRemarks(templateRequestDto.getRemarks());
-        template.setCreatedBy(UserContext.getUserId());
-        template.setCreatedDate(LocalDateTime.now());
         template.setTermsCategory(templateRequestDto.getTermsCategory());
         template.setDeleted("N");
         TermsTemplateEntity savedTemplate = termsTemplateRepository.save(template);
@@ -253,8 +243,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
                 termsTemplateDtlEntity.setClauseNo(clause.getClauseNo());
                 termsTemplateDtlEntity.setClauseDetails(clause.getClauseDetails());
                 termsTemplateDtlEntity.setActive(clause.getActive());
-                termsTemplateDtlEntity.setCreatedBy(UserContext.getUserId());
-                termsTemplateDtlEntity.setCreatedDate(LocalDateTime.now());
 
                 listOfClauses.add(termsTemplateDtlEntity);
             }
@@ -317,7 +305,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         if (clauses.isEmpty()) {
             throw new ResourceNotFoundException("Active Terms Template Detail not found", "clauseNo", clauseNo);
         }
-        LocalDateTime now = LocalDateTime.now();
         List<TermsTemplateDtlDto> deletedClauses = new ArrayList<>();
 
         for (TermsTemplateDtlEntity clause : clauses) {
@@ -325,7 +312,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
             BeanUtils.copyProperties(clause, oldClause);
 
             clause.setActive("N");
-            clause.setLastModifiedDate(now);
             TermsTemplateDtlEntity deletedClause = termsTemplateDtlRepository.save(clause);
             deletedClauses.add(this.mapToDtlDto(deletedClause));
             String docId = UserContext.getDocumentId();
@@ -356,8 +342,6 @@ public class TermsTemplateServiceImpl implements TermsTemplateService {
         entity.setClauseNo(dto.getClauseNo());
         entity.setClauseDetails(dto.getClauseDetails());
         entity.setActive(dto.getActive() != null ? dto.getActive() : "Y");
-        entity.setCreatedDate(LocalDateTime.now());
-        entity.setLastModifiedDate(LocalDateTime.now());
         TermsTemplateDtlEntity saved = termsTemplateDtlRepository.save(entity);
 
         dto.setDetRowId(saved.getId().getDetRowId());

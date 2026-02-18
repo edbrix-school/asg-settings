@@ -9,7 +9,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -36,10 +37,10 @@ public class AlertAndRemainderDto {
     private Integer seqNo;
     @Size(max = 20, message = "Created by must not exceed 20 characters")
     private String createdBy;
-    private Date createdDate;
+    private LocalDateTime createdDate;
     @Size(max = 20, message = "Last modified by must not exceed 20 characters")
     private String lastModifiedBy;
-    private Date lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
     private AlertCheckTypeEnum alertCheckType;
     private Integer escalateDays;
@@ -49,8 +50,8 @@ public class AlertAndRemainderDto {
     private String deleted;
     private Integer alertEscalateFrequency;
     private Integer alertNotifyFrequency;
-    private Date escalateAlertSendMailDate;
-    private Date notifyAlertSendMailDate;
+    private LocalDate escalateAlertSendMailDate;
+    private LocalDate notifyAlertSendMailDate;
     private Integer dailyRecurrence;
     private FrequencyTypeEnum frequencyType;
 }

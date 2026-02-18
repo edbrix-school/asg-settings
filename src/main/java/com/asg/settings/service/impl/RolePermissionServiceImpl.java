@@ -62,9 +62,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
         
         // Set audit fields
         response.setCreatedBy(roleEntity.getCreatedBy() != null ? roleEntity.getCreatedBy() : "");
-        response.setCreatedDate(roleEntity.getCreatedDate() != null ? roleEntity.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        response.setCreatedDate(roleEntity.getCreatedDate() != null ? roleEntity.getCreatedDate() : null);
         response.setLastModifiedBy(roleEntity.getLastModifiedBy() != null ? roleEntity.getLastModifiedBy() : "");
-        response.setLastModifiedDate(roleEntity.getLastModifiedDate() != null ? roleEntity.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        response.setLastModifiedDate(roleEntity.getLastModifiedDate() != null ? roleEntity.getLastModifiedDate() : null);
 
         // NEW: fetch all docs + module + existing rights for this role
         List<UserRoleRightsDetEntity> allDocsWithRights =
@@ -169,11 +169,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
             entity.setId(new UserRoleRightsKey(request.getRoleId(), entry.getDetRowId()));
             entity.setDocId(entry.getDocId());
             entity.setRights(entry.getRights());
-            entity.setCreatedBy(entry.getCreatedBy());
-            entity.setCreatedDate(LocalDateTime.now());
-            entity.setLastModifiedBy(entry.getLastModifiedBy());
-            entity.setLastModifiedDate(LocalDateTime.now());
-
             rightsRepo.save(entity);
         }
 
@@ -207,10 +202,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
                 newEntity.setId(new UserRoleRightsKey(roleId, entry.getDetRowId()));
                 newEntity.setDocId(entry.getDocId());
                 newEntity.setRights(entry.getRights());
-                newEntity.setCreatedBy(entry.getLastModifiedBy());
-                newEntity.setCreatedDate(LocalDateTime.now());
-                newEntity.setLastModifiedBy(entry.getLastModifiedBy());
-                newEntity.setLastModifiedDate(LocalDateTime.now());
                 rightsRepo.save(newEntity);
             } else {
                 // Update existing record
@@ -219,8 +210,6 @@ public class RolePermissionServiceImpl implements RolePermissionService {
                 BeanUtils.copyProperties(entity, oldEntity);
 
                 entity.setRights(entry.getRights());
-                entity.setLastModifiedBy(UserContext.getUserId());
-                entity.setLastModifiedDate(LocalDateTime.now());
                 rightsRepo.save(entity);
 
                 String logDetail = String.format("KeyId = DET_ROW_ID:%s", entry.getDetRowId());
