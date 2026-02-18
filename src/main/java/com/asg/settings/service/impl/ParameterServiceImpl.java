@@ -5,9 +5,13 @@ import com.asg.common.lib.enums.GlobalParameterTypeEnum;
 import com.asg.common.lib.enums.ParameterUpdateStatus;
 import com.asg.settings.dto.*;
 import com.asg.settings.entity.GlobalParameterEntity;
+import com.asg.common.lib.enums.LogDetailsEnum;
+import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.repository.GlobalParameterRepository;
 import com.asg.settings.repository.ParameterRepository;
 import com.asg.settings.service.ParameterService;
+import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,21 +31,36 @@ public class ParameterServiceImpl implements ParameterService {
 
     private final ParameterRepository parameterRepository;
     private final GlobalParameterRepository globalParameterRepository;
+    private final LoggingService loggingService;
+    private final EntityManager entityManager;
 
     @Autowired
     public ParameterServiceImpl(ParameterRepository parameterRepository,
-                                GlobalParameterRepository globalParameterRepository) {
+                                GlobalParameterRepository globalParameterRepository,
+                                LoggingService loggingService,
+                                EntityManager entityManager) {
         this.parameterRepository = parameterRepository;
         this.globalParameterRepository = globalParameterRepository;
+        this.loggingService = loggingService;
+        this.entityManager = entityManager;
     }
 
 
     public BulkUpdateResponseDTO updateParameters(UpdateParameterRequestDTO request) {
         List<ParameterUpdateResultDTO> results = new ArrayList<>();
         int successCount = 0;
+        String docId = UserContext.getDocumentId();
 
         for (UpdateParameterDTO param : request.getParameters()) {
             try {
+                GlobalParameterEntity oldParam = globalParameterRepository.findById(param.getParameterPoid()).orElse(null);
+                GlobalParameterEntity oldParamCopy = null;
+                if (oldParam != null) {
+                    oldParamCopy = new GlobalParameterEntity();
+                    BeanUtils.copyProperties(oldParam, oldParamCopy);
+                    entityManager.detach(oldParam);
+                }
+
                 String status = parameterRepository.callUpdateProcedure(
                         request.getLoginUserPoid(),
                         param.getParameterPoid(),
@@ -53,13 +72,20 @@ public class ParameterServiceImpl implements ParameterService {
 
                 if (updateStatus == ParameterUpdateStatus.SUCCESS) {
                     successCount++;
+                    GlobalParameterEntity newParam = globalParameterRepository.findById(param.getParameterPoid()).orElse(null);
+                    
+                    if (oldParamCopy != null && newParam != null) {
+                        String logDetail = String.format("KeyId = PARAMETER_POID %s", param.getParameterPoid());
+                        loggingService.createLog(oldParamCopy, newParam, GlobalParameterEntity.class, docId, 
+                            param.getParameterPoid().toString(), logDetail);
+                    }
                 }
 
                 results.add(new ParameterUpdateResultDTO(
                         param.getParameterPoid(),
                         param.getParameterKeyId(),
                         updateStatus,
-                        updateStatus == ParameterUpdateStatus.SUCCESS ? null : "Unknown error"
+                        updateStatus == ParameterUpdateStatus.SUCCESS ? null : status
                 ));
 
             } catch (Exception ex) {

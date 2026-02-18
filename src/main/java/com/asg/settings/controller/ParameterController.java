@@ -148,8 +148,19 @@ public class ParameterController {
         BulkUpdateResponseDTO response = parameterService.updateParameters(updateParameterDTO);
 
         return switch (response.getOverallStatus()) {
-            case "SUCCESS" -> success("All parameters updated successfully", response);
-            case "PARTIAL_SUCCESS" -> success("Some parameters updated successfully", response);
+            case "SUCCESS" -> {
+                long count = response.getResults().stream()
+                    .filter(r -> r.getStatus() == com.asg.common.lib.enums.ParameterUpdateStatus.SUCCESS)
+                    .count();
+                String msg = count == 1 ? "1 row updated successfully" : count + " rows updated successfully";
+                yield success(msg, response);
+            }
+            case "PARTIAL_SUCCESS" -> {
+                long count = response.getResults().stream()
+                    .filter(r -> r.getStatus() == com.asg.common.lib.enums.ParameterUpdateStatus.SUCCESS)
+                    .count();
+                yield success(count + " rows updated, some failed", response);
+            }
             default -> error("Failed to update parameters", 500, response);
         };
     }
