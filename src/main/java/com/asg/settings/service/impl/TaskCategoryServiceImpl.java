@@ -145,7 +145,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         if (category == null) {
             return notFound("Task Category not found for id: " + categoryPoid);
         }
-        LocalDateTime now = LocalDateTime.now();
 
         // Idempotency check
         if ("N".equalsIgnoreCase(category.getActive())) {
@@ -191,10 +190,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryEntity.setActive(StringUtils.isBlank(taskCategoryDto.getActive()) ? "Y" : taskCategoryDto.getActive());
         taskCategoryEntity.setDeleted(StringUtils.isBlank(taskCategoryDto.getDeleted()) ? "N" : taskCategoryDto.getDeleted());
         taskCategoryEntity.setCategoryCode(taskCategoryDto.getCategoryCode());
-        taskCategoryEntity.setCreatedBy(getCurrentUser());
-        taskCategoryEntity.setCreatedDate(LocalDateTime.now());
-        taskCategoryEntity.setLastModifiedBy(getCurrentUser());
-        taskCategoryEntity.setLastModifiedDate(LocalDateTime.now());
 
         TaskCategoryEntity savedEntity = taskCategoryRepository.save(taskCategoryEntity);
         Long categoryPoid = savedEntity.getCategoryPoid();
@@ -209,10 +204,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
                 TaskCategoryDTLEntity subCategoryEntity = new TaskCategoryDTLEntity();
                 subCategoryEntity.setCategoryPoid(categoryPoid);
                 subCategoryEntity.setSubCategoryDescription(subCategoryDto.getSubCategoryDescription());
-                subCategoryEntity.setCreatedBy(getCurrentUser());
-                subCategoryEntity.setCreatedDate(LocalDateTime.now());
-                subCategoryEntity.setLastModifiedBy(getCurrentUser());
-                subCategoryEntity.setLastModifiedDate(LocalDateTime.now());
                 subCategoriesToSave.add(subCategoryEntity);
             }
             taskCategoryDTLRepository.saveAll(subCategoriesToSave);
@@ -250,8 +241,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryEntity.setActive(StringUtils.isBlank(taskCategoryDto.getActive()) ? "Y" : taskCategoryDto.getActive());
         taskCategoryEntity.setDeleted(StringUtils.isBlank(taskCategoryDto.getDeleted()) ? "N" : taskCategoryDto.getDeleted());
         taskCategoryEntity.setCategoryCode(taskCategoryDto.getCategoryCode());
-        taskCategoryEntity.setLastModifiedBy(getCurrentUser());
-        taskCategoryEntity.setLastModifiedDate(LocalDateTime.now());
 
         taskCategoryRepository.save(taskCategoryEntity);
         if (taskCategoryDto.getSubCategories() != null && !taskCategoryDto.getSubCategories().isEmpty()) {
@@ -337,8 +326,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         BeanUtils.copyProperties(entity, oldEntity);
 
         entity.setSubCategoryDescription(dto.getSubCategoryDescription());
-        entity.setLastModifiedBy(getCurrentUser());
-        entity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(entity);
 
         String logDetail = String.format("KeyId: CATEGORY_POID:%s DET_ROW_ID:%s", oldEntity.getCategoryPoid() ,oldEntity.getDetRowId());
@@ -352,10 +339,6 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         TaskCategoryDTLEntity newEntity = new TaskCategoryDTLEntity();
         newEntity.setCategoryPoid(categoryPoid);
         newEntity.setSubCategoryDescription(dto.getSubCategoryDescription());
-        newEntity.setCreatedBy(getCurrentUser());
-        newEntity.setCreatedDate(LocalDateTime.now());
-        newEntity.setLastModifiedBy(getCurrentUser());
-        newEntity.setLastModifiedDate(LocalDateTime.now());
         entitiesToSave.add(newEntity);
 
     }

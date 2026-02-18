@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @NoArgsConstructor
@@ -28,12 +28,12 @@ public class CurrencyRateDto {
     private Integer decimals;
     private BigDecimal buyRate;
     private BigDecimal sellRate;
-    private Date rateDate;
+    private LocalDate rateDate;
     private List<CurrencyRateEntity> rateHistory;
     
     // Audit fields
     private String createdBy;
-    private OffsetDateTime createdDate;
+    private LocalDateTime createdDate;
     private String lastModifiedBy;
-    private OffsetDateTime lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 }

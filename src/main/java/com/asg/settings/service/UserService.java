@@ -8,7 +8,6 @@ import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
-import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.common.lib.utility.ValidationUtil;
 import com.asg.settings.dto.*;
@@ -34,10 +33,7 @@ import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -182,9 +178,9 @@ public class UserService {
                 user.getUserLockedReason(),
                 user.getResetPasswordNextLogin(),
                 user.getCreatedBy(),
-                user.getCreatedDate() != null ? new Date(user.getCreatedDate().getTime()) : null,
+                user.getCreatedDate(),
                 user.getLastModifiedBy(),
-                user.getLastModifiedDate() != null ? Timestamp.valueOf(user.getLastModifiedDate()) : null
+                user.getLastModifiedDate()
         );
     }
 
@@ -369,20 +365,10 @@ public class UserService {
         Timestamp now = Timestamp.from(Instant.now());
         user = userRepository.saveAndFlush(user);*/
 
-
-        Timestamp now = Timestamp.from(Instant.now());
-        String currentUser = ASGHelperUtils.getCurrentUser();
-
         if (user.getUserPoid() == null) {
-            // --- Creating new user ---
-            user.setCreatedBy(currentUser);
-            user.setCreatedDate(now);
-            user.setLastModifiedBy(currentUser);
-            user.setLastModifiedDate(now.toLocalDateTime());
+            // --- Creating new user - BaseEntity handles audit fields ---
         } else {
-            // --- Updating existing user ---
-            user.setLastModifiedBy(currentUser);
-            user.setLastModifiedDate(now.toLocalDateTime());
+            // --- Updating existing user - BaseEntity handles audit fields ---
         }
         boolean isNewUser = user.getUserPoid() == null;
         user = userRepository.saveAndFlush(user);
@@ -490,20 +476,21 @@ public class UserService {
     }
 
     private void deleteUserRole(UserRoleDto role, User finalUser) {
-        UserRolesEntity rolePresent = userRoleRepository.getUserRolesEntitiesById_UserPoidAndUserRolePoid(finalUser.getUserPoid(), role.userRolePoId());
+        UserRolesEntity rolePresent = userRoleRepository.findById_UserPoidAndId_DetRowId(finalUser.getUserPoid(), role.detRowId());
         if (null != rolePresent) {
-            userRoleRepository.deleteByUserRolePoidAndId_UserPoid(role.userRolePoId(), finalUser.getUserPoid());
+            userRoleRepository.delete(rolePresent);
             loggingService.logDelete(rolePresent, UserContext.getDocumentId(), finalUser.getUserPoid().toString());
         } else {
-            throw new InputMismatchException("Cannot delete a role that  is not assigned to the user, userRoleId  -> " + role.userRoleId());
+            throw new InputMismatchException("Cannot delete a role that is not assigned to the user, userRolePoId -> " + role.userRolePoId() + ", detRowId -> " + role.detRowId());
         }
     }
 
     private void updateUserRole(UserRoleDto role, User finalUser) {
         UserRolesEntity rolePresent = userRoleRepository.findById_UserPoidAndId_DetRowId(finalUser.getUserPoid(), role.detRowId());
         if (null != rolePresent) {
-            Date oldExpiryDate = rolePresent.getExpiryDate();
+            LocalDate oldExpiryDate = rolePresent.getExpiryDate();
             rolePresent.setExpiryDate(role.expiryDate());
+            rolePresent.setUserRolePoid(role.userRolePoId());
             userRoleRepository.save(rolePresent);
 
             String docId = UserContext.getDocumentId();

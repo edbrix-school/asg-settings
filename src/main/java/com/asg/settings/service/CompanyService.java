@@ -1,12 +1,10 @@
 package com.asg.settings.service;
 
-import com.asg.common.lib.dto.DeleteReasonDto;
-import com.asg.common.lib.dto.FilterDto;
-import com.asg.common.lib.dto.FilterRequestDto;
-import com.asg.common.lib.dto.RawSearchResult;
+import com.asg.common.lib.dto.*;
 import com.asg.common.lib.entity.Company;
 import com.asg.common.lib.entity.CompanyDivisionEntity;
 import com.asg.common.lib.entity.TimeZoneEntity;
+import com.asg.common.lib.entity.key.CompanyDivisionEntityKey;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.exception.ResourceNotFoundException;
 import com.asg.common.lib.exception.ValidationException;
@@ -16,26 +14,23 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
-import com.asg.common.lib.utility.ASGHelperUtils;
 import com.asg.common.lib.utility.PaginationUtil;
-import com.asg.common.lib.dto.CompanyDivisionDto;
-import com.asg.common.lib.dto.CompanyDto;
-import com.asg.common.lib.dto.TimeZoneDto;
 import com.asg.settings.dto.UserCompanyDto;
-import com.asg.settings.entity.*;
-import com.asg.common.lib.entity.key.CompanyDivisionEntityKey;
+import com.asg.settings.entity.DivisionMasterEntity;
+import com.asg.settings.entity.State;
+import com.asg.settings.entity.UsersCompanyEntity;
 import com.asg.settings.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,7 +74,7 @@ public class CompanyService {
             List<UserCompanyDto> result = new ArrayList<>();
 
             for (UsersCompanyEntity usersCompanyEntity : companyList) {
-                Date expiry = usersCompanyEntity.getExpiryDate();
+                LocalDate expiry = usersCompanyEntity.getExpiryDate();
                 Long companyPoid = usersCompanyEntity.getId().getCompanyPoid();
                 Company company = companyRepository.findByCompanyPoid(companyPoid);
                 TimeZoneEntity timeZoneEntity = timeZoneRepository.findByTimezoneId(company.getTimezoneId());
@@ -316,7 +311,7 @@ public class CompanyService {
             String logDetail = String.format("Row Created on Company Division with DetRowId %s ", companyDivision.getId().getDetRowId());
             loggingService.createLogSummaryEntry(UserContext.getDocumentId(), companyPoid.toString(), logDetail);
         } else {
-            throw new ValidationException("You are attempting to create the same division multiple times. Please review your selection. divisionId -> " + division.getDivPoid());
+            throw new ValidationException("You are attempting to create the same division multiple times. " + division.getDivPoid());
         }
     }
 
@@ -369,24 +364,22 @@ public class CompanyService {
         }
 
         Company newCompany = new Company();
-        java.util.Date currentDate = new java.util.Date(System.currentTimeMillis());
 
-        newCompany.setCreatedBy(userId);
         newCompany.setCompanyPoid(null);
-        newCompany.setCreatedDate(currentDate);
 
         // Initialize all 8 tracking fields for new company
+        LocalDateTime currentDateTime = com.asg.common.lib.utility.DateUtil.getCurrentDateTimeInUserTimeZone();
         newCompany.setFinancialDateUpdatedBy(userId);
-        newCompany.setFinancialDateUpdatedDate(currentDate);
+        newCompany.setFinancialDateUpdatedDate(currentDateTime);
         newCompany.setTransDateUpdatedBy(userId);
-        newCompany.setTransDateUpdatedDate(currentDate);
+        newCompany.setTransDateUpdatedDate(currentDateTime);
         newCompany.setReportDateUpdatedBy(userId);
-        newCompany.setReportDateUpdatedDate(currentDate);
+        newCompany.setReportDateUpdatedDate(currentDateTime);
         newCompany.setInventoryDateUpdatedBy(userId);
-        newCompany.setInventoryDateUpdatedDate(currentDate);
+        newCompany.setInventoryDateUpdatedDate(currentDateTime);
         // Set VAT filing audit fields on CREATE also
         newCompany.setVatLastFiledBy(userId);
-        newCompany.setVatLastFiledCreatedDate(currentDate);
+        newCompany.setVatLastFiledCreatedDate(currentDateTime);
 
 
         // Set all other fields from the input company
@@ -423,47 +416,43 @@ public class CompanyService {
             throw new ValidationException("Company Name already exists, please enter unique name.");
         }
 
-
-        existingCompany.setLastModifiedBy(userId);
-        existingCompany.setLastModifiedDate(new java.util.Date(System.currentTimeMillis()));
-
         // Make copy of old company for logging
         Company oldCompany = new Company();
         BeanUtils.copyProperties(existingCompany, oldCompany);
 
 
         // Check for field changes and update tracking fields
-        java.util.Date date = new java.util.Date(System.currentTimeMillis());
+        LocalDateTime currentDateTime = com.asg.common.lib.utility.DateUtil.getCurrentDateTimeInUserTimeZone();
 
         if (!Objects.equals(company.getFinancialPeriodStart(), existingCompany.getFinancialPeriodStart()) ||
                 !Objects.equals(company.getFinancialPeriodEnd(), existingCompany.getFinancialPeriodEnd())) {
             existingCompany.setFinancialDateUpdatedBy(userId);
-            existingCompany.setFinancialDateUpdatedDate(date);
+            existingCompany.setFinancialDateUpdatedDate(currentDateTime);
         }
 
         if (!Objects.equals(company.getTransPeriodStart(), existingCompany.getTransPeriodStart()) ||
                 !Objects.equals(company.getTransPeriodEnd(), existingCompany.getTransPeriodEnd())) {
             existingCompany.setTransDateUpdatedBy(userId);
-            existingCompany.setTransDateUpdatedDate(date);
+            existingCompany.setTransDateUpdatedDate(currentDateTime);
         }
 
         if (!Objects.equals(company.getReportPeriodStart(), existingCompany.getReportPeriodStart()) ||
                 !Objects.equals(company.getReportPeriodEnd(), existingCompany.getReportPeriodEnd())) {
             existingCompany.setReportDateUpdatedBy(userId);
-            existingCompany.setReportDateUpdatedDate(date);
+            existingCompany.setReportDateUpdatedDate(currentDateTime);
         }
 
         if (!Objects.equals(company.getStockPeriodStart(), existingCompany.getStockPeriodStart()) ||
                 !Objects.equals(company.getStockPeriodEnd(), existingCompany.getStockPeriodEnd())) {
             existingCompany.setInventoryDateUpdatedBy(userId);
-            existingCompany.setInventoryDateUpdatedDate(date);
+            existingCompany.setInventoryDateUpdatedDate(currentDateTime);
         }
 
         // Track VAT filing changes
         if (!Objects.equals(company.getVatLastFiledDate(), existingCompany.getVatLastFiledDate()) ||
                 !Objects.equals(company.getVatLastFiledBy(), existingCompany.getVatLastFiledBy())) {
             existingCompany.setVatLastFiledBy(userId);
-            existingCompany.setVatLastFiledCreatedDate(date);
+            existingCompany.setVatLastFiledCreatedDate(currentDateTime);
         }
 
         setCompanyFields(existingCompany, company);

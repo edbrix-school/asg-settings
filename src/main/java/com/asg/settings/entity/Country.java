@@ -1,6 +1,7 @@
 package com.asg.settings.entity;
 
 import com.asg.common.lib.annotation.AuditIgnore;
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Table(name = "GLOBAL_COUNTRY_MASTER")
-public class Country {
+public class Country extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "COUNTRY_POID")
@@ -43,22 +44,6 @@ public class Country {
 
     @Column(name = "SEQNO")
     private Integer seqNo;
-
-    @Column(name = "CREATED_BY")
-    @AuditIgnore
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    @AuditIgnore
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    @AuditIgnore
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    @AuditIgnore
-    private LocalDateTime lastModifiedDate;
 
     @Column(name = "DELETED")
     @AuditIgnore

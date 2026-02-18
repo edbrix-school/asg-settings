@@ -4,7 +4,7 @@ import com.asg.common.lib.dto.UserRoleDto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -22,7 +22,7 @@ public class CreateUserRequest {
     @Email(message = "Invalid email format")
     @Size(max = 50, message = "userEmail must not exceed 50 characters")
     private String userEmail;
-    private Date expiryDate;
+    private LocalDate expiryDate;
     @Size(max = 1, message = "userLocked must not exceed 1 character")
     private String userLocked;
     @Size(max = 100, message = "userLockedReason must not exceed 100 characters")

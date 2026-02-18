@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.TaskCategoryDTLId;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Entity
 @IdClass(TaskCategoryDTLId.class)
 @Table(name = "GLOBAL_TASK_CATEGORY_DTL")
-public class TaskCategoryDTLEntity {
+public class TaskCategoryDTLEntity extends BaseEntity {
 
     @Id
     @Column(name = "CATEGORY_POID", nullable = false)
@@ -29,15 +30,4 @@ public class TaskCategoryDTLEntity {
     @Column(name = "SUB_CATEGORY_DESCRIPTION", length = 100)
     private String subCategoryDescription;
 
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 }

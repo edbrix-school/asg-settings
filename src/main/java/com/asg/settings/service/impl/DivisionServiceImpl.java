@@ -26,7 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,8 +59,6 @@ public class DivisionServiceImpl implements DivisionService {
         entity.setSeqNo(request.getSeqNo());
         entity.setActive(request.getActive() != null ? request.getActive() : "N");
         entity.setDeleted("N");
-        entity.setCreatedBy(request.getCreatedBy());
-        entity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
         DivisionMasterEntity saved = divisionRepository.save(entity);
         String docId = UserContext.getDocumentId();
@@ -107,9 +104,6 @@ public class DivisionServiceImpl implements DivisionService {
             entity.setActive(request.getActive());
         }
 
-        entity.setUpdatedBy(request.getUpdatedBy());
-        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-
         DivisionMasterEntity updated = divisionRepository.save(entity);
 
         String docId = UserContext.getDocumentId();
@@ -140,8 +134,6 @@ public class DivisionServiceImpl implements DivisionService {
                 .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
         entity.setActive("Y");
-        entity.setUpdatedBy(updatedBy);
-        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         divisionRepository.save(entity);
     }
 
@@ -151,8 +143,6 @@ public class DivisionServiceImpl implements DivisionService {
                 .filter(this::isNotDeleted)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Division not found"));
         entity.setActive("N");
-        entity.setUpdatedBy(updatedBy);
-        entity.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         divisionRepository.save(entity);
     }
 
@@ -186,9 +176,9 @@ public class DivisionServiceImpl implements DivisionService {
         response.setActive(entity.getActive()); // map active (Y/N string)
         response.setDeleted(entity.getDeleted());
         response.setCreatedBy(entity.getCreatedBy());
-        response.setCreatedAt(entity.getCreatedAt());
-        response.setUpdatedBy(entity.getUpdatedBy());
-        response.setUpdatedAt(entity.getUpdatedAt());
+        response.setCreatedAt(entity.getCreatedDate());
+        response.setUpdatedBy(entity.getLastModifiedBy());
+        response.setUpdatedAt(entity.getLastModifiedDate());
         return response;
     }
 

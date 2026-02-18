@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Repository
@@ -64,7 +65,6 @@ public class CurrencyCreateRepository {
             entity.setCurrencyName(request.getCurrencyName());
             entity.setCurrencyName2(request.getCurrencyName2());
             entity.setCreatedBy(userId != null ? userId : "SYSTEM");
-            entity.setCreatedDate(OffsetDateTime.now());
             entity.setActive("Y");
             entity.setDeleted(null);
 
@@ -96,7 +96,6 @@ public class CurrencyCreateRepository {
             entity.setSeqno(request.getSeqno());
             entity.setActive(request.getActive());
             entity.setLastModifiedBy(userId != null ? userId : "SYSTEM");
-            entity.setLastModifiedDate(OffsetDateTime.now());
 
             log.info("CURRENCY_UPDATE success for code={} name={} by userId={}",
                     entity.getCurrencyCode(), entity.getCurrencyName(), userId);

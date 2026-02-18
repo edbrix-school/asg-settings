@@ -9,4 +9,8 @@ public class UpdateParameterDTO {
     private Long parameterPoid;
     private String parameterKeyId;
     private String parameterValue;
+    /**
+     * Action type for parameter operations: isCreated, isUpdated, isDeleted, noChange
+     */
+    private String actionType;
 }

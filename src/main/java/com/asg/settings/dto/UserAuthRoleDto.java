@@ -3,14 +3,14 @@ package com.asg.settings.dto;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Data
 public class UserAuthRoleDto implements Serializable {
 
     private Long userPoid;
     private Long detRowId;
-    private Date expiryDate;
+    private LocalDate expiryDate;
     private Long userRolePoId;
     private String roleId;
     private String roleName;

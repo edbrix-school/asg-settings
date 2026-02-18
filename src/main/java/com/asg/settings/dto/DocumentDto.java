@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -22,15 +22,15 @@ public class DocumentDto {
     private String docType;
     private String isoDocument;
     private BigDecimal docRevision;
-    private Date docRevisionDate;
+    private LocalDate docRevisionDate;
     private byte[] docIcon;
     private String docDetails;
     private String taskflowUrl;
     private Integer seqno;
     private String createdBy;
-    private Timestamp createdDate;
+    private LocalDateTime createdDate;
     private String lastModifiedBy;
-    private Timestamp lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
     private BigDecimal docPoid;
     private String userRoles;
     private String approvalRequired;
