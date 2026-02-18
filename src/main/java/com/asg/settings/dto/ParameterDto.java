@@ -19,4 +19,5 @@ public class ParameterDto {
     private Long parameterPoid;
     private String category;
     private String parameterType;
+    private String actionType;
 }
