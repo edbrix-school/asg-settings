@@ -499,6 +499,7 @@ public class UserService {
         if (null != rolePresent) {
             LocalDate oldExpiryDate = rolePresent.getExpiryDate();
             rolePresent.setExpiryDate(role.expiryDate());
+            rolePresent.setUserRolePoid(role.userRolePoId());
             userRoleRepository.save(rolePresent);
 
             String docId = UserContext.getDocumentId();
