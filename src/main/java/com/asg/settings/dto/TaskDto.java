@@ -5,15 +5,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Setter
 public class TaskDto {
 
     private Long transactionPoid;
-    private Date transactionDate;
+    private LocalDate transactionDate;
     private Long companyPoid;
 
     private String label;
@@ -32,16 +32,13 @@ public class TaskDto {
     private Long progressPercent;
     private Long estHours;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date dueDate;
+    private LocalDate dueDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date dateClosed;
+    private LocalDate dateClosed;
 
     private Long durationHrs;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date startDate;
+    private LocalDate startDate;
 
     private String actionDetails;
     private Long actionedBy;
@@ -53,15 +50,9 @@ public class TaskDto {
     private String autoTask;
     private String deleted;
     private String createdBy;
-
-    @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
     private LocalDateTime createdDate;
-
     private String lastModifiedBy;
-
-    @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
     private LocalDateTime lastModifiedDate;
-
     private Long faPoid;
     private Long taskReportedBy;
     private LovGetListDto taskReportedByDet;

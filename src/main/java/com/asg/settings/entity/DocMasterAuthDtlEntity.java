@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.GlobalDocMasterAuthDtlId;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -10,15 +11,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
 @Entity
 @Table(name = "GLOBAL_DOC_MASTER_AUTH_DTL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DocMasterAuthDtlEntity {
+public class DocMasterAuthDtlEntity extends BaseEntity {
 
     @EmbeddedId
     private GlobalDocMasterAuthDtlId id;
@@ -37,18 +36,6 @@ public class DocMasterAuthDtlEntity {
 
     @Column(name = "SECOND_USER_ROLE_POID")
     private Long secondUserRolePoid;
-
-    @Column(name = "CREATED_BY")
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private Timestamp createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private Timestamp lastModifiedDate;
 
     @Column(name = "SQL_KEY_POID_NAME")
     private String sqlKeyPoidName;

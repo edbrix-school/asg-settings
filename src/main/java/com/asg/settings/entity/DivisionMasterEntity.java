@@ -1,15 +1,14 @@
 package com.asg.settings.entity;
 
 import com.asg.common.lib.annotation.AuditIgnore;
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "GLOBAL_DIVISION_MASTER")
 @Data
-public class DivisionMasterEntity {
+public class DivisionMasterEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,22 +33,6 @@ public class DivisionMasterEntity {
     @Column(name = "DELETED", length = 1)
     @AuditIgnore
     private String deleted;
-
-    @Column(name = "CREATED_BY")
-    @AuditIgnore
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    @AuditIgnore
-    private Timestamp createdAt;
-
-    @Column(name = "LASTMODIFIED_BY")
-    @AuditIgnore
-    private String updatedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    @AuditIgnore
-    private Timestamp updatedAt;
 
     @Column(name = "SEQNO")
     private Integer seqNo;

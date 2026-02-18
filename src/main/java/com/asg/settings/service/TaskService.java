@@ -11,6 +11,7 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.service.LovDataService;
+import com.asg.common.lib.utility.DateUtil;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.LastTaskDto;
 import com.asg.settings.dto.TaskDto;
@@ -87,10 +88,10 @@ public class TaskService {
 
         // Adding validation for startdate ahead of enddate for update common for create also
         if (task.getStartDate() != null && task.getDueDate() != null) {
-            if (task.getStartDate().after(task.getDueDate())) {
+            if (task.getStartDate().isAfter(task.getDueDate())) {
                 throw new ValidationException("Start Date cannot be after Due Date");
             }
-            if (task.getStartDate().equals(task.getDueDate())) {
+            if (task.getStartDate().isEqual(task.getDueDate())) {
                 throw new ValidationException("Start Date cannot be equal to Due Date");
             }
         }
@@ -109,10 +110,6 @@ public class TaskService {
     private Long createNewTask(Task task, Long userPoid) {
 
         Task newTask = new Task();
-
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        Date date = new Date(System.currentTimeMillis());
-
         // Creating auto increment docref from last category+1
         Long maxNum = taskRepository.findMaxDocRefNumberByCategory(task.getTaskCategory());
         String newDocRef = task.getTaskCategory() + (maxNum + 1);
@@ -122,13 +119,10 @@ public class TaskService {
         setTaskFields(newTask, task, userPoid);
 
         newTask.setCompanyPoid(1L);
-        newTask.setTransactionDate(date);
+        newTask.setTransactionDate(DateUtil.getCurrentDateInUserTimeZone());
         newTask.setTransactionPoid(null);
 
-        // Get user name instead of using POID
-        String userName = userService.getUserNameByUserPoid(userPoid);
-        newTask.setCreatedBy(userName != null ? userName : userPoid.toString());
-        newTask.setCreatedDate(now.toLocalDateTime());
+        // Audit fields handled by AuditListener
 
         newTask = taskRepository.saveAndFlush(newTask);
         String docId = task.getRefDocId();
@@ -151,17 +145,13 @@ public class TaskService {
             throw new ValidationException("Cancelled/Completed dated is required...");
         }
 
-        Timestamp now = new Timestamp(System.currentTimeMillis());
         Task oldTask = new Task();
         BeanUtils.copyProperties(existingTask, oldTask);
 
         // Set all other fields from the input task
         setTaskFields(existingTask, task, userPoid);
 
-        // Get user name instead of using POID
-        String userName = userService.getUserNameByUserPoid(userPoid);
-        existingTask.setLastModifiedBy(userName != null ? userName : userPoid.toString());
-        existingTask.setLastModifiedDate(now.toLocalDateTime());
+        // Audit fields handled by AuditListener
         existingTask.setCompanyPoid(task.getCompanyPoid());
 
         existingTask = taskRepository.saveAndFlush(existingTask);

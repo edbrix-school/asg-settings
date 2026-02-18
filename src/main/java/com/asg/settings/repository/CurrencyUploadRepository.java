@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
 
 @Repository
 public class CurrencyUploadRepository {
@@ -40,7 +41,7 @@ public class CurrencyUploadRepository {
         }
     }
 
-    public String callCurrencyUpdateProc(Long groupPoid, String currencyCode, Date rateChangeDate, BigDecimal buyRate, BigDecimal sellRate) throws SQLException {
+    public String callCurrencyUpdateProc(Long groupPoid, String currencyCode, LocalDate rateChangeDate, BigDecimal buyRate, BigDecimal sellRate) throws SQLException {
         String sql = "BEGIN PROC_GLOB_CURRENCY_UPDATE(?, ?, ?, ?, ?, ?); END;";
         try (Connection conn = dataSource.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
@@ -48,9 +49,8 @@ public class CurrencyUploadRepository {
             cs.setLong(1, groupPoid);
             cs.setString(2, currencyCode);
             
-            // Convert Date to Timestamp preserving the exact date without timezone conversion
-            Timestamp timestamp = new Timestamp(rateChangeDate.getTime());
-            cs.setTimestamp(3, timestamp);
+            // Convert LocalDate to java.sql.Date for database
+            cs.setDate(3, java.sql.Date.valueOf(rateChangeDate));
             
             cs.setBigDecimal(4, buyRate);
             cs.setBigDecimal(5, sellRate);

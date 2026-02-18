@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.GlobalDocMasterApprovalDtlId;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -11,7 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "GLOBAL_DOC_MASTER_APPROVAL_DTL")
@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DocMasterApprovalDtlEntity {
+public class DocMasterApprovalDtlEntity extends BaseEntity {
 
     @EmbeddedId
     private GlobalDocMasterApprovalDtlId id;
@@ -32,18 +32,6 @@ public class DocMasterApprovalDtlEntity {
 
     @Column(name = "ALTERNATE_USER_ROLE_POID")
     private Long alternateUserRolePoid;
-
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private Timestamp createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private Timestamp lastModifiedDate;
 
 }
 

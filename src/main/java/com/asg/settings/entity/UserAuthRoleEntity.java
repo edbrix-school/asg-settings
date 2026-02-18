@@ -7,7 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
 
-import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,7 +22,7 @@ public class UserAuthRoleEntity {
     private Long userRolePoid;
 
     @Column(name = "EXPIRY_DATE")
-    private Date expiryDate;
+    private LocalDate expiryDate;
 
     @Column(name = "CREATED_BY")
     private String createdBy;

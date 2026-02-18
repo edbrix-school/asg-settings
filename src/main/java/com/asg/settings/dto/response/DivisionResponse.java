@@ -2,7 +2,7 @@ package com.asg.settings.dto.response;
 
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 public class DivisionResponse {
@@ -16,7 +16,7 @@ public class DivisionResponse {
     private Integer seqNo;
     private String deleted;
     private String createdBy;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
     private String updatedBy;
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 }

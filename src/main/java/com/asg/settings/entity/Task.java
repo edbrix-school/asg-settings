@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -8,22 +9,20 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
-import java.sql.Date;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "GLOBAL_TASK_HDR")
 @Data
-public class Task {
+public class Task extends BaseEntity {
 
     @Id
     @Column(name = "TRANSACTION_POID", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionPoid; // Primary Key
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "TRANSACTION_DATE")
-    private Date transactionDate;
+    private LocalDate transactionDate;
 
     @Column(name = "COMPANY_POID")
     private Long companyPoid;
@@ -77,20 +76,17 @@ public class Task {
     @Column(name = "EST_HOURS")
     private Long estHours;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "DUE_DATE")
-    private Date dueDate;
+    private LocalDate dueDate;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "DATE_CLOSED")
-    private Date dateClosed;
+    private LocalDate dateClosed;
 
     @Column(name = "DURATION_HRS")
     private Long durationHrs;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "START_DATE")
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "ACTION_DETAILS", length = 1000)
     private String actionDetails;
@@ -118,20 +114,6 @@ public class Task {
 
     @Column(name = "DELETED", length = 1)
     private String deleted;
-
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
-
-    @JsonFormat(pattern = "dd-MMM-yyyy HH:mm:ss")
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
     @Column(name = "FA_POID")
     private Long faPoid;

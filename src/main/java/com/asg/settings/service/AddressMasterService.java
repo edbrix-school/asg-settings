@@ -13,6 +13,7 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.ASGHelperUtils;
+import com.asg.common.lib.utility.DateUtil;
 import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.common.lib.dto.AddressDetailsDTO;
 import com.asg.common.lib.dto.response.AddressMasterResponse;
@@ -206,8 +207,6 @@ public class AddressMasterService {
         } else {
             master = new AddressMaster();
             master.setGroupPoid(1L);
-            master.setCreatedBy(currentUser);
-            master.setCreatedDate(LocalDateTime.now());
             master.setDeleted("N"); // Ensure deleted flag is set
         }
 
@@ -227,8 +226,6 @@ public class AddressMasterService {
         if (req.getSeqno() != null) {
             master.setSeqno(req.getSeqno());
         }
-        master.setLastModifiedBy(currentUser);
-        master.setLastModifiedDate(LocalDateTime.now());
 
         return master;
     }
@@ -337,7 +334,7 @@ public class AddressMasterService {
                                                     ? UserContext.getUserName()
                                                     : UserContext.getUserId()
                                     );
-                                    existing.setVerifiedDate(LocalDate.now());
+                                    existing.setVerifiedDate(DateUtil.getCurrentDateInUserTimeZone());
                                     toSave.add(existing);
                                 }
 
@@ -375,7 +372,7 @@ public class AddressMasterService {
 
                                 oldDetail.setVerified("Y");
                                 oldDetail.setVerifiedBy(UserContext.getUserId());
-                                oldDetail.setVerifiedDate(LocalDate.now());
+                                oldDetail.setVerifiedDate(DateUtil.getCurrentDateInUserTimeZone());
                             }
 
                             toSave.add(oldDetail);
@@ -463,8 +460,6 @@ public class AddressMasterService {
         if (StringUtils.isNotBlank(dto.getVerified())) {
             entity.setVerified(dto.getVerified());
         }
-        entity.setLastModifiedBy(currentUser);
-        entity.setLastModifiedDate(LocalDateTime.now());
         entity.setWhatsappNo(dto.getWhatsappNo());
         entity.setLinkedin(dto.getLinkedIn());
         entity.setInstagram(dto.getInstagram());
@@ -525,10 +520,6 @@ public class AddressMasterService {
         detail.setVerified("N");
         detail.setVerifiedBy(null);
         detail.setVerifiedDate(null);
-        detail.setCreatedBy(currentUser);
-        detail.setCreatedDate(LocalDateTime.now());
-        detail.setLastModifiedBy(currentUser);
-        detail.setLastModifiedDate(LocalDateTime.now());
         detail.setWhatsappNo(dto.getWhatsappNo());
         detail.setLinkedin(dto.getLinkedIn());
         detail.setInstagram(dto.getInstagram());
@@ -565,9 +556,9 @@ public class AddressMasterService {
         
         // Set audit fields
         resp.setCreatedBy(m.getCreatedBy());
-        resp.setCreatedDate(m.getCreatedDate() != null ? m.getCreatedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        resp.setCreatedDate(m.getCreatedDate() != null ? m.getCreatedDate() : null);
         resp.setLastModifiedBy(m.getLastModifiedBy());
-        resp.setLastModifiedDate(m.getLastModifiedDate() != null ? m.getLastModifiedDate().atOffset(java.time.ZoneOffset.UTC) : null);
+        resp.setLastModifiedDate(m.getLastModifiedDate() != null ? m.getLastModifiedDate() : null);
 
         if (m.getCountryPoid() != null && m.getCountryPoid() != 0) {
             countryRepo.findById(m.getCountryPoid()).ifPresent(c -> {

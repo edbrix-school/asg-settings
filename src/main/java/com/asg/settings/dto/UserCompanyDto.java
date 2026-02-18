@@ -2,7 +2,6 @@ package com.asg.settings.dto;
 
 import com.asg.common.lib.dto.TimeZoneDto;
 
-import java.sql.Date;
 import java.time.LocalDate;
 
 public record UserCompanyDto(
