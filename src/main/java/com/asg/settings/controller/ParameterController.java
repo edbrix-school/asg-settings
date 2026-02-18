@@ -1,5 +1,7 @@
 package com.asg.settings.controller;
 
+import com.asg.common.lib.annotation.AllowedAction;
+import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.BulkUpdateResponseDTO;
 import com.asg.settings.dto.GlobalParameterResponse;
@@ -32,6 +34,7 @@ public class ParameterController {
     @Autowired
     private ParameterService parameterService;
 
+    @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
             summary = "Get List Of User Parameters",
             description = """
@@ -63,6 +66,7 @@ public class ParameterController {
         return success("User parameters fetched successfully", responseData);
     }
 
+    @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
             summary = "Get List Of System Parameters",
             description = """
@@ -95,9 +99,10 @@ public class ParameterController {
         return success("System parameters fetched successfully", responseData);
     }
 
+    @AllowedAction(UserRolesRightsEnum.EDIT)
     @Operation(
             summary = "Update Parameters",
-            description = "Updating an existing parameter. This endpoint allows you to update an existing parameter's details. The `parameterPoid` is required to identify the parameter to be updated. The updated details are provided in the request body. The response indicates the success or failure of the update operation."
+            description = "Updating existing parameters. This endpoint allows you to update parameter details in bulk. The `parameterPoid` is required to identify the parameter to be updated. The updated details are provided in the request body. The response indicates the success or failure of the update operation."
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
@@ -106,10 +111,16 @@ public class ParameterController {
                         Update the parameters by providing the required details.
                         - **loginUserPoid:** ID of the user updating the parameters. Required.
                         - **parameters:** Parameters to update. This field is mandatory.
-                    
+
+                    ### Action Types
+                        - Each parameter can include an **actionType** field controlling how it is processed.
+                        - Supported values: `isUpdated`, `noChange`.
+                        - If `actionType` is omitted or blank, it is treated as `isUpdated` for backward compatibility.
+                        - Currently, `isCreated` and `isDeleted` are not supported for global parameters and will be returned as failed in the response.
+
                     ### Notes
                         - All fields are required for successful parameters update.
-                    
+
                     """,
             content = @Content(
                     examples = {
@@ -122,12 +133,14 @@ public class ParameterController {
                                                     {
                                                         "parameterPoid": 55717,
                                                         "parameterKeyId": "70",
-                                                        "parameterValue": "\\\\\\\\10.100.100.159\\\\erp_reports\\\\Reports\\\\9_updated\\\\"
+                                                        "parameterValue": "\\\\\\\\10.100.100.159\\\\erp_reports\\\\Reports\\\\9_updated\\\\",
+                                                        "actionType": "isUpdated"
                                                     },
                                                     {
                                                         "parameterPoid": 55718,
                                                         "parameterKeyId": "70",
-                                                        "parameterValue": "\\\\\\\\10.100.100.159\\\\erp_reports\\\\Reports\\\\10_updated\\\\"
+                                                        "parameterValue": "\\\\\\\\10.100.100.159\\\\erp_reports\\\\Reports\\\\10_updated\\\\",
+                                                        "actionType": "noChange"
                                                     }
                                                 ]
                                             }
