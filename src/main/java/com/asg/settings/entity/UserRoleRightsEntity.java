@@ -1,6 +1,7 @@
 package com.asg.settings.entity;
 
 import com.asg.common.lib.annotation.AuditIgnore;
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.UserRoleRightsKey;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
         uniqueConstraints = @UniqueConstraint(columnNames = {"USER_ROLE_POID", "DET_ROW_ID", "DOC_ID"})
 )
 @Data
-public class UserRoleRightsEntity {
+public class UserRoleRightsEntity extends BaseEntity {
     @EmbeddedId
     @AuditIgnore
     private UserRoleRightsKey id;
@@ -25,19 +26,4 @@ public class UserRoleRightsEntity {
     @Column(name = "RIGHTS")
     private String rights;
 
-    @Column(name = "CREATED_BY")
-    @AuditIgnore
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    @AuditIgnore
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    @AuditIgnore
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    @AuditIgnore
-    private LocalDateTime lastModifiedDate;
 }

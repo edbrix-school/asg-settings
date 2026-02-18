@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,13 +8,11 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
 @Table(name = "GLOBAL_MODULE_MASTER")
-public class GlobalModuleMasterEntity {
+public class GlobalModuleMasterEntity extends BaseEntity {
 
     @Id
     @Column(name = "MODULE_ID", length = 20, nullable = false)
@@ -36,18 +35,6 @@ public class GlobalModuleMasterEntity {
 
     @Column(name = "SEQNO", precision = 5)
     private Integer seqNo;
-
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
     @Column(name = "MODULE_POID", nullable = false)
     private Long modulePoid;

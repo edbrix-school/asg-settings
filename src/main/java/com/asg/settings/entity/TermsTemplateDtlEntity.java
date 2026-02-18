@@ -1,5 +1,6 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.TermsTemplateDtlKey;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name="GLOBAL_TERMS_TEMPLATE_DTL")
-public class TermsTemplateDtlEntity {
+public class TermsTemplateDtlEntity extends BaseEntity {
 
     @EmbeddedId
     private TermsTemplateDtlKey id;
@@ -25,17 +26,5 @@ public class TermsTemplateDtlEntity {
 
     @Column(name = "ACTIVE")
     private String active;
-
-    @Column(name = "CREATED_BY")
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY")
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
 }
