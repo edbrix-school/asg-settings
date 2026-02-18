@@ -485,12 +485,12 @@ public class UserService {
     }
 
     private void deleteUserRole(UserRoleDto role, User finalUser) {
-        UserRolesEntity rolePresent = userRoleRepository.getUserRolesEntitiesById_UserPoidAndUserRolePoid(finalUser.getUserPoid(), role.userRolePoId());
+        UserRolesEntity rolePresent = userRoleRepository.findById_UserPoidAndId_DetRowId(finalUser.getUserPoid(), role.detRowId());
         if (null != rolePresent) {
-            userRoleRepository.deleteByUserRolePoidAndId_UserPoid(role.userRolePoId(), finalUser.getUserPoid());
+            userRoleRepository.delete(rolePresent);
             loggingService.logDelete(rolePresent, UserContext.getDocumentId(), finalUser.getUserPoid().toString());
         } else {
-            throw new InputMismatchException("Cannot delete a role that  is not assigned to the user, userRoleId  -> " + role.userRoleId());
+            throw new InputMismatchException("Cannot delete a role that is not assigned to the user, userRolePoId -> " + role.userRolePoId() + ", detRowId -> " + role.detRowId());
         }
     }
 
