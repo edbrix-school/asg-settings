@@ -13,12 +13,12 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
-import com.asg.settings.dto.request.GlobalKPIMastersRequestDto;
+import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
 import com.asg.settings.dto.response.*;
 import com.asg.settings.entity.*;
 import com.asg.settings.repository.*;
-import com.asg.settings.service.GlobalKPIMasterService;
-import com.asg.settings.utility.GlobalKPIMasterMapper;
+import com.asg.settings.service.GlobalKpiMasterService;
+import com.asg.settings.utility.GlobalKpiMasterMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
+public class GlobalKpiMasterServiceImpl implements GlobalKpiMasterService {
 
     private final GlobalKpiMastersRepository globalKpiMastersRepository;
     private final GlobalKpiMastersCompanyDtlRepository companyDtlRepository;
@@ -56,24 +56,24 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
 
 
     @Override
-    public GlobalKPIMastersResponseDto getById(Long globalKpiMastersPoid) {
+    public GlobalKpiMastersResponseDto getById(Long globalKpiMastersPoid) {
 
         GlobalKpiMastersEntity entity = findHeaderEntityById(globalKpiMastersPoid);
 
         //company details
        List<GlobalKpiMastersCompanyDtlEntity>  companyDtlEntities = companyDtlRepository.findByTransactionPoid(globalKpiMastersPoid);
-       List<GlobalKpiMastersCompanyDtlResponseDto>  companyDtlResponseDtoList = GlobalKPIMasterMapper.toCompanyDtlDtoList(companyDtlEntities);
+       List<GlobalKpiMastersCompanyDtlResponseDto>  companyDtlResponseDtoList = GlobalKpiMasterMapper.toCompanyDtlDtoList(companyDtlEntities);
        //line details
        List<GlobalKpiMastersLineDtlEntity> lineDtlEntities = lineDtlRepository.findByTransactionPoid(globalKpiMastersPoid);
-       List<GlobalKpiMastersLineDtlResponseDto> lineDtlResponseDtoList = GlobalKPIMasterMapper.toLineDtlDtoList(lineDtlEntities);
+       List<GlobalKpiMastersLineDtlResponseDto> lineDtlResponseDtoList = GlobalKpiMasterMapper.toLineDtlDtoList(lineDtlEntities);
        //employee details
        List<GlobalKpiMastersEmpDtlEntity> empDtlEntities = empDtlRepository.findByTransactionPoid(globalKpiMastersPoid);
-       List<GlobalKpiMastersEmpDtlResponseDto> empDtlResponseDtoList = GlobalKPIMasterMapper.toEmpDtlDtoList(empDtlEntities);
+       List<GlobalKpiMastersEmpDtlResponseDto> empDtlResponseDtoList = GlobalKpiMasterMapper.toEmpDtlDtoList(empDtlEntities);
        //department details
        List<GlobalKpiMastersDeptDtlEntity> deptDtlEntities = deptDtlRepository.findByTransactionPoid(globalKpiMastersPoid);
-       List<GlobalKpiMastersDeptDtlResponseDto> deptDtlResponseDtoList = GlobalKPIMasterMapper.toDeptDtlDtoList(deptDtlEntities);
+       List<GlobalKpiMastersDeptDtlResponseDto> deptDtlResponseDtoList = GlobalKpiMasterMapper.toDeptDtlDtoList(deptDtlEntities);
 
-      return GlobalKPIMasterMapper.toDto(entity,companyDtlResponseDtoList,empDtlResponseDtoList,deptDtlResponseDtoList,lineDtlResponseDtoList);
+      return GlobalKpiMasterMapper.toDto(entity,companyDtlResponseDtoList,empDtlResponseDtoList,deptDtlResponseDtoList,lineDtlResponseDtoList);
 
     }
 
@@ -108,9 +108,9 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
 
     @Override
     @Transactional
-    public GlobalKPIMastersResponseDto create(GlobalKPIMastersRequestDto requestDto) {
+    public GlobalKpiMastersResponseDto create(GlobalKpiMastersRequestDto requestDto) {
 
-        GlobalKpiMastersEntity entity = GlobalKPIMasterMapper.toHeaderCreateEntity(requestDto, new GlobalKpiMastersEntity());
+        GlobalKpiMastersEntity entity = GlobalKpiMasterMapper.toHeaderCreateEntity(requestDto, new GlobalKpiMastersEntity());
         entity.setCreatedBy(UserContext.getUserName());
         entity.setCreatedDate(LocalDateTime.now());
         GlobalKpiMastersEntity saved = globalKpiMastersRepository.save(entity);
@@ -120,12 +120,12 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
     }
 
     @Override
-    public GlobalKPIMastersResponseDto update(GlobalKPIMastersRequestDto requestDto,Long globalKpiMastersPoid) {
+    public GlobalKpiMastersResponseDto update(GlobalKpiMastersRequestDto requestDto, Long globalKpiMastersPoid) {
 
         GlobalKpiMastersEntity existingEntity = findHeaderEntityById(globalKpiMastersPoid);
         GlobalKpiMastersEntity oldEntity = new GlobalKpiMastersEntity();
         BeanUtils.copyProperties(existingEntity, oldEntity);
-        GlobalKpiMastersEntity entity = GlobalKPIMasterMapper.toHeaderCreateEntity(requestDto, existingEntity);
+        GlobalKpiMastersEntity entity = GlobalKpiMasterMapper.toHeaderCreateEntity(requestDto, existingEntity);
         entity.setLastModifiedBy(UserContext.getUserName());
         entity.setLastModifiedDate(LocalDateTime.now());
           globalKpiMastersRepository.save(entity);
@@ -149,7 +149,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
         return procRepository.getAllEmployees();
     }
 
-        private void updateChildTables(GlobalKPIMastersRequestDto requestDto, Long globalKpiMastersPoid) {
+        private void updateChildTables(GlobalKpiMastersRequestDto requestDto, Long globalKpiMastersPoid) {
 
          //Line - Wise
             if (requestDto.getLineWiseSettings() != null && !requestDto.getLineWiseSettings().isEmpty()) {
@@ -188,7 +188,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
                             GlobalKpiMastersLineDtlEntity entity = lineDtlRepository.findByTransactionPoidAndDetRowId(globalKpiMastersPoid, dto.getDetRowId()).orElseThrow(() -> new ResourceNotFoundException("Line Details", "DetRowId", dto.getDetRowId()));
                             GlobalKpiMastersLineDtlEntity oldEntity = new GlobalKpiMastersLineDtlEntity();
                             BeanUtils.copyProperties(entity, oldEntity);
-                            GlobalKPIMasterMapper.toLineDtlEntity(entity, dto);
+                            GlobalKpiMasterMapper.toLineDtlEntity(entity, dto);
                             entity.setLastModifiedBy(UserContext.getUserName());
                             entity.setLastModifiedDate(LocalDateTime.now());
                             entitiesToUpdate.add(entity);
@@ -262,7 +262,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
                         GlobalKpiMastersCompanyDtlEntity oldEntity = new GlobalKpiMastersCompanyDtlEntity();
                         BeanUtils.copyProperties(entity, oldEntity);
 
-                        GlobalKPIMasterMapper.toCompanyDtlEntity(dto, entity);
+                        GlobalKpiMasterMapper.toCompanyDtlEntity(dto, entity);
                         entity.setLastModifiedBy(UserContext.getUserName());
                         entity.setLastModifiedDate(LocalDateTime.now());
 
@@ -333,7 +333,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
                             GlobalKpiMastersDeptDtlEntity oldEntity = new GlobalKpiMastersDeptDtlEntity();
                             BeanUtils.copyProperties(entity, oldEntity);
 
-                            GlobalKPIMasterMapper.toDeptDtlEntity(dto, entity);
+                            GlobalKpiMasterMapper.toDeptDtlEntity(dto, entity);
                             entity.setLastModifiedBy(UserContext.getUserName());
                             entity.setLastModifiedDate(LocalDateTime.now());
 
@@ -418,7 +418,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
                             GlobalKpiMastersEmpDtlEntity oldEntity = new GlobalKpiMastersEmpDtlEntity();
                             BeanUtils.copyProperties(entity, oldEntity);
 
-                            GlobalKPIMasterMapper.toEmpDtlEntity(dto, entity);
+                            GlobalKpiMasterMapper.toEmpDtlEntity(dto, entity);
                             entity.setLastModifiedBy(UserContext.getUserName());
                             entity.setLastModifiedDate(LocalDateTime.now());
 
@@ -462,7 +462,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
 
 
 
-    private void saveChildTables(GlobalKPIMastersRequestDto requestDto,
+    private void saveChildTables(GlobalKpiMastersRequestDto requestDto,
                                  Long globalKpiMastersPoid) {
 
         String currentUser = UserContext.getUserName();
@@ -491,7 +491,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
             Long detRowId = counter.incrementAndGet();
 
             GlobalKpiMastersLineDtlEntity entity =
-                    GlobalKPIMasterMapper.toLineDtlEntity(
+                    GlobalKpiMasterMapper.toLineDtlEntity(
                             new GlobalKpiMastersLineDtlEntity(), dto);
             entity.setTransactionPoid(poid);
             entity.setDetRowId(detRowId);
@@ -525,7 +525,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
             Long detRowId = counter.incrementAndGet();
 
             GlobalKpiMastersCompanyDtlEntity entity =
-                    GlobalKPIMasterMapper.toCompanyDtlEntity(
+                    GlobalKpiMasterMapper.toCompanyDtlEntity(
                             dto, new GlobalKpiMastersCompanyDtlEntity());
 
             entity.setTransactionPoid(poid);
@@ -558,7 +558,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
             Long detRowId = counter.incrementAndGet();
 
             GlobalKpiMastersEmpDtlEntity entity =
-                    GlobalKPIMasterMapper.toEmpDtlEntity(
+                    GlobalKpiMasterMapper.toEmpDtlEntity(
                             dto, new GlobalKpiMastersEmpDtlEntity());
 
             entity.setTransactionPoid(poid);
@@ -592,7 +592,7 @@ public class GlobalKPIMasterServiceImpl implements GlobalKPIMasterService {
             Long detRowId = counter.incrementAndGet();
 
             GlobalKpiMastersDeptDtlEntity entity =
-                    GlobalKPIMasterMapper.toDeptDtlEntity(
+                    GlobalKpiMasterMapper.toDeptDtlEntity(
                             dto, new GlobalKpiMastersDeptDtlEntity());
 
             entity.setTransactionPoid(poid);

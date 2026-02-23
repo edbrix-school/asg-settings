@@ -1,20 +1,20 @@
 package com.asg.settings.utility;
 
 import com.asg.common.lib.security.util.UserContext;
-import com.asg.settings.dto.request.GlobalKPIMastersRequestDto;
+import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
 import com.asg.settings.dto.response.*;
 import com.asg.settings.entity.*;
 import java.util.List;
 
 
-public class GlobalKPIMasterMapper {
+public class GlobalKpiMasterMapper {
 
     // HEADER MAPPER
-    public static GlobalKPIMastersResponseDto toDto(GlobalKpiMastersEntity entity, List<GlobalKpiMastersCompanyDtlResponseDto> companyDetails, List<GlobalKpiMastersEmpDtlResponseDto> employeeDetails
+    public static GlobalKpiMastersResponseDto toDto(GlobalKpiMastersEntity entity, List<GlobalKpiMastersCompanyDtlResponseDto> companyDetails, List<GlobalKpiMastersEmpDtlResponseDto> employeeDetails
             , List<GlobalKpiMastersDeptDtlResponseDto> departmentDetails, List<GlobalKpiMastersLineDtlResponseDto> lineDetails) {
         if (entity == null) return null;
 
-        return GlobalKPIMastersResponseDto.builder()
+        return GlobalKpiMastersResponseDto.builder()
                 .globalKpiMastersPoid(entity.getGlobalKpiMastersPoid())
                 .groupPoid(entity.getGroupPoid())
                 .kpiCode(entity.getKpiCode())
@@ -42,7 +42,7 @@ public class GlobalKPIMasterMapper {
                 .build();
     }
 
-    public static GlobalKpiMastersEntity toHeaderEntity(GlobalKPIMastersResponseDto dto) {
+    public static GlobalKpiMastersEntity toHeaderEntity(GlobalKpiMastersResponseDto dto) {
         if (dto == null) return null;
 
         return GlobalKpiMastersEntity.builder()
@@ -70,7 +70,7 @@ public class GlobalKPIMasterMapper {
     }
 
     public static GlobalKpiMastersEntity toHeaderCreateEntity(
-            GlobalKPIMastersRequestDto requestDto, GlobalKpiMastersEntity entity
+            GlobalKpiMastersRequestDto requestDto, GlobalKpiMastersEntity entity
     ) {
 
         if (requestDto == null) {
@@ -130,7 +130,7 @@ public class GlobalKPIMasterMapper {
         }
 
         return entities.stream()
-                .map(GlobalKPIMasterMapper::toCompanyDtlDto)
+                .map(GlobalKpiMasterMapper::toCompanyDtlDto)
                 .toList();
     }
 
@@ -169,7 +169,7 @@ public class GlobalKPIMasterMapper {
         }
 
         return entities.stream()
-                .map(GlobalKPIMasterMapper::toDeptDtlDto)
+                .map(GlobalKpiMasterMapper::toDeptDtlDto)
                 .toList();
     }
 
@@ -212,7 +212,7 @@ public class GlobalKPIMasterMapper {
         }
 
         return entities.stream()
-                .map(GlobalKPIMasterMapper::toEmpDtlDto)
+                .map(GlobalKpiMasterMapper::toEmpDtlDto)
                 .toList();
     }
 
@@ -256,7 +256,7 @@ public class GlobalKPIMasterMapper {
         }
 
         return entities.stream()
-                .map(GlobalKPIMasterMapper::toLineDtlDto)
+                .map(GlobalKpiMasterMapper::toLineDtlDto)
                 .toList();
     }
 

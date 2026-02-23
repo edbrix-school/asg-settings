@@ -7,10 +7,10 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.LoggingService;
-import com.asg.settings.dto.request.GlobalKPIMastersRequestDto;
-import com.asg.settings.dto.response.GlobalKPIMastersResponseDto;
+import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
+import com.asg.settings.dto.response.GlobalKpiMastersResponseDto;
 import com.asg.settings.dto.response.KpiLineMasterResponseDto;
-import com.asg.settings.service.GlobalKPIMasterService;
+import com.asg.settings.service.GlobalKpiMasterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -35,9 +35,9 @@ import static com.asg.common.lib.dto.response.ApiResponse.*;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Global KPI Master")
-public class GlobalKPIController {
+public class GlobalKpiController {
 
-        private final GlobalKPIMasterService service;
+        private final GlobalKpiMasterService service;
         private final LoggingService loggingService;
 
         // ========================= GET BY ID =========================
@@ -53,7 +53,7 @@ public class GlobalKPIController {
         @GetMapping("/{globalKpiMastersPoid}")
         public ResponseEntity<?> getById(@PathVariable Long globalKpiMastersPoid) {
 
-                GlobalKPIMastersResponseDto result = service.getById(globalKpiMastersPoid);
+                GlobalKpiMastersResponseDto result = service.getById(globalKpiMastersPoid);
 
                 loggingService.createLogSummaryEntry(
                         LogDetailsEnum.VIEWED,
@@ -93,9 +93,9 @@ public class GlobalKPIController {
                 @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         @PostMapping
-        public ResponseEntity<?> create(@Valid @RequestBody GlobalKPIMastersRequestDto requestDto) {
+        public ResponseEntity<?> create(@Valid @RequestBody GlobalKpiMastersRequestDto requestDto) {
 
-                GlobalKPIMastersResponseDto result = service.create(requestDto);
+                GlobalKpiMastersResponseDto result = service.create(requestDto);
                 return success("Global KPI Master created successfully", result);
         }
 
@@ -112,10 +112,10 @@ public class GlobalKPIController {
         })
         @PutMapping("/{globalKpiMastersPoid}")
         public ResponseEntity<?> update(
-                @Valid @RequestBody GlobalKPIMastersRequestDto requestDto,
+                @Valid @RequestBody GlobalKpiMastersRequestDto requestDto,
                 @PathVariable Long globalKpiMastersPoid) {
 
-                GlobalKPIMastersResponseDto result =
+                GlobalKpiMastersResponseDto result =
                         service.update(requestDto, globalKpiMastersPoid);
 
                 return success("Global KPI Master updated successfully", result);

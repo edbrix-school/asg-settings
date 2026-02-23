@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GlobalKPIMastersResponseDto {
+public class GlobalKpiMastersResponseDto {
 
     private Long globalKpiMastersPoid;
     private Long groupPoid;

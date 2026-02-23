@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GlobalKPIMastersRequestDto {
+public class GlobalKpiMastersRequestDto {
 
     private String kpiCode;
     @NotBlank(message = "KPI name is mandatory")
