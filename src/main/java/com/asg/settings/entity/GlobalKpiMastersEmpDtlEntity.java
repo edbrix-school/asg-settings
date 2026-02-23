@@ -1,25 +1,29 @@
 package com.asg.settings.entity;
 
 
+import com.asg.common.lib.entity.BaseEntity;
 import com.asg.settings.entity.key.GlobalKpiMastersDtlId;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "GLOBAL_KPI_MASTERS_EMP_DTL")
-@Data
 @Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GlobalKpiMastersEmpDtlEntity {
+@IdClass(GlobalKpiMastersDtlId.class)
+public class GlobalKpiMastersEmpDtlEntity  extends BaseEntity {
 
-    @EmbeddedId
-    private GlobalKpiMastersDtlId id;
+    @Id
+    @Column(name = "TRANSACTION_POID")
+    private Long transactionPoid;
+
+    @Id
+    @Column(name = "DET_ROW_ID" )
+    private Long detRowId;
 
     @Column(name = "EMP_POID")
     private Long empPoid;
@@ -27,17 +31,6 @@ public class GlobalKpiMastersEmpDtlEntity {
     @Column(name = "TARGET_VALUE")
     private Long targetValue;
 
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
-
-    @Column(name = "CREATED_DATE")
-    private LocalDateTime createdDate;
-
-    @Column(name = "LASTMODIFIED_BY", length = 20)
-    private String lastModifiedBy;
-
-    @Column(name = "LASTMODIFIED_DATE")
-    private LocalDateTime lastModifiedDate;
 
 
 }

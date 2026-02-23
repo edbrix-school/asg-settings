@@ -83,8 +83,6 @@ public class GlobalKPIMasterMapper {
         entity.setDepartments(requestDto.getDepartments());
         entity.setKpiUnit(requestDto.getKpiUnit());
         entity.setFrequency(requestDto.getFrequency());
-        entity.setLastExecuted(requestDto.getLastExecuted());
-
         entity.setSqlProcedure(requestDto.getSqlProcedure());
         entity.setSqlQueryLineKpi(requestDto.getSqlQueryLineKpi());
         entity.setSqlQueryCompanyKpi(requestDto.getSqlQueryCompanyKpi());
@@ -102,8 +100,8 @@ public class GlobalKPIMasterMapper {
         if (entity == null) return null;
 
         return GlobalKpiMastersCompanyDtlResponseDto.builder()
-                .globalKpiMastersPoid(entity.getId().getTransactionPoid())
-                .detRowId(entity.getId().getDetRowId())
+                .globalKpiMastersPoid(entity.getTransactionPoid())
+                .detRowId(entity.getDetRowId())
                 .companyPoid(entity.getCompanyPoid())
                 .targetValue(entity.getTargetValue())
                 .createdBy(entity.getCreatedBy())
@@ -141,8 +139,8 @@ public class GlobalKPIMasterMapper {
         if (entity == null) return null;
 
         return GlobalKpiMastersDeptDtlResponseDto.builder()
-                .globalKpiMastersPoid(entity.getId().getTransactionPoid())
-                .detRowId(entity.getId().getDetRowId())
+                .globalKpiMastersPoid(entity.getTransactionPoid())
+                .detRowId(entity.getDetRowId())
                 .deptPoid(entity.getDeptPoid())
                 .targetValue(entity.getTargetValue())
                 .createdBy(entity.getCreatedBy())
@@ -183,8 +181,8 @@ public class GlobalKPIMasterMapper {
         if (entity == null) return null;
 
         return GlobalKpiMastersEmpDtlResponseDto.builder()
-                .globalKpiMastersPoid(entity.getId().getTransactionPoid())
-                .detRowId(entity.getId().getDetRowId())
+                .globalKpiMastersPoid(entity.getTransactionPoid())
+                .detRowId(entity.getDetRowId())
                 .empPoid(entity.getEmpPoid())
                 .targetValue(entity.getTargetValue())
                 .createdBy(entity.getCreatedBy())
@@ -226,8 +224,8 @@ public class GlobalKPIMasterMapper {
         if (entity == null) return null;
 
         return GlobalKpiMastersLineDtlResponseDto.builder()
-                .globalKpiMastersPoid(entity.getId().getTransactionPoid())
-                .detRowId(entity.getId().getDetRowId())
+                .globalKpiMastersPoid(entity.getTransactionPoid())
+                .detRowId(entity.getDetRowId())
                 .linePoid(entity.getLinePoid())
                 .targetValue(entity.getTargetValue())
                 .createdBy(entity.getCreatedBy())

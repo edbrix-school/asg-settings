@@ -7,13 +7,11 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.LoggingService;
+import com.asg.settings.dto.request.GlobalKPIMastersRequestDto;
 import com.asg.settings.dto.response.GlobalKPIMastersResponseDto;
 import com.asg.settings.dto.response.KpiLineMasterResponseDto;
 import com.asg.settings.service.GlobalKPIMasterService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -36,95 +34,143 @@ import static com.asg.common.lib.dto.response.ApiResponse.*;
 @RequestMapping("/v1/global-kpi-master")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Global-KPI-Master-Controller")
+@Tag(name = "Global KPI Master")
 public class GlobalKPIController {
 
         private final GlobalKPIMasterService service;
         private final LoggingService loggingService;
 
-        @AllowedAction(UserRolesRightsEnum.VIEW)
-        @Operation(summary = "Get Global KPI Master Data by ID", description = "Retrieve specific Global KPI Master data record by Global KPI Master POID")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved Global KPI Master Data", content = @Content(schema = @Schema(implementation = GlobalKPIMastersResponseDto.class))),
-                        @ApiResponse(responseCode = "404", description = "Global KPI Master data not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
-        @GetMapping("/{globalKpiMastersPoid}")
-        public ResponseEntity<?> getById(
-                        @Parameter(description = "Global KPI Master POID", required = true) @PathVariable Long globalKpiMastersPoid) {
-                GlobalKPIMastersResponseDto result = service.getById(globalKpiMastersPoid);
-                loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(),
-                                globalKpiMastersPoid.toString());
-                return success("Global KPI Master data retrieved successfully", result);
-        }
+        // ========================= GET BY ID =========================
 
         @AllowedAction(UserRolesRightsEnum.VIEW)
-        @Operation(summary = "List Global KPI Master Data", description = "Retrieve a paginated list of Global KPI Master data")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved Global KPI Master data list", content = @Content(schema = @Schema(implementation = Map.class))),
-                        @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @Operation(summary = "Get Global KPI Master by ID",
+                description = "Retrieve a specific Global KPI Master record by POID")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Global KPI Master retrieved successfully"),
+                @ApiResponse(responseCode = "404", description = "Global KPI Master not found"),
+                @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        @GetMapping("/{globalKpiMastersPoid}")
+        public ResponseEntity<?> getById(@PathVariable Long globalKpiMastersPoid) {
+
+                GlobalKPIMastersResponseDto result = service.getById(globalKpiMastersPoid);
+
+                loggingService.createLogSummaryEntry(
+                        LogDetailsEnum.VIEWED,
+                        UserContext.getDocumentId(),
+                        globalKpiMastersPoid.toString());
+
+                return success("Global KPI Master retrieved successfully", result);
+        }
+
+        // ========================= LIST =========================
+
+        @AllowedAction(UserRolesRightsEnum.VIEW)
+        @Operation(summary = "List Global KPI Masters",
+                description = "Retrieve a paginated list of Global KPI Master records")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Global KPI Master list retrieved successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         @PostMapping("/list")
         public ResponseEntity<?> list(
+                @RequestBody(required = false) FilterRequestDto filters,
+                @PageableDefault(size = 20) Pageable pageable) {
 
-                        @RequestBody(required = false) FilterRequestDto filters,
-                        @PageableDefault(size = 20) Pageable pageable) {
                 Map<String, Object> result = service.list(filters, pageable);
-                return success("Global KPI Master data retrieved successfully", result);
+                return success("Global KPI Master list retrieved successfully", result);
         }
 
-        @AllowedAction(UserRolesRightsEnum.DELETE)
-        @Operation(summary = "Delete Global KPI Master")
+        // ========================= CREATE =========================
+
+        @AllowedAction(UserRolesRightsEnum.CREATE)
+        @Operation(summary = "Create Global KPI Master",
+                description = "Create a new Global KPI Master record")
         @ApiResponses({
-                        @ApiResponse(responseCode = "200", description = "Global KPI Master deleted successfully"),
-                        @ApiResponse(responseCode = "403", description = "Insufficient permissions"),
-                        @ApiResponse(responseCode = "404", description = "Global KPI Master not found"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
+                @ApiResponse(responseCode = "200", description = "Global KPI Master created successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        @PostMapping
+        public ResponseEntity<?> create(@Valid @RequestBody GlobalKPIMastersRequestDto requestDto) {
+
+                GlobalKPIMastersResponseDto result = service.create(requestDto);
+                return success("Global KPI Master created successfully", result);
+        }
+
+        // ========================= UPDATE =========================
+
+        @AllowedAction(UserRolesRightsEnum.EDIT)
+        @Operation(summary = "Update Global KPI Master",
+                description = "Update an existing Global KPI Master record")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Global KPI Master updated successfully"),
+                @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                @ApiResponse(responseCode = "404", description = "Global KPI Master not found"),
+                @ApiResponse(responseCode = "500", description = "Internal server error")
+        })
+        @PutMapping("/{globalKpiMastersPoid}")
+        public ResponseEntity<?> update(
+                @Valid @RequestBody GlobalKPIMastersRequestDto requestDto,
+                @PathVariable Long globalKpiMastersPoid) {
+
+                GlobalKPIMastersResponseDto result =
+                        service.update(requestDto, globalKpiMastersPoid);
+
+                return success("Global KPI Master updated successfully", result);
+        }
+
+        // ========================= DELETE =========================
+
+        @AllowedAction(UserRolesRightsEnum.DELETE)
+        @Operation(summary = "Delete Global KPI Master",
+                description = "Delete a Global KPI Master record")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Global KPI Master deleted successfully"),
+                @ApiResponse(responseCode = "403", description = "Insufficient permissions"),
+                @ApiResponse(responseCode = "404", description = "Global KPI Master not found"),
+                @ApiResponse(responseCode = "500", description = "Internal server error")
         })
         @DeleteMapping("/{globalKpiMastersPoid}")
         public ResponseEntity<?> delete(
-                        @Parameter(description = "Global KPI Master POID", required = true) @PathVariable Long globalKpiMastersPoid,
-                        @Valid @RequestBody DeleteReasonDto deleteReasonDto) {
+                @PathVariable Long globalKpiMastersPoid,
+                @Valid @RequestBody DeleteReasonDto deleteReasonDto) {
+
                 service.delete(globalKpiMastersPoid, deleteReasonDto);
                 return success("Global KPI Master deleted successfully", null);
-
         }
 
+        // ========================= FETCH RELATED DATA =========================
+
         @AllowedAction(UserRolesRightsEnum.VIEW)
-        @Operation(summary = "List KPI Line Master", description = "Retrieve all active KPI Line Master records")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved KPI Line Master list", content = @Content(schema = @Schema(implementation = KpiLineMasterResponseDto.class))),
-                        @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
+        @Operation(summary = "Fetch KPI Lines",
+                description = "Retrieve all active KPI Line records")
         @GetMapping("/fetch/lines")
         public ResponseEntity<?> listKpiLines() {
-                log.info("Fetching all KPI Lines");
+
                 List<KpiLineMasterResponseDto> result = service.getAllLines();
-                return success("KPI Line Master retrieved successfully", result);
+                return success("KPI Lines retrieved successfully", result);
         }
 
         @AllowedAction(UserRolesRightsEnum.VIEW)
-        @Operation(summary = "List KPI Company Master", description = "Retrieve all active KPI Company Master records")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved KPI Company Master list"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
+        @Operation(summary = "Fetch KPI Companies",
+                description = "Retrieve all active KPI Company records")
         @GetMapping("/fetch/companies")
         public ResponseEntity<?> getAllCompanies() {
-                return success("KPI Company Master retrieved successfully", service.getAllCompanies());
+
+                return success("KPI Companies retrieved successfully",
+                        service.getAllCompanies());
         }
 
         @AllowedAction(UserRolesRightsEnum.VIEW)
-        @Operation(summary = "List KPI Employee Master", description = "Retrieve all active KPI Employee Master records")
-        @ApiResponses(value = {
-                        @ApiResponse(responseCode = "200", description = "Successfully retrieved KPI Employee Master list"),
-                        @ApiResponse(responseCode = "500", description = "Internal server error")
-        })
+        @Operation(summary = "Fetch KPI Employees",
+                description = "Retrieve all active KPI Employee records")
         @GetMapping("/fetch/employees")
         public ResponseEntity<?> getAllEmployees() {
-                return success("KPI Employee Master retrieved successfully", service.getAllEmployees());
-        }
 
+                return success("KPI Employees retrieved successfully",
+                        service.getAllEmployees());
+        }
 }
+

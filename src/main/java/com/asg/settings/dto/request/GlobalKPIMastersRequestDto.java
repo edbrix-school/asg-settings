@@ -4,12 +4,11 @@ import com.asg.settings.dto.response.GlobalKpiMastersCompanyDtlResponseDto;
 import com.asg.settings.dto.response.GlobalKpiMastersDeptDtlResponseDto;
 import com.asg.settings.dto.response.GlobalKpiMastersEmpDtlResponseDto;
 import com.asg.settings.dto.response.GlobalKpiMastersLineDtlResponseDto;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -19,11 +18,14 @@ import java.util.List;
 public class GlobalKPIMastersRequestDto {
 
     private String kpiCode;
+    @NotBlank(message = "KPI name is mandatory")
     private String kpiName;
+    @NotBlank(message = "Department is mandatory")
     private String departments;
+    @NotBlank(message = "KPI unit is mandatory")
     private String kpiUnit;
+    @NotBlank(message = "Frequency is mandatory")
     private String frequency;
-    private LocalDateTime lastExecuted;
     private String sqlProcedure;
     private String sqlQueryLineKpi;
     private String sqlQueryCompanyKpi;
@@ -31,11 +33,6 @@ public class GlobalKPIMastersRequestDto {
     private String sqlQueryDeptKpi;
     private String active;
     private Long seqNo;
-    private String createdBy;
-    private LocalDateTime createdDate;
-    private String lastModifiedBy;
-    private LocalDateTime lastModifiedDate;
-    private String deleted;
 
     List<GlobalKpiMastersLineDtlResponseDto> lineWiseSettings;
     List<GlobalKpiMastersCompanyDtlResponseDto> companyWiseSettings;

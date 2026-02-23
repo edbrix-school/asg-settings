@@ -1,33 +1,30 @@
 package com.asg.settings.entity;
 
+import com.asg.common.lib.annotation.AuditIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "GLOBAL_KPI_MASTERS")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class GlobalKpiMastersEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "global_kpi_masters_seq")
-    @SequenceGenerator(
-            name = "global_kpi_masters_seq",
-            sequenceName = "GLOBAL_KPI_MASTERS_SEQ",
-            allocationSize = 1
-    )
-    @Column(name = "GLOBAL_KPI_MASTERS_POID", nullable = false)
+    @Column(name = "GLOBAL_KPI_MASTERS_POID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @AuditIgnore
     private Long globalKpiMastersPoid;
 
     @Column(name = "GROUP_POID")
     private Long groupPoid;
 
+    @AuditIgnore
     @Column(name = "KPI_CODE", length = 50)
     private String kpiCode;
 
@@ -68,17 +65,22 @@ public class GlobalKpiMastersEntity {
     private Long seqNo;
 
     @Column(name = "CREATED_BY", length = 20)
+    @AuditIgnore
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
+    @AuditIgnore
     private LocalDateTime createdDate;
 
     @Column(name = "LASTMODIFIED_BY", length = 20)
+    @AuditIgnore
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
+    @AuditIgnore
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "DELETED", length = 1)
+    @AuditIgnore
     private String deleted = "N";
 }

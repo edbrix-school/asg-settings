@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GlobalKpiMastersEmpDtlRepository extends JpaRepository<GlobalKpiMastersEmpDtlEntity, GlobalKpiMastersDtlId> {
-    List<GlobalKpiMastersEmpDtlEntity> findByIdTransactionPoid(Long globalKpiMastersPoid);
+    List<GlobalKpiMastersEmpDtlEntity> findByTransactionPoid(Long globalKpiMastersPoid);
 
     @Query("""
        SELECT COALESCE(MAX(e.id.detRowId), 0)
@@ -19,7 +19,5 @@ public interface GlobalKpiMastersEmpDtlRepository extends JpaRepository<GlobalKp
        """)
     long findMaxDetRowId(@Param("globalKpiMastersPoid")Long globalKpiMastersPoid);
 
-    void deleteByIdTransactionPoidAndIdDetRowId(Long globalKpiMastersPoid, Long detRowId);
-
-    Optional<GlobalKpiMastersEmpDtlEntity> findByIdTransactionPoidAndIdDetRowId(Long globalKpiMastersPoid, Long detRowId);
+    Optional<GlobalKpiMastersEmpDtlEntity> findByTransactionPoidAndDetRowId(Long globalKpiMastersPoid, Long detRowId);
 }
