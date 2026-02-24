@@ -41,6 +41,9 @@ public class EmailPdfTemplateService {
     @Autowired
     private jakarta.persistence.EntityManager entityManager;
 
+    @Autowired
+    private com.asg.common.lib.service.DocumentDeleteService documentDeleteService;
+
     public Map<String, Object> listTemplates(String docId, FilterRequestDto request, Pageable pageable) {
         String operator = documentService.resolveOperator(request);
         String isDeleted = documentService.resolveIsDeleted(request);
@@ -80,7 +83,7 @@ public class EmailPdfTemplateService {
             entity = new EmailPdfTemplateMasterEntity();
             entity.setTemplatePoid(repository.getNextSequenceValue());
             entity.setCreatedBy(getCurrentUser());
-            entity.setCreatedDate(new java.sql.Timestamp(System.currentTimeMillis()));
+            entity.setCreatedDate(java.time.LocalDateTime.now());
             entity.setDeleted("N");
         }
 
@@ -97,7 +100,7 @@ public class EmailPdfTemplateService {
         entity.setActive(dto.getActive() != null ? dto.getActive() : "Y");
         entity.setRemarks(dto.getRemarks());
         entity.setLastModifiedBy(getCurrentUser());
-        entity.setLastModifiedDate(new java.sql.Timestamp(System.currentTimeMillis()));
+        entity.setLastModifiedDate(java.time.LocalDateTime.now());
 
         EmailPdfTemplateMasterEntity saved = repository.save(entity);
         repository.flush();
@@ -128,19 +131,18 @@ public class EmailPdfTemplateService {
     }
 
     @Transactional
-    public void softDeleteTemplate(Long templatePoid) {
+    public void softDeleteTemplate(Long templatePoid, com.asg.common.lib.dto.DeleteReasonDto deleteReasonDto) {
         EmailPdfTemplateMasterEntity entity = repository.findByTemplatePoid(templatePoid);
         if (entity == null) {
             throw new ResourceNotFoundException("EmailPdfTemplate", "templatePoid", templatePoid.toString());
         }
-        entity.setDeleted("Y");
-        entity.setActive("N");
-        entity.setLastModifiedBy(getCurrentUser());
-        entity.setLastModifiedDate(new java.sql.Timestamp(System.currentTimeMillis()));
-        repository.save(entity);
-
-        loggingService.createLogSummaryEntry(LogDetailsEnum.DELETED, UserContext.getDocumentId(), templatePoid.toString());
-        loggingService.logSimpleFieldChange(EmailPdfTemplateMasterEntity.class, UserContext.getDocumentId(), 
-                templatePoid.toString(), "deleted", "N", "Y", "Template soft deleted");
+        
+        documentDeleteService.deleteDocument(
+                templatePoid,
+                "GLOBAL_EMAIL_PDF_TEMPLATE_MST",
+                "TEMPLATE_POID",
+                deleteReasonDto,
+                null
+        );
     }
 }

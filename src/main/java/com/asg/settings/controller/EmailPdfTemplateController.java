@@ -2,8 +2,10 @@ package com.asg.settings.controller;
 
 import com.asg.common.lib.annotation.AllowedAction;
 import com.asg.common.lib.dto.FilterRequestDto;
+import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.EmailPdfTemplateDto;
 import com.asg.settings.entity.EmailPdfTemplateMasterEntity;
 import com.asg.settings.service.EmailPdfTemplateService;
@@ -30,6 +32,7 @@ import static com.asg.common.lib.dto.response.ApiResponse.*;
 public class EmailPdfTemplateController {
 
     private final EmailPdfTemplateService service;
+    private final LoggingService loggingService;
 
     @AllowedAction(UserRolesRightsEnum.VIEW)
     @Operation(
@@ -84,6 +87,7 @@ public class EmailPdfTemplateController {
     public ResponseEntity<?> getTemplateDetails(@PathVariable Long templatePoid) {
         try {
             EmailPdfTemplateDto data = service.getTemplateById(templatePoid);
+            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), templatePoid.toString());
             return success("Template fetched successfully", data);
         } catch (Exception ex) {
             return internalServerError("Failed to retrieve template details: " + ex.getMessage());
@@ -135,12 +139,6 @@ public class EmailPdfTemplateController {
     @PostMapping("/create")
     public ResponseEntity<?> createTemplate(@RequestBody @Valid EmailPdfTemplateDto dto) {
         try {
-            if (StringUtils.isBlank(dto.getTemplateName())) {
-                return badRequest("Template name is required");
-            }
-            if (StringUtils.isBlank(dto.getType())) {
-                return badRequest("Type is required");
-            }
             if (dto.getTemplatePoid() != null) {
                 return badRequest("templatePoid must be null when creating");
             }
@@ -167,10 +165,6 @@ public class EmailPdfTemplateController {
             @PathVariable Long templatePoid,
             @RequestBody @Valid EmailPdfTemplateDto dto) {
         try {
-            if (StringUtils.isBlank(dto.getTemplateName())) {
-                return badRequest("Template name is required");
-            }
-
             dto.setTemplatePoid(templatePoid);
             EmailPdfTemplateMasterEntity saved = service.createOrUpdateTemplate(dto);
 
@@ -185,14 +179,16 @@ public class EmailPdfTemplateController {
     }
 
     @AllowedAction(UserRolesRightsEnum.DELETE)
-    @Operation(summary = "Soft Delete Template")
-    @DeleteMapping("/soft-delete")
-    public ResponseEntity<?> softDeleteTemplate(@RequestParam Long templatePoid) {
+    @Operation(summary = "Delete Template")
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> softDeleteTemplate(
+            @RequestParam Long templatePoid,
+            @RequestBody com.asg.common.lib.dto.DeleteReasonDto deleteReasonDto) {
         try {
-            service.softDeleteTemplate(templatePoid);
-            return success("Template soft deleted successfully", Map.of("templatePoid", templatePoid));
+            service.softDeleteTemplate(templatePoid, deleteReasonDto);
+            return success("Template deleted successfully", Map.of("templatePoid", templatePoid));
         } catch (Exception e) {
-            return internalServerError("Failed to soft delete template: " + e.getMessage());
+            return internalServerError("Failed to delete template: " + e.getMessage());
         }
     }
 }

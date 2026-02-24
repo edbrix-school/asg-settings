@@ -19,22 +19,22 @@ public class EmailPdfTemplateMasterEntity {
     @Column(name = "GROUP_POID")
     private Long groupPoid;
 
-    @Column(name = "TEMPLATE_NAME", length = 200)
+    @Column(name = "TEMPLATE_NAME")
     private String templateName;
 
-    @Column(name = "TEMPLATE_TYPE", length = 20)
+    @Column(name = "TEMPLATE_TYPE")
     private String type;
 
-    @Column(name = "TEMPLATE_DOC_ID", length = 50)
+    @Column(name = "TEMPLATE_DOC_ID")
     private String templateDocId;
 
-    @Column(name = "FIELDS_TO_USE", length = 4000)
+    @Column(name = "FIELDS_TO_USE")
     private String fieldsToUse;
 
-    @Column(name = "SQL_QUERY", length = 8000)
+    @Column(name = "SQL_QUERY")
     private String sqlQuery;
 
-    @Column(name = "EMAIL_SUBJECT", length = 1000)
+    @Column(name = "EMAIL_SUBJECT")
     private String emailSubject;
 
     @Column(name = "EMAIL_CONTENT", columnDefinition = "CLOB")
@@ -43,27 +43,27 @@ public class EmailPdfTemplateMasterEntity {
     @Column(name = "PDF_CONTENT", columnDefinition = "CLOB")
     private String pdfContent;
 
-    @Column(name = "ACTIVE", length = 1)
+    @Column(name = "ACTIVE")
     private String active;
 
     @Column(name = "SEQNO")
     private Integer seqNo;
 
-    @Column(name = "CREATED_BY", length = 20)
+    @Column(name = "CREATED_BY")
     private String createdBy;
 
     @Column(name = "CREATED_DATE")
-    private java.sql.Timestamp createdDate;
+    private java.time.LocalDateTime createdDate;
 
-    @Column(name = "LASTMODIFIED_BY", length = 20)
+    @Column(name = "LASTMODIFIED_BY")
     private String lastModifiedBy;
 
     @Column(name = "LASTMODIFIED_DATE")
-    private java.sql.Timestamp lastModifiedDate;
+    private java.time.LocalDateTime lastModifiedDate;
 
-    @Column(name = "DELETED", length = 1)
+    @Column(name = "DELETED")
     private String deleted;
 
-    @Column(name = "REMARKS", length = 1000)
+    @Column(name = "REMARKS")
     private String remarks;
 }
