@@ -1,7 +1,6 @@
 package com.asg.settings.dto.response;
 
 import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,6 +35,6 @@ public class GlobalKpiMastersResponseDto {
     List<GlobalKpiMastersLineDtlResponseDto> lineWiseSettings;
     List<GlobalKpiMastersCompanyDtlResponseDto> companyWiseSettings;
     List<GlobalKpiMastersEmpDtlResponseDto> employeeWiseSettings;
-    List <GlobalKpiMastersDeptDtlResponseDto> departmentWiseSettings;
+    List<GlobalKpiMastersDeptDtlResponseDto> departmentWiseSettings;
 
 }

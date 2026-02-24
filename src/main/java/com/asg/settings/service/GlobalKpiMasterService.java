@@ -28,10 +28,4 @@ public interface GlobalKpiMasterService {
     List<KpiCompanyMasterResponseDto> getAllCompanies();
 
     List<KpiEmployeeMasterResponseDto> getAllEmployees();
-
-
-
-
-
-
 }

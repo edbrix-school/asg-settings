@@ -1,17 +1,13 @@
 package com.asg.settings.dto.response;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Builder
 @Getter
-@Service
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class GlobalKpiMastersEmpDtlResponseDto {

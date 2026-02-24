@@ -4,15 +4,19 @@ import com.asg.common.lib.security.util.UserContext;
 import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
 import com.asg.settings.dto.response.*;
 import com.asg.settings.entity.*;
-import java.util.List;
 
+import java.util.List;
 
 public class GlobalKpiMasterMapper {
 
     // HEADER MAPPER
-    public static GlobalKpiMastersResponseDto toDto(GlobalKpiMastersEntity entity, List<GlobalKpiMastersCompanyDtlResponseDto> companyDetails, List<GlobalKpiMastersEmpDtlResponseDto> employeeDetails
-            , List<GlobalKpiMastersDeptDtlResponseDto> departmentDetails, List<GlobalKpiMastersLineDtlResponseDto> lineDetails) {
-        if (entity == null) return null;
+    public static GlobalKpiMastersResponseDto toDto(GlobalKpiMastersEntity entity,
+            List<GlobalKpiMastersCompanyDtlResponseDto> companyDetails,
+            List<GlobalKpiMastersEmpDtlResponseDto> employeeDetails,
+            List<GlobalKpiMastersDeptDtlResponseDto> departmentDetails,
+            List<GlobalKpiMastersLineDtlResponseDto> lineDetails) {
+        if (entity == null)
+            return null;
 
         return GlobalKpiMastersResponseDto.builder()
                 .globalKpiMastersPoid(entity.getGlobalKpiMastersPoid())
@@ -42,36 +46,8 @@ public class GlobalKpiMasterMapper {
                 .build();
     }
 
-    public static GlobalKpiMastersEntity toHeaderEntity(GlobalKpiMastersResponseDto dto) {
-        if (dto == null) return null;
-
-        return GlobalKpiMastersEntity.builder()
-                .globalKpiMastersPoid(dto.getGlobalKpiMastersPoid())
-                .groupPoid(dto.getGroupPoid())
-                .kpiCode(dto.getKpiCode())
-                .kpiName(dto.getKpiName())
-                .departments(dto.getDepartments())
-                .kpiUnit(dto.getKpiUnit())
-                .frequency(dto.getFrequency())
-                .lastExecuted(dto.getLastExecuted())
-                .sqlProcedure(dto.getSqlProcedure())
-                .sqlQueryLineKpi(dto.getSqlQueryLineKpi())
-                .sqlQueryCompanyKpi(dto.getSqlQueryCompanyKpi())
-                .sqlQueryEmpKpi(dto.getSqlQueryEmpKpi())
-                .sqlQueryDeptKpi(dto.getSqlQueryDeptKpi())
-                .active(dto.getActive())
-                .seqNo(dto.getSeqNo())
-                .createdBy(dto.getCreatedBy())
-                .createdDate(dto.getCreatedDate())
-                .lastModifiedBy(dto.getLastModifiedBy())
-                .lastModifiedDate(dto.getLastModifiedDate())
-                .deleted(dto.getDeleted())
-                .build();
-    }
-
     public static GlobalKpiMastersEntity toHeaderCreateEntity(
-            GlobalKpiMastersRequestDto requestDto, GlobalKpiMastersEntity entity
-    ) {
+            GlobalKpiMastersRequestDto requestDto, GlobalKpiMastersEntity entity) {
 
         if (requestDto == null) {
             return null;
@@ -95,9 +71,10 @@ public class GlobalKpiMasterMapper {
         return entity;
     }
 
-    //COMPANY DTL MAPPER
+    // COMPANY DTL MAPPER
     public static GlobalKpiMastersCompanyDtlResponseDto toCompanyDtlDto(GlobalKpiMastersCompanyDtlEntity entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return GlobalKpiMastersCompanyDtlResponseDto.builder()
                 .globalKpiMastersPoid(entity.getTransactionPoid())
@@ -134,9 +111,10 @@ public class GlobalKpiMasterMapper {
                 .toList();
     }
 
-    //DEPT DTL MAPPER
+    // DEPT DTL MAPPER
     public static GlobalKpiMastersDeptDtlResponseDto toDeptDtlDto(GlobalKpiMastersDeptDtlEntity entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return GlobalKpiMastersDeptDtlResponseDto.builder()
                 .globalKpiMastersPoid(entity.getTransactionPoid())
@@ -178,7 +156,8 @@ public class GlobalKpiMasterMapper {
     public static GlobalKpiMastersEmpDtlResponseDto toEmpDtlDto(
             GlobalKpiMastersEmpDtlEntity entity) {
 
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return GlobalKpiMastersEmpDtlResponseDto.builder()
                 .globalKpiMastersPoid(entity.getTransactionPoid())
@@ -203,7 +182,6 @@ public class GlobalKpiMasterMapper {
         return entity;
     }
 
-
     public static List<GlobalKpiMastersEmpDtlResponseDto> toEmpDtlDtoList(
             List<GlobalKpiMastersEmpDtlEntity> entities) {
 
@@ -221,7 +199,8 @@ public class GlobalKpiMasterMapper {
     public static GlobalKpiMastersLineDtlResponseDto toLineDtlDto(
             GlobalKpiMastersLineDtlEntity entity) {
 
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return GlobalKpiMastersLineDtlResponseDto.builder()
                 .globalKpiMastersPoid(entity.getTransactionPoid())
