@@ -74,11 +74,12 @@ public class EmailPdfTemplateService {
         EmailPdfTemplateMasterEntity entity;
 
         if (dto.getTemplatePoid() != null) {
-            oldEntity = repository.findByTemplatePoid(dto.getTemplatePoid());
-            if (oldEntity == null) {
+            entity = repository.findByTemplatePoid(dto.getTemplatePoid());
+            if (entity == null) {
                 throw new ResourceNotFoundException("EmailPdfTemplate", "templatePoid", dto.getTemplatePoid().toString());
             }
-            entity = oldEntity;
+            oldEntity = new EmailPdfTemplateMasterEntity();
+            BeanUtils.copyProperties(entity, oldEntity);
         } else {
             entity = new EmailPdfTemplateMasterEntity();
             entity.setTemplatePoid(repository.getNextSequenceValue());
@@ -104,12 +105,10 @@ public class EmailPdfTemplateService {
 
         EmailPdfTemplateMasterEntity saved = repository.save(entity);
         repository.flush();
-        entityManager.clear(); // Clear persistence context
+        entityManager.clear();
         
-        // Re-fetch to get the actual ID set by trigger
         saved = repository.findByTemplatePoid(entity.getTemplatePoid());
         if (saved == null) {
-            // Trigger changed the ID, get the latest by sequence
             saved = entityManager.createQuery(
                 "SELECT e FROM EmailPdfTemplateMasterEntity e WHERE e.templatePoid = (SELECT MAX(e2.templatePoid) FROM EmailPdfTemplateMasterEntity e2)",
                 EmailPdfTemplateMasterEntity.class
@@ -121,7 +120,6 @@ public class EmailPdfTemplateService {
 
         if (oldEntity == null) {
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
-            loggingService.logChanges(null, saved, EmailPdfTemplateMasterEntity.class, docId, key, LogDetailsEnum.CREATED, "TEMPLATE_POID");
         } else {
             loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldEntity, saved, EmailPdfTemplateMasterEntity.class, docId, key, LogDetailsEnum.MODIFIED, "TEMPLATE_POID");
