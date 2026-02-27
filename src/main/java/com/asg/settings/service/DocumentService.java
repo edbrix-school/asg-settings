@@ -540,7 +540,21 @@ public class DocumentService {
         }
 
         // Save updated document
-        documentRepository.save(document);
+        try {
+            callBeforeSaveProc(UserContext.getDocumentId(), documentKeyPoid);
+
+        } catch (Exception e) {
+            throw new ValidationException("Before Save Validation Failed : " + e.getMessage());
+        }
+
+        documentRepository.saveAndFlush(document);
+
+        try {
+            callAfterSaveProc(UserContext.getDocumentId(), documentKeyPoid);
+
+        } catch (Exception e) {
+            throw new ValidationException("After Save Validation Failed : " + e.getMessage());
+        }
 
         loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.MODIFIED, "DOC_ID");
 
@@ -551,6 +565,73 @@ public class DocumentService {
         response.put("docId", document.getDocId());
         response.put("status", "UPDATED");
         return response;
+    }
+    private void callBeforeSaveProc(String docId, Long docKeyPoid) {
+        log.info("[BEFORE SAVE PROC] docId: " + docId + ", docKeyPoid: " + docKeyPoid);
+
+        StoredProcedureQuery sp = entityManager
+                .createStoredProcedureQuery("PROC_DOC_BEFORE_SAVE");
+
+        sp.registerStoredProcedureParameter("P_LOGIN_GROUP_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_COMPANY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_USER_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_ID", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_KEY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_DATE", java.sql.Date.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_FIELD_VALUES", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_STATUS", String.class, ParameterMode.OUT);
+
+        sp.setParameter("P_LOGIN_GROUP_POID", UserContext.getGroupPoid());
+        sp.setParameter("P_LOGIN_COMPANY_POID", UserContext.getCompanyPoid());
+        sp.setParameter("P_LOGIN_USER_POID", UserContext.getUserPoid());
+        sp.setParameter("P_DOC_ID", docId);
+        sp.setParameter("P_DOC_KEY_POID", docKeyPoid);
+        sp.setParameter("P_DOC_DATE", null);
+        sp.setParameter("P_FIELD_VALUES", null);
+
+        sp.execute();
+
+        String status = (String) sp.getOutputParameterValue("P_STATUS");
+        log.info("[BEFORE SAVE PROC RESULT] status: " + status);
+
+        if (status != null && status.toUpperCase().contains("ERROR")) {
+            log.error("[BEFORE SAVE PROC FAILED] status: " + status);
+            throw new ValidationException(status);
+        }
+    }
+
+    private void callAfterSaveProc(String docId, Long docKeyPoid) {
+        log.info("[AFTER SAVE PROC] docId: " + docId + ", docKeyPoid: " + docKeyPoid);
+
+        StoredProcedureQuery sp = entityManager
+                .createStoredProcedureQuery("PROC_DOC_AFTER_SAVE");
+
+        sp.registerStoredProcedureParameter("P_LOGIN_GROUP_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_COMPANY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_USER_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_ID", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_KEY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_DATE", java.sql.Date.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_FIELD_VALUES", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_STATUS", String.class, ParameterMode.OUT);
+
+        sp.setParameter("P_LOGIN_GROUP_POID", UserContext.getGroupPoid());
+        sp.setParameter("P_LOGIN_COMPANY_POID", UserContext.getCompanyPoid());
+        sp.setParameter("P_LOGIN_USER_POID", UserContext.getUserPoid());
+        sp.setParameter("P_DOC_ID", docId);
+        sp.setParameter("P_DOC_KEY_POID", docKeyPoid);
+        sp.setParameter("P_DOC_DATE", null);
+        sp.setParameter("P_FIELD_VALUES", null);
+
+        sp.execute();
+
+        String status = (String) sp.getOutputParameterValue("P_STATUS");
+        log.info("[AFTER SAVE PROC RESULT] status: " + status);
+
+        if (status != null && status.toUpperCase().contains("ERROR")){
+            log.error("[AFTER SAVE PROC FAILED] status: " + status);
+            throw new ValidationException(status);
+        }
     }
 
     private void checkEditRights(Long docKeyPoid, String docId) {
