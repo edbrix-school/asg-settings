@@ -7,6 +7,7 @@ import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.LoggingService;
+import com.asg.settings.dto.request.FetchRequestData;
 import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
 import com.asg.settings.dto.response.GlobalKpiMastersResponseDto;
 import com.asg.settings.dto.response.KpiLineMasterResponseDto;
@@ -143,34 +144,46 @@ public class GlobalKpiController {
 
         // ========================= FETCH RELATED DATA =========================
 
-        @AllowedAction(UserRolesRightsEnum.VIEW)
         @Operation(summary = "Fetch KPI Lines",
                 description = "Retrieve all active KPI Line records")
-        @GetMapping("/fetch/lines")
-        public ResponseEntity<?> listKpiLines() {
+        @PostMapping("/fetch/lines")
+        public ResponseEntity<?> listKpiLines(@RequestBody FetchRequestData requestData) {
 
-                List<KpiLineMasterResponseDto> result = service.getAllLines();
+                List<KpiLineMasterResponseDto> result = service.getAllLines(requestData);
                 return success("KPI Lines retrieved successfully", result);
         }
 
-        @AllowedAction(UserRolesRightsEnum.VIEW)
         @Operation(summary = "Fetch KPI Companies",
                 description = "Retrieve all active KPI Company records")
-        @GetMapping("/fetch/companies")
-        public ResponseEntity<?> getAllCompanies() {
+        @PostMapping("/fetch/companies")
+        public ResponseEntity<?> getAllCompanies(@RequestBody FetchRequestData requestData) {
 
                 return success("KPI Companies retrieved successfully",
-                        service.getAllCompanies());
+                        service.getAllCompanies(requestData));
         }
 
-        @AllowedAction(UserRolesRightsEnum.VIEW)
         @Operation(summary = "Fetch KPI Employees",
                 description = "Retrieve all active KPI Employee records")
-        @GetMapping("/fetch/employees")
-        public ResponseEntity<?> getAllEmployees() {
+        @PostMapping("/fetch/employees")
+        public ResponseEntity<?> getAllEmployees(@RequestBody FetchRequestData requestData) {
 
                 return success("KPI Employees retrieved successfully",
-                        service.getAllEmployees());
+                        service.getAllEmployees(requestData));
         }
+
+
+        @GetMapping("/exists-kpi-name")
+        public ResponseEntity<?> checkKpiNameExists(
+                @RequestParam String kpiName,
+                @RequestParam(required = false) Long kpiPoid) {
+
+                boolean exists = service.checkKpiNameExists(kpiName, kpiPoid);
+                String message = exists
+                        ? "KPI name already exists"
+                        : "KPI name is available";
+
+                return success(message, exists);
+        }
+
 }
 
