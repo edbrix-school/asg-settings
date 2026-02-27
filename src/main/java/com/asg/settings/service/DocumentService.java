@@ -541,7 +541,7 @@ public class DocumentService {
 
         // Save updated document
         try {
-            callBeforeSaveProc(document.getDocId(), documentKeyPoid);
+            callBeforeSaveProc(UserContext.getDocumentId(), documentKeyPoid);
 
         } catch (Exception e) {
             throw new ValidationException("Before Save Validation Failed : " + e.getMessage());
@@ -550,7 +550,7 @@ public class DocumentService {
         documentRepository.saveAndFlush(document);
 
         try {
-            callAfterSaveProc(document.getDocId(), documentKeyPoid);
+            callAfterSaveProc(UserContext.getDocumentId(), documentKeyPoid);
 
         } catch (Exception e) {
             throw new ValidationException("After Save Validation Failed : " + e.getMessage());
