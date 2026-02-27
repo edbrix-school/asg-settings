@@ -6,4 +6,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GlobalKpiMastersRepository extends JpaRepository<GlobalKpiMastersEntity, Long> {
+
+
+    boolean existsByKpiNameIgnoreCase(String kpiName);
+
+    boolean existsByKpiNameIgnoreCaseAndGlobalKpiMastersPoidNot(
+            String kpiName,
+            Long globalKpiMastersPoid
+    );
 }

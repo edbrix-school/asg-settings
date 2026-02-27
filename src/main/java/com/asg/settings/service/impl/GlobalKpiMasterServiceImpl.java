@@ -13,6 +13,7 @@ import com.asg.common.lib.service.DocumentDeleteService;
 import com.asg.common.lib.service.DocumentSearchService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.common.lib.utility.PaginationUtil;
+import com.asg.settings.dto.request.FetchRequestData;
 import com.asg.settings.dto.request.GlobalKpiMastersRequestDto;
 import com.asg.settings.dto.response.*;
 import com.asg.settings.entity.*;
@@ -28,9 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -116,6 +115,10 @@ public class GlobalKpiMasterServiceImpl implements GlobalKpiMasterService {
     @Transactional
     public GlobalKpiMastersResponseDto create(GlobalKpiMastersRequestDto requestDto) {
 
+        if (checkKpiNameExists(requestDto.getKpiName(), null)){
+            throw new ValidationException("KPI Name already exists");
+        }
+
         GlobalKpiMastersEntity entity = GlobalKpiMasterMapper.toHeaderCreateEntity(requestDto,
                 new GlobalKpiMastersEntity());
         GlobalKpiMastersEntity saved = globalKpiMastersRepository.save(entity);
@@ -127,6 +130,10 @@ public class GlobalKpiMasterServiceImpl implements GlobalKpiMasterService {
 
     @Override
     public GlobalKpiMastersResponseDto update(GlobalKpiMastersRequestDto requestDto, Long globalKpiMastersPoid) {
+
+        if (checkKpiNameExists(requestDto.getKpiName(), globalKpiMastersPoid)){
+            throw new ValidationException("KPI Name already exists");
+        }
 
         GlobalKpiMastersEntity existingEntity = findHeaderEntityById(globalKpiMastersPoid);
         GlobalKpiMastersEntity oldEntity = new GlobalKpiMastersEntity();
@@ -140,18 +147,79 @@ public class GlobalKpiMasterServiceImpl implements GlobalKpiMasterService {
     }
 
     @Override
-    public List<KpiLineMasterResponseDto> getAllLines() {
-        return procRepository.getAllLines();
+    public List<KpiLineMasterResponseDto> getAllLines(FetchRequestData requestData) {
+
+        List<KpiLineMasterResponseDto> lines =
+                procRepository.getAllLines();
+
+        if (requestData == null
+                || requestData.getPoid() == null
+                || requestData.getPoid().isEmpty()) {
+            return lines;
+        }
+
+        Set<Long> excluded = new HashSet<>(requestData.getPoid());
+
+        return lines.stream()
+                .filter(line -> !excluded.contains(line.getLinePoid()))
+                .toList();
     }
 
     @Override
-    public List<KpiCompanyMasterResponseDto> getAllCompanies() {
-        return procRepository.getAllCompanies();
+    public List<KpiCompanyMasterResponseDto> getAllCompanies(FetchRequestData requestData) {
+
+        List<KpiCompanyMasterResponseDto> companies =
+                procRepository.getAllCompanies();
+
+        if (requestData == null
+                || requestData.getPoid() == null
+                || requestData.getPoid().isEmpty()) {
+            return companies;
+        }
+
+        Set<Long> excluded = new HashSet<>(requestData.getPoid());
+
+        return companies.stream()
+                .filter(company -> !excluded.contains(company.getCompanyPoid()))
+                .toList();
     }
 
     @Override
-    public List<KpiEmployeeMasterResponseDto> getAllEmployees() {
-        return procRepository.getAllEmployees();
+    public List<KpiEmployeeMasterResponseDto> getAllEmployees(FetchRequestData requestData) {
+
+        List<KpiEmployeeMasterResponseDto> employees =
+                procRepository.getAllEmployees();
+
+        if (requestData == null
+                || requestData.getPoid() == null
+                || requestData.getPoid().isEmpty()) {
+            return employees;
+        }
+
+        Set<Long> excluded = new HashSet<>(requestData.getPoid());
+
+        return employees.stream()
+                .filter(emp -> !excluded.contains(emp.getEmployeePoid()))
+                .toList();
+    }
+
+    @Override
+    public boolean checkKpiNameExists(String kpiName, Long kpiPoid) {
+
+        if (kpiName == null || kpiName.trim().isEmpty()) {
+            return false;
+        }
+
+        if (kpiPoid == null) {
+            return globalKpiMastersRepository.existsByKpiNameIgnoreCase(
+                    kpiName
+            );
+        }
+
+        return globalKpiMastersRepository
+                .existsByKpiNameIgnoreCaseAndGlobalKpiMastersPoidNot(
+                        kpiName,  kpiPoid
+                );
     }
 
     private void updateChildTables(GlobalKpiMastersRequestDto requestDto, Long globalKpiMastersPoid) {
