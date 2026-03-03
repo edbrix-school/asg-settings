@@ -6,6 +6,7 @@ import com.asg.common.lib.dto.FilterRequestDto;
 import com.asg.common.lib.entity.CurrencyEntity;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
+import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.CurrencyRateDto;
@@ -96,7 +97,11 @@ public class CurrencyController {
 
     @PostMapping("/details")
     public ResponseEntity<?> getCurrencyDetails(
-            @RequestParam Long currencyPoid) {
+            @RequestParam(required = false) Long currencyPoid) {
+
+        if (currencyPoid == null) {
+            throw new ValidationException("currencyPoid is required");
+        }
         try {
             CurrencyRateDto data = currencyService.getAllCurrencyRates(currencyPoid);
             loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), currencyPoid.toString());
