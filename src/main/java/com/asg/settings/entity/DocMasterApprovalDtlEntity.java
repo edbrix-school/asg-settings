@@ -11,8 +11,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "GLOBAL_DOC_MASTER_APPROVAL_DTL")
 @Data
@@ -25,7 +23,7 @@ public class DocMasterApprovalDtlEntity extends BaseEntity {
     private GlobalDocMasterApprovalDtlId id;
 
     @Column(name = "APPROVAL_LEVEL")
-    private BigDecimal approvalLevel;
+    private Long approvalLevel;
 
     @Column(name = "USER_ROLE_POID")
     private Long userRolePoid;

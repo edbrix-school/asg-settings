@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -86,6 +87,13 @@ public class UpdateDocumentRequest {
     @Size(max = 500, message = "Auto Refresh Fields must not exceed 500 characters")
     private String autoRefreshFields;
 
+    @Size(max = 1, message = "Approval Custom Rule must not exceed 1 character")
+    private String approvalCustomRule;
+
+    @Size(max = 1, message = "Approval Required must not exceed 1 character")
+    private String approvalRequired;
+
+    private List<DocMasterApprovalDtlRequestDto> documentApprovalDetails;
 
 }
 
