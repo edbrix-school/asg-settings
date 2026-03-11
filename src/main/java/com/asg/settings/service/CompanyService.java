@@ -325,7 +325,8 @@ public class CompanyService {
 
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
-            if (division.getLogoImageBase64() != null && !division.getLogoImageBase64().trim().isEmpty()) {
+            // Only skip logo update if it's null (not provided), but allow empty string to clear it
+            if (division.getLogoImageBase64() != null) {
                 existingDivision.setLogoImageBase64(division.getLogoImageBase64());
             }
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
