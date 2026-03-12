@@ -284,6 +284,7 @@ public class DocumentService {
         dto.setDocShortName2(entity.getDocShortName2());
         dto.setDocName(entity.getDocName());
         dto.setDocName2(entity.getDocName2());
+        dto.setRouteName(entity.getRouteName());
 
         if (entity.getModuleId() != null) {
             dto.setModule(lovService.getDetailsByPoidAndLovName(Long.valueOf(entity.getModuleId()),"MODULE"));
@@ -459,6 +460,7 @@ public class DocumentService {
         if (StringUtils.isNotBlank(request.getDocShortName2())) document.setDocShortName2(request.getDocShortName2());
         if (StringUtils.isNotBlank(request.getDocName())) document.setDocName(request.getDocName());
         if (StringUtils.isNotBlank(request.getDocName2())) document.setDocName2(request.getDocName2());
+        if (StringUtils.isNotBlank(request.getRouteName())) document.setRouteName(request.getRouteName());
         if (StringUtils.isNotBlank(request.getModuleId())) document.setModuleId(request.getModuleId());
         if (StringUtils.isNotBlank(request.getDataEntryPeriod()))
             document.setDataEntryPeriod(request.getDataEntryPeriod());

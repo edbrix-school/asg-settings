@@ -18,6 +18,7 @@ public class DocumentDto {
     private String docShortName2;
     private String docName;
     private String docName2;
+    private String routeName;
     private LovGetListDto module;
     private String docType;
     private String isoDocument;
