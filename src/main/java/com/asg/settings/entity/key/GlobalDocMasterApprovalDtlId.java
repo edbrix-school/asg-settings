@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Embeddable
 @Data
 @NoArgsConstructor
@@ -20,5 +18,5 @@ public class GlobalDocMasterApprovalDtlId {
     private String docId;
 
     @Column(name = "DET_ROW_ID", nullable = false)
-    private BigDecimal detRowId;
+    private Long detRowId;
 }

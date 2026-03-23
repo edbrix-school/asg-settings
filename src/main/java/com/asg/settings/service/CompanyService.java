@@ -325,12 +325,16 @@ public class CompanyService {
 
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
-            existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
+            // Only skip logo update if it's null (not provided), but allow empty string to clear it
+            if (division.getLogoImageBase64() != null) {
+                existingDivision.setLogoImageBase64(division.getLogoImageBase64());
+            }
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
-            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId());
-            loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
+            
             companyDivisionRepository.saveAndFlush(existingDivision);
+            
+            loggingService.logChanges(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), LogDetailsEnum.MODIFIED, String.format("COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId()));
         } else {
             throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getDetRowId());
         }

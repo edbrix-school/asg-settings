@@ -19,10 +19,12 @@ import com.asg.common.lib.utility.PaginationUtil;
 import com.asg.settings.dto.ApprovalActionRequest;
 import com.asg.settings.dto.DocMasterApprovalDtlDto;
 import com.asg.settings.dto.DocumentDto;
+import com.asg.settings.dto.request.DocMasterApprovalDtlRequestDto;
 import com.asg.settings.dto.request.UpdateDocumentRequest;
 import com.asg.settings.entity.DocMasterApprovalDtlEntity;
 import com.asg.settings.entity.DocMasterAuthDtlEntity;
 import com.asg.settings.entity.RoleEntity;
+import com.asg.settings.entity.key.GlobalDocMasterApprovalDtlId;
 import com.asg.settings.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.ParameterMode;
@@ -109,6 +111,7 @@ public class DocumentService {
 
         docApprDtl.forEach(docMasterApprovalDtlEntity -> {
             DocMasterApprovalDtlDto docMasterApprovalDtlDto = new DocMasterApprovalDtlDto();
+            docMasterApprovalDtlDto.setDetRowId(docMasterApprovalDtlEntity.getId().getDetRowId());
             docMasterApprovalDtlDto.setApprovalLevel(docMasterApprovalDtlEntity.getApprovalLevel());
 
             // ✅ Handle user role safely
@@ -281,6 +284,7 @@ public class DocumentService {
         dto.setDocShortName2(entity.getDocShortName2());
         dto.setDocName(entity.getDocName());
         dto.setDocName2(entity.getDocName2());
+        dto.setRouteName(entity.getRouteName());
 
         if (entity.getModuleId() != null) {
             dto.setModule(lovService.getDetailsByPoidAndLovName(Long.valueOf(entity.getModuleId()),"MODULE"));
@@ -456,6 +460,7 @@ public class DocumentService {
         if (StringUtils.isNotBlank(request.getDocShortName2())) document.setDocShortName2(request.getDocShortName2());
         if (StringUtils.isNotBlank(request.getDocName())) document.setDocName(request.getDocName());
         if (StringUtils.isNotBlank(request.getDocName2())) document.setDocName2(request.getDocName2());
+        if (StringUtils.isNotBlank(request.getRouteName())) document.setRouteName(request.getRouteName());
         if (StringUtils.isNotBlank(request.getModuleId())) document.setModuleId(request.getModuleId());
         if (StringUtils.isNotBlank(request.getDataEntryPeriod()))
             document.setDataEntryPeriod(request.getDataEntryPeriod());
@@ -513,6 +518,12 @@ public class DocumentService {
         if (StringUtils.isNotBlank(request.getApprovalInfoFields()))
             document.setApprovalInfoFields(request.getApprovalInfoFields());
 
+        if (StringUtils.isNotBlank(request.getApprovalCustomRule()))
+            document.setApprovalCustomRule(request.getApprovalCustomRule());
+
+        if (StringUtils.isNotBlank(request.getApprovalRequired()))
+            document.setApprovalRequired(request.getApprovalRequired());
+
         if (StringUtils.isNotBlank(request.getApprovalViewRptFile()))
             document.setApprovalViewRptFile(request.getApprovalViewRptFile());
 
@@ -548,6 +559,11 @@ public class DocumentService {
         }
 
         documentRepository.saveAndFlush(document);
+
+        // Handle approval details with actionType
+        if (request.getDocumentApprovalDetails() != null && !request.getDocumentApprovalDetails().isEmpty()) {
+            handleApprovalDetails(document, request.getDocumentApprovalDetails());
+        }
 
         try {
             callAfterSaveProc(UserContext.getDocumentId(), documentKeyPoid);
@@ -682,5 +698,79 @@ public class DocumentService {
         Page<Map<String, Object>> page = new PageImpl<>(raw.records(), pageable, raw.totalRecords());
 
         return PaginationUtil.wrapPage(page, raw.displayFields());
+    }
+
+    
+    private void handleApprovalDetails(DocumentEntity document, List<DocMasterApprovalDtlRequestDto> approvalDtls) {
+        List<DocMasterApprovalDtlEntity> toSave = new ArrayList<>();
+        List<DocMasterApprovalDtlEntity> toDelete = new ArrayList<>();
+        
+        for (DocMasterApprovalDtlRequestDto dto : approvalDtls) {
+            String actionType = dto.getActionType() != null ? dto.getActionType().toLowerCase() : "nochange";
+            
+            switch (actionType) {
+                case "isdeleted" -> {
+                    if (dto.getDetRowId() != null) {
+                        GlobalDocMasterApprovalDtlId id = GlobalDocMasterApprovalDtlId.builder()
+                                .docId(document.getDocId())
+                                .detRowId(dto.getDetRowId())
+                                .build();
+                        documentApprovalDtlRepository.findById(id).ifPresent(existing -> {
+                            loggingService.logDelete(existing, UserContext.getDocumentId(), document.getDocPoid().toString());
+                            toDelete.add(existing);
+                        });
+                    }
+                }
+                case "iscreated" -> {
+                    Long nextDetRowId = documentApprovalDtlRepository.findAllById_DocId(document.getDocId()).stream()
+                            .map(e -> e.getId().getDetRowId())
+                            .max(Long::compareTo)
+                            .orElse(0L) + 1;
+                    
+                    DocMasterApprovalDtlEntity entity = DocMasterApprovalDtlEntity.builder()
+                            .id(GlobalDocMasterApprovalDtlId.builder()
+                                    .docId(document.getDocId())
+                                    .detRowId(nextDetRowId)
+                                    .build())
+                            .approvalLevel(dto.getApprovalLevel())
+                            .userRolePoid(dto.getUserRolePoid())
+                            .alternateUserRolePoid(dto.getAlternateUserRolePoid())
+                            .build();
+                    toSave.add(entity);
+                    
+                    String logDetail = String.format("Row Created with DetRowId %s", nextDetRowId);
+                    loggingService.createLogSummaryEntry(UserContext.getDocumentId(), document.getDocPoid().toString(), logDetail);
+                }
+                case "isupdated" -> {
+                    if (dto.getDetRowId() != null) {
+                        GlobalDocMasterApprovalDtlId id = GlobalDocMasterApprovalDtlId.builder()
+                                .docId(document.getDocId())
+                                .detRowId(dto.getDetRowId())
+                                .build();
+                        
+                        documentApprovalDtlRepository.findById(id).ifPresent(existing -> {
+                            DocMasterApprovalDtlEntity oldEntity = new DocMasterApprovalDtlEntity();
+                            BeanUtils.copyProperties(existing, oldEntity);
+                            
+                            existing.setApprovalLevel(dto.getApprovalLevel());
+                            existing.setUserRolePoid(dto.getUserRolePoid());
+                            existing.setAlternateUserRolePoid(dto.getAlternateUserRolePoid());
+                            toSave.add(existing);
+                            
+                            String logDetail = String.format("KeyId = DET_ROW_ID:%s", dto.getDetRowId());
+                            loggingService.logChanges(oldEntity, existing, DocMasterApprovalDtlEntity.class, 
+                                    UserContext.getDocumentId(), document.getDocPoid().toString(), LogDetailsEnum.MODIFIED, logDetail);
+                        });
+                    }
+                }
+            }
+        }
+        
+        if (!toSave.isEmpty()) {
+            documentApprovalDtlRepository.saveAll(toSave);
+        }
+        if (!toDelete.isEmpty()) {
+            documentApprovalDtlRepository.deleteAll(toDelete);
+        }
     }
 }
