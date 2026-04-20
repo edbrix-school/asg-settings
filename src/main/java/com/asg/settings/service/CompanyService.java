@@ -310,6 +310,8 @@ public class CompanyService {
             companyDivisionRepository.saveAndFlush(companyDivision);
             String logDetail = String.format("Row Created on Company Division with DetRowId %s ", companyDivision.getId().getDetRowId());
             loggingService.createLogSummaryEntry(UserContext.getDocumentId(), companyPoid.toString(), logDetail);
+            String keyIdDetail = String.format("KeyId = COMPANY_POID:%s", companyPoid);
+            loggingService.createLogDetailsEntry(UserContext.getDocumentId(), companyPoid.toString(), "divPoid", null, String.valueOf(division.getDivPoid()), keyIdDetail, "GLOBAL_COMPANY_DIV_DET");
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. " + division.getDivPoid());
         }
@@ -349,6 +351,8 @@ public class CompanyService {
             Long detRowId = existingDivision.getId().getDetRowId();
             companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, detRowId);
             loggingService.logDelete(existingDivision, UserContext.getDocumentId(), companyPoid.toString());
+            String keyIdDetail = String.format("KeyId = COMPANY_POID:%s", companyPoid);
+            loggingService.createLogDetailsEntry(UserContext.getDocumentId(), companyPoid.toString(), "divPoid", String.valueOf(existingDivision.getDivPoid()), null, keyIdDetail, "GLOBAL_COMPANY_DIV_DET");
         } else {
             throw new ValidationException("Cannot delete a division that is not assigned to the company, divPoid -> " + division.getDivPoid());
         }
