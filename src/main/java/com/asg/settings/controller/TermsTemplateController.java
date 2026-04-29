@@ -115,7 +115,6 @@ public class TermsTemplateController {
     public ResponseEntity<?> updateTemplateMetadata(@Parameter(description = "termsPoid identifier", example = "208", required = true) @PathVariable Long termsPoid, @Parameter(description = "loginUserPoid identifier", example = "3371", required = true) @RequestHeader("loginUserPoid") String loginUserPoid, @Valid @RequestBody TermsTemplateDto request) {
         try {
             TemplateResponseDto updatedTemplate = termsTemplateService.updateTemplateMetadata(termsPoid, request, loginUserPoid);
-            loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), termsPoid.toString());
             return success("Template updated successfully", updatedTemplate);
         } catch (Exception ex) {
             return internalServerError("Failed to update template: " + ex.getMessage());
@@ -175,6 +174,7 @@ public class TermsTemplateController {
     @GetMapping("/{termsPoid}")
     public ResponseEntity<?> getTermsTemplateAndClauses(@Parameter(description = "Unique identifier of the terms template", required = true, example = "30") @PathVariable Long termsPoid) {
         TermsTemplateDto termsTemplateDto = termsTemplateService.getTermsTemplateAndClauses(termsPoid);
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), termsPoid.toString());
         return success("Terms & clauses fetched successFully ", termsTemplateDto);
     }
 
