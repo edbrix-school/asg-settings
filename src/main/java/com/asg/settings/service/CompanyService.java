@@ -456,9 +456,8 @@ public class CompanyService {
             existingCompany.setInventoryDateUpdatedDate(currentDateTime);
         }
 
-        // Track VAT filing changes
-        if (!Objects.equals(company.getVatLastFiledDate(), existingCompany.getVatLastFiledDate()) ||
-                !Objects.equals(company.getVatLastFiledBy(), existingCompany.getVatLastFiledBy())) {
+        // Track VAT filing changes - only update audit fields when vatLastFiledDate actually changes
+        if (!Objects.equals(company.getVatLastFiledDate(), existingCompany.getVatLastFiledDate())) {
             existingCompany.setVatLastFiledBy(userId);
             existingCompany.setVatLastFiledCreatedDate(currentDateTime);
         }
