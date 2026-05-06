@@ -572,7 +572,7 @@ public class DocumentService {
             throw new ValidationException("After Save Validation Failed : " + e.getMessage());
         }
 
-        loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.MODIFIED, "DOC_ID");
+        loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocPoid().toString(), LogDetailsEnum.MODIFIED, "DOC_ID");
 
 
         // Return response matching original ticket format
