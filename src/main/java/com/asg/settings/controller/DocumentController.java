@@ -111,7 +111,7 @@ public class DocumentController {
             @RequestParam String docId,
             @RequestParam(required = false, defaultValue = "false") Boolean includeSql) {
         DocumentDto document = documentService.getDocumentById(docId, includeSql);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), document.getDocPoid().toString());
         return success("success", document);
     }
 
