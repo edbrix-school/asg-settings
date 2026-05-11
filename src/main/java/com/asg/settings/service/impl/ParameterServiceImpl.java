@@ -198,15 +198,18 @@ public class ParameterServiceImpl implements ParameterService {
         } else return null;
     }
 
-    // Do case-insensitive sorting and keep nulls last
+    // Do case-insensitive sorting, keep nulls last, and append PARAMETER_POID as stable tiebreaker
     private Sort normalizeSort(Sort sort) {
-        return Sort.by(
-                sort.stream()
-                        .map(o -> isStringField(o.getProperty())
-                                ? o.ignoreCase().nullsLast()
-                                : o.nullsLast())
-                        .toList()
-        );
+        List<Sort.Order> orders = sort.stream()
+                .map(o -> isStringField(o.getProperty())
+                        ? o.ignoreCase().nullsLast()
+                        : o.nullsLast())
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+        boolean alreadyHasPoid = orders.stream().anyMatch(o -> "parameterPoid".equals(o.getProperty()));
+        if (!alreadyHasPoid) {
+            orders.add(Sort.Order.asc("parameterPoid").nullsLast());
+        }
+        return Sort.by(orders);
     }
 
     //Helper to identify sorting for only string fields by matching
