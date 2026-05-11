@@ -21,6 +21,10 @@ public class AlertConfigEntity extends BaseEntity {
     @AuditIgnore
     private Long configPoid;
 
+    @Column(name = "GROUP_POID")
+    @AuditIgnore
+    private Long groupPoid;
+
     @Column(name = "ALERT_NAME", length = 100, nullable = false)
     @Size(max = 100)
     private String alertName;

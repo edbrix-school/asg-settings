@@ -62,6 +62,7 @@ public class AlertConfigServiceImpl implements AlertConfigService {
     public AlertAndRemainderDto createAlert(AlertAndRemainderDto request) {
 
         AlertConfigEntity entity = convertFromAlertDtoToAlertEntity(request);
+        entity.setGroupPoid(UserContext.getGroupPoid());
         AlertConfigEntity alertConfigEntity = alertConfigRepository.save(entity);
         String docId = UserContext.getDocumentId();
         String key = alertConfigEntity.getConfigPoid().toString();
