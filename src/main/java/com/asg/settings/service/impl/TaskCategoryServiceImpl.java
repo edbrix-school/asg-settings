@@ -190,6 +190,7 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
         taskCategoryEntity.setActive(StringUtils.isBlank(taskCategoryDto.getActive()) ? "Y" : taskCategoryDto.getActive());
         taskCategoryEntity.setDeleted(StringUtils.isBlank(taskCategoryDto.getDeleted()) ? "N" : taskCategoryDto.getDeleted());
         taskCategoryEntity.setCategoryCode(taskCategoryDto.getCategoryCode());
+        taskCategoryEntity.setGroupPoid(UserContext.getGroupPoid());
 
         TaskCategoryEntity savedEntity = taskCategoryRepository.save(taskCategoryEntity);
         Long categoryPoid = savedEntity.getCategoryPoid();
