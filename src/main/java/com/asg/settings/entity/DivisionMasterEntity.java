@@ -16,6 +16,10 @@ public class DivisionMasterEntity extends BaseEntity {
     @AuditIgnore
     private Long divisionId;
 
+    @Column(name = "GROUP_POID")
+    @AuditIgnore
+    private Long groupPoid;
+
     @Column(name = "DIVISION_CODE", unique = true, nullable = false)
     @AuditIgnore
     private String divisionCode;
