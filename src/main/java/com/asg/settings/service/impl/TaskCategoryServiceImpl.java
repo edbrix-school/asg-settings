@@ -274,8 +274,8 @@ public class TaskCategoryServiceImpl implements TaskCategoryService {
             entitiesToDelete.forEach( entity -> loggingService.logDelete(entity, UserContext.getDocumentId() , categoryPoid.toString()));
         }
         if (!entitiesToSave.isEmpty()) {
-            taskCategoryDTLRepository.saveAll(entitiesToSave);
-            entitiesToSave.forEach(cat -> {
+            List<TaskCategoryDTLEntity> savedEntities = taskCategoryDTLRepository.saveAllAndFlush(entitiesToSave);
+            savedEntities.forEach(cat -> {
                 String logDetail = String.format("Row Created on Task Category with DetRowId %s ", cat.getDetRowId());
                 loggingService.createLogSummaryEntry(UserContext.getDocumentId(), cat.getCategoryPoid().toString(), logDetail);
             });
