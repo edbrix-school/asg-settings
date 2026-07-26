@@ -5,6 +5,7 @@ import com.asg.common.lib.dto.*;
 import com.asg.common.lib.enums.LogDetailsEnum;
 import com.asg.common.lib.enums.UserRolesRightsEnum;
 import com.asg.common.lib.security.util.UserContext;
+import com.asg.common.lib.service.DocumentDownloadHeaderService;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.UserRoleRequestDto;
 import com.asg.settings.dto.request.LoadDefaultRightsRequest;
@@ -51,6 +52,7 @@ public class UserRoleController {
     private final RolePermissionService userPermissionService;
 
     private final LoggingService loggingService;
+    private final DocumentDownloadHeaderService downloadHeaderService;
 
     @Operation(summary = "Fetch permissions")
     @ApiResponses(value = {
@@ -480,8 +482,11 @@ public class UserRoleController {
         try {
             byte[] pdf = userRoleService.print(userRolePoid);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=user-roles-rights-" + userRolePoid + ".pdf")
+                    .headers(downloadHeaderService.buildAttachmentHeaders(
+                            UserContext.getDocumentId(),
+                            userRolePoid,
+                            "user-roles-rights",
+                            "pdf"))
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(pdf);
         } catch (Exception e) {
