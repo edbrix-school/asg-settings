@@ -483,7 +483,7 @@ public class UserRoleController {
             byte[] pdf = userRoleService.print(userRolePoid);
             return ResponseEntity.ok()
                     .headers(downloadHeaderService.buildAttachmentHeaders(
-                            UserContext.getDocumentId(),
+                            RoleEntity.class, "USER_ROLE_POID",
                             userRolePoid,
                             "user-roles-rights",
                             "pdf"))
