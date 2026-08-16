@@ -65,7 +65,7 @@ public class AddressMaster extends BaseEntity {
     @Column(name = "ACTIVE", length = 1)
     private String active;
 
-    @Column(name = "SEQNO")
+    @Column(name = "SEQNO", precision = 5, scale = 0)
     private Long seqno;
 
     @Column(name = "OLD_ACCTNO", length = 20)
