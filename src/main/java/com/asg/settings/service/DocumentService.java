@@ -284,6 +284,7 @@ public class DocumentService {
         dto.setDocShortName2(entity.getDocShortName2());
         dto.setDocName(entity.getDocName());
         dto.setDocName2(entity.getDocName2());
+        dto.setRouteName(entity.getRouteName());
 
         if (entity.getModuleId() != null) {
             dto.setModule(lovService.getDetailsByPoidAndLovName(Long.valueOf(entity.getModuleId()),"MODULE"));
@@ -459,6 +460,7 @@ public class DocumentService {
         if (StringUtils.isNotBlank(request.getDocShortName2())) document.setDocShortName2(request.getDocShortName2());
         if (StringUtils.isNotBlank(request.getDocName())) document.setDocName(request.getDocName());
         if (StringUtils.isNotBlank(request.getDocName2())) document.setDocName2(request.getDocName2());
+        if (StringUtils.isNotBlank(request.getRouteName())) document.setRouteName(request.getRouteName());
         if (StringUtils.isNotBlank(request.getModuleId())) document.setModuleId(request.getModuleId());
         if (StringUtils.isNotBlank(request.getDataEntryPeriod()))
             document.setDataEntryPeriod(request.getDataEntryPeriod());
@@ -570,7 +572,7 @@ public class DocumentService {
             throw new ValidationException("After Save Validation Failed : " + e.getMessage());
         }
 
-        loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocId(), LogDetailsEnum.MODIFIED, "DOC_ID");
+        loggingService.logChanges(oldDocument, document, DocumentEntity.class, UserContext.getDocumentId(), document.getDocPoid().toString(), LogDetailsEnum.MODIFIED, "DOC_ID");
 
 
         // Return response matching original ticket format
@@ -646,6 +648,54 @@ public class DocumentService {
             log.error("[AFTER SAVE PROC FAILED] status: " + status);
             throw new ValidationException(status);
         }
+    }
+
+    public boolean getGrantEditPermissionStatus(String docId, Long docKeyPoid) {
+        StoredProcedureQuery sp = entityManager.createStoredProcedureQuery("PROC_GLOBAL_DOC_EDIT_RIGHT_GET");
+        sp.registerStoredProcedureParameter("P_LOGIN_GROUP_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_USER_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_ID", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_KEY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_STATUS", String.class, ParameterMode.OUT);
+
+        sp.setParameter("P_LOGIN_GROUP_POID", UserContext.getGroupPoid());
+        sp.setParameter("P_LOGIN_USER_POID", UserContext.getUserPoid());
+        sp.setParameter("P_DOC_ID", docId);
+        sp.setParameter("P_DOC_KEY_POID", docKeyPoid);
+
+        sp.execute();
+        String status = (String) sp.getOutputParameterValue("P_STATUS");
+        log.info("[GRANT_EDIT_GET] status: " + status);
+        return status != null && status.contains("SUCCESS");
+    }
+
+    @Transactional
+    public String grantEditPermission(String docId, Long docKeyPoid, String reason, String approvalStatus) {
+        if (approvalStatus != null && approvalStatus.equalsIgnoreCase("FINAL_APPROVAL_COMPLETED")) {
+            throw new ValidationException("Approval process is completed for this document, temporary edit access cannot be granted.");
+        }
+        StoredProcedureQuery sp = entityManager.createStoredProcedureQuery("PROC_GLOBAL_DOC_EDIT_RIGHT_SET");
+        sp.registerStoredProcedureParameter("P_LOGIN_GROUP_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_LOGIN_USER_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_ID", String.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_DOC_KEY_POID", Long.class, ParameterMode.IN);
+        sp.registerStoredProcedureParameter("P_STATUS", String.class, ParameterMode.OUT);
+
+        sp.setParameter("P_LOGIN_GROUP_POID", UserContext.getGroupPoid());
+        sp.setParameter("P_LOGIN_USER_POID", UserContext.getUserPoid());
+        sp.setParameter("P_DOC_ID", docId);
+        sp.setParameter("P_DOC_KEY_POID", docKeyPoid);
+
+        sp.execute();
+        String status = (String) sp.getOutputParameterValue("P_STATUS");
+        log.info("[GRANT_EDIT_SET] status: " + status);
+
+        // PROC_GLOBAL_DOC_EDIT_RIGHT_SET already calls PROC_UPDATE_LOG_SUMMARY internally.
+        // We only log the user-provided reason separately, which the procedure does not capture.
+        if (status != null && status.contains("SUCCESS") && reason != null && !reason.isBlank()) {
+            loggingService.createLogSummaryEntry(docId, docKeyPoid.toString(), "Edit Permission Reason : " + reason);
+        }
+        return status;
     }
 
     private void checkEditRights(Long docKeyPoid, String docId) {

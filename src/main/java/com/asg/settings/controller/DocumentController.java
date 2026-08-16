@@ -9,6 +9,7 @@ import com.asg.common.lib.exception.ValidationException;
 import com.asg.common.lib.security.util.UserContext;
 import com.asg.common.lib.service.LoggingService;
 import com.asg.settings.dto.ApprovalActionRequest;
+import com.asg.settings.dto.request.GrantEditPermissionRequest;
 import com.asg.settings.dto.DocumentDto;
 import com.asg.common.lib.dto.DropdownStringDto;
 import com.asg.settings.dto.request.UpdateDocumentRequest;
@@ -111,7 +112,7 @@ public class DocumentController {
             @RequestParam String docId,
             @RequestParam(required = false, defaultValue = "false") Boolean includeSql) {
         DocumentDto document = documentService.getDocumentById(docId, includeSql);
-        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), docId.toString());
+        loggingService.createLogSummaryEntry(LogDetailsEnum.VIEWED, UserContext.getDocumentId(), document.getDocPoid().toString());
         return success("success", document);
     }
 
@@ -223,6 +224,46 @@ public class DocumentController {
             return badRequest("Validation Error: " + e.getMessage());
         } catch (Exception e) {
             return internalServerError("Error executing approval action: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+            summary = "Get Temporary Edit Permission Status",
+            description = "Checks if the current user has an active temporary edit grant for the given document record (calls PROC_GLOBAL_DOC_EDIT_RIGHT_GET)."
+    )
+    @GetMapping("/{docId}/grant-edit-permission/status")
+    public ResponseEntity<?> getGrantEditPermissionStatus(
+            @PathVariable String docId,
+            @RequestParam Long docKeyPoid) {
+        try {
+            boolean hasAccess = documentService.getGrantEditPermissionStatus(docId, docKeyPoid);
+            Map<String, Object> data = new HashMap<>();
+            data.put("hasTemporaryEditAccess", hasAccess);
+            return success("Status fetched successfully", data);
+        } catch (Exception e) {
+            return internalServerError("Error checking grant edit permission status: " + e.getMessage());
+        }
+    }
+
+    @Operation(
+            summary = "Give Temporary Edit Access",
+            description = "Grants temporary edit access (8 hours) for the selected document record (calls PROC_GLOBAL_DOC_EDIT_RIGHT_SET). Requires permission 000-070 View."
+    )
+    @PostMapping("/{docId}/grant-edit-permission")
+    public ResponseEntity<?> grantEditPermission(
+            @PathVariable String docId,
+            @RequestBody GrantEditPermissionRequest request) {
+        try {
+            if (request.getDocKeyPoid() == null) {
+                return badRequest("Validation Error: docKeyPoid is required");
+            }
+            String status = documentService.grantEditPermission(docId, request.getDocKeyPoid(), request.getReason(), request.getApprovalStatus());
+            if (status != null && status.contains("SUCCESS")) {
+                return success(status);
+            }
+            return badRequest(status);
+        } catch (Exception e) {
+            return internalServerError("Error granting edit permission: " + e.getMessage());
         }
     }
 

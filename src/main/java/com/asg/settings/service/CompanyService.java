@@ -310,6 +310,8 @@ public class CompanyService {
             companyDivisionRepository.saveAndFlush(companyDivision);
             String logDetail = String.format("Row Created on Company Division with DetRowId %s ", companyDivision.getId().getDetRowId());
             loggingService.createLogSummaryEntry(UserContext.getDocumentId(), companyPoid.toString(), logDetail);
+            String keyIdDetail = String.format("KeyId = COMPANY_POID:%s", companyPoid);
+            loggingService.createLogDetailsEntry(UserContext.getDocumentId(), companyPoid.toString(), "divPoid", null, String.valueOf(division.getDivPoid()), keyIdDetail, "GLOBAL_COMPANY_DIV_DET");
         } else {
             throw new ValidationException("You are attempting to create the same division multiple times. " + division.getDivPoid());
         }
@@ -325,12 +327,16 @@ public class CompanyService {
 
             existingDivision.setDivisionName(division.getDivisionName());
             existingDivision.setRemarks(division.getRemarks());
-            existingDivision.setLogoImageBase64((division.getLogoImageBase64()));
+            // Only skip logo update if it's null (not provided), but allow empty string to clear it
+            if (division.getLogoImageBase64() != null) {
+                existingDivision.setLogoImageBase64(division.getLogoImageBase64());
+            }
             existingDivision.setCompanyDivAddress(division.getCompanyDivAddress());
             existingDivision.setCompanyDivAddressPos(division.getCompanyDivAddressPos());
-            String logDetail = String.format("KeyId = COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId());
-            loggingService.createLog(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), logDetail);
+            
             companyDivisionRepository.saveAndFlush(existingDivision);
+            
+            loggingService.logChanges(oldCompanyData, existingDivision, CompanyDivisionEntity.class, UserContext.getDocumentId(), companyPoid.toString(), LogDetailsEnum.MODIFIED, String.format("COMPANY_POID %s: DET_ROW_ID %s", companyPoid, division.getDetRowId()));
         } else {
             throw new ValidationException("Cannot update a division that is not assigned to the company, detRowId -> " + division.getDetRowId());
         }
@@ -345,6 +351,8 @@ public class CompanyService {
             Long detRowId = existingDivision.getId().getDetRowId();
             companyDivisionRepository.deleteById_CompanyPoidAndId_DetRowId(companyPoid, detRowId);
             loggingService.logDelete(existingDivision, UserContext.getDocumentId(), companyPoid.toString());
+            String keyIdDetail = String.format("KeyId = COMPANY_POID:%s", companyPoid);
+            loggingService.createLogDetailsEntry(UserContext.getDocumentId(), companyPoid.toString(), "divPoid", String.valueOf(existingDivision.getDivPoid()), null, keyIdDetail, "GLOBAL_COMPANY_DIV_DET");
         } else {
             throw new ValidationException("Cannot delete a division that is not assigned to the company, divPoid -> " + division.getDivPoid());
         }
@@ -448,9 +456,8 @@ public class CompanyService {
             existingCompany.setInventoryDateUpdatedDate(currentDateTime);
         }
 
-        // Track VAT filing changes
-        if (!Objects.equals(company.getVatLastFiledDate(), existingCompany.getVatLastFiledDate()) ||
-                !Objects.equals(company.getVatLastFiledBy(), existingCompany.getVatLastFiledBy())) {
+        // Track VAT filing changes - only update audit fields when vatLastFiledDate actually changes
+        if (!Objects.equals(company.getVatLastFiledDate(), existingCompany.getVatLastFiledDate())) {
             existingCompany.setVatLastFiledBy(userId);
             existingCompany.setVatLastFiledCreatedDate(currentDateTime);
         }

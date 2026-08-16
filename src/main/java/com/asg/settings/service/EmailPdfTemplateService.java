@@ -121,7 +121,6 @@ public class EmailPdfTemplateService {
         if (oldEntity == null) {
             loggingService.createLogSummaryEntry(LogDetailsEnum.CREATED, docId, key);
         } else {
-            loggingService.createLogSummaryEntry(LogDetailsEnum.MODIFIED, docId, key);
             loggingService.logChanges(oldEntity, saved, EmailPdfTemplateMasterEntity.class, docId, key, LogDetailsEnum.MODIFIED, "TEMPLATE_POID");
         }
 

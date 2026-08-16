@@ -68,16 +68,15 @@ public class AddressMasterService {
                 .collect(Collectors.groupingBy(AddressDetailsDTO::getAddressType));
 
         AddressTypeMapDTO typeMap = new AddressTypeMapDTO();
-        typeMap.setMAIN(grouped.getOrDefault("MAIN", List.of()));
-        typeMap.setFINANCE(grouped.getOrDefault("FINANCE", List.of()));
-        typeMap.setSALES(grouped.getOrDefault("SALES", List.of()));
-        typeMap.setOPERATIONS(grouped.getOrDefault("OPERATIONS", List.of()));
-        typeMap.setINVOICE(grouped.getOrDefault("INVOICE", List.of()));
-        typeMap.setDELIVERY_ORDER(grouped.getOrDefault("DELIVERY_ORDER", List.of()));
-        typeMap.setCARGO_ARRIVAL_NOTICE(grouped.getOrDefault("CARGO_ARRIVAL_NOTICE", List.of()));
-        typeMap.setSHIP_CHANDLING(grouped.getOrDefault("SHIP_CHANDLING", List.of()));
-        typeMap.setCLAIM_UAC(grouped.getOrDefault("CLAIM_UAC", List.of()));
-        typeMap.setCAN(grouped.getOrDefault("CAN", List.of()));
+        typeMap.setMain(grouped.getOrDefault("MAIN", List.of()));
+        typeMap.setFinance(grouped.getOrDefault("FINANCE", List.of()));
+        typeMap.setSales(grouped.getOrDefault("SALES", List.of()));
+        typeMap.setOperation(grouped.getOrDefault("OPERATION", List.of()));
+        typeMap.setInvoiceAddress(grouped.getOrDefault("INVOICE_ADDRESS", List.of()));
+        typeMap.setDeliveryOrder(grouped.getOrDefault("DELIVERY_ORDER", List.of()));
+        typeMap.setShipChandling(grouped.getOrDefault("SHIP_CHANDLING", List.of()));
+        typeMap.setClaimUac(grouped.getOrDefault("CLAIM_UAC", List.of()));
+        typeMap.setCan(grouped.getOrDefault("CAN", List.of()));
 
         AddressMasterResponse resp = buildMasterResponse(master, details);
         resp.setAddressTypeMap(typeMap);
@@ -178,10 +177,10 @@ public class AddressMasterService {
         if (req.getCountryId() == null)
             throw new IllegalArgumentException("Country is mandatory");
 
-        if (req.getAddressTypeMap() == null || req.getAddressTypeMap().getMAIN() == null || req.getAddressTypeMap().getMAIN().isEmpty())
+        if (req.getAddressTypeMap() == null || req.getAddressTypeMap().getMain() == null || req.getAddressTypeMap().getMain().isEmpty())
             throw new IllegalArgumentException("MAIN contact details are mandatory (Mobile & Email required)");
 
-        AddressDetailsDTO main = req.getAddressTypeMap().getMAIN().get(0);
+        AddressDetailsDTO main = req.getAddressTypeMap().getMain().get(0);
         if (main.getMobile() == null || main.getMobile().isBlank())
             throw new IllegalArgumentException("Mobile is mandatory");
         if (main.getEmail() == null || main.getEmail().isEmpty())
@@ -260,16 +259,15 @@ public class AddressMasterService {
 
         // Combine all tabs
         Map<String, List<AddressDetailsDTO>> typedLists = new LinkedHashMap<>();
-        if (typeMap.getMAIN() != null) typedLists.put("MAIN", typeMap.getMAIN());
-        if (typeMap.getFINANCE() != null) typedLists.put("FINANCE", typeMap.getFINANCE());
-        if (typeMap.getSALES() != null) typedLists.put("SALES", typeMap.getSALES());
-        if (typeMap.getOPERATIONS() != null) typedLists.put("OPERATIONS", typeMap.getOPERATIONS());
-        if (typeMap.getINVOICE() != null) typedLists.put("INVOICE", typeMap.getINVOICE());
-        if (typeMap.getDELIVERY_ORDER() != null) typedLists.put("DELIVERY_ORDER", typeMap.getDELIVERY_ORDER());
-        if (typeMap.getCARGO_ARRIVAL_NOTICE() != null) typedLists.put("CARGO_ARRIVAL_NOTICE", typeMap.getCARGO_ARRIVAL_NOTICE());
-        if (typeMap.getSHIP_CHANDLING() != null) typedLists.put("SHIP_CHANDLING", typeMap.getSHIP_CHANDLING());
-        if (typeMap.getCLAIM_UAC() != null) typedLists.put("CLAIM_UAC", typeMap.getCLAIM_UAC());
-        if (typeMap.getCAN() != null) typedLists.put("CAN", typeMap.getCAN());
+        if (typeMap.getMain() != null) typedLists.put("MAIN", typeMap.getMain());
+        if (typeMap.getFinance() != null) typedLists.put("FINANCE", typeMap.getFinance());
+        if (typeMap.getSales() != null) typedLists.put("SALES", typeMap.getSales());
+        if (typeMap.getOperation() != null) typedLists.put("OPERATION", typeMap.getOperation());
+        if (typeMap.getInvoiceAddress() != null) typedLists.put("INVOICE_ADDRESS", typeMap.getInvoiceAddress());
+        if (typeMap.getDeliveryOrder() != null) typedLists.put("DELIVERY_ORDER", typeMap.getDeliveryOrder());
+        if (typeMap.getShipChandling() != null) typedLists.put("SHIP_CHANDLING", typeMap.getShipChandling());
+        if (typeMap.getClaimUac() != null) typedLists.put("CLAIM_UAC", typeMap.getClaimUac());
+        if (typeMap.getCan() != null) typedLists.put("CAN", typeMap.getCan());
 
         for (Map.Entry<String, List<AddressDetailsDTO>> entry : typedLists.entrySet()) {
             String type = entry.getKey();
