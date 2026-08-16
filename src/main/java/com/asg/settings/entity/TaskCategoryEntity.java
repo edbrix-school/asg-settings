@@ -21,6 +21,10 @@ public class TaskCategoryEntity extends BaseEntity {
     @AuditIgnore
     private Long categoryPoid;
 
+    @Column(name = "GROUP_POID")
+    @AuditIgnore
+    private Long groupPoid;
+
     @Column(name = "CATEGORY_CODE", length = 30)
     private String categoryCode;
 

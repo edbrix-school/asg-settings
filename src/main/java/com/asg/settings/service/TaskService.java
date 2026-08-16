@@ -151,9 +151,6 @@ public class TaskService {
         // Set all other fields from the input task
         setTaskFields(existingTask, task, userPoid);
 
-        // Audit fields handled by AuditListener
-        existingTask.setCompanyPoid(task.getCompanyPoid());
-
         existingTask = taskRepository.saveAndFlush(existingTask);
         String docId = existingTask.getRefDocId();
         String key = existingTask.getTransactionPoid().toString();

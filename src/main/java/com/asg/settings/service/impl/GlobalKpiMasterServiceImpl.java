@@ -210,7 +210,7 @@ public class GlobalKpiMasterServiceImpl implements GlobalKpiMasterService {
             return false;
         }
 
-        if (kpiPoid == null) {
+        if (kpiPoid == null || kpiPoid == 0) {
             return globalKpiMastersRepository.existsByKpiNameIgnoreCase(
                     kpiName
             );

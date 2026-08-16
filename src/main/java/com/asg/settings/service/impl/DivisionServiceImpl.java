@@ -59,6 +59,7 @@ public class DivisionServiceImpl implements DivisionService {
         entity.setSeqNo(request.getSeqNo());
         entity.setActive(request.getActive() != null ? request.getActive() : "N");
         entity.setDeleted("N");
+        entity.setGroupPoid(UserContext.getGroupPoid());
 
         DivisionMasterEntity saved = divisionRepository.save(entity);
         String docId = UserContext.getDocumentId();

@@ -26,6 +26,8 @@ public class UpdateDocumentRequest {
     private String docName;
     @Size(max = 20,message = "Doc Name 2 must not exceed 20 characters")
     private String docName2;
+    @Size(max = 100,message = "Route Name must not exceed 100 characters")
+    private String routeName;
     @Size(max = 20,message = "Module Id must not exceed 20 characters")
     private String moduleId;
     private String dataEntryPeriod;
