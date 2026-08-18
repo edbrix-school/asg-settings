@@ -128,9 +128,11 @@ public class GlobalExceptionHandler {
             errorMessage = ex.getCause() != null ? ex.getCause().getMessage() : "Data integrity violation";
         }
         
-        // Parse constraint name from Oracle error message
-        // Pattern: ORA-00001: unique constraint (SCHEMA.CONSTRAINT_NAME) violated
-        Pattern constraintPattern = Pattern.compile("unique constraint \\([^.]+\\.([^)]+)\\)", Pattern.CASE_INSENSITIVE);
+        // Parse constraint name from the DB error message. Handles both
+        // Oracle's "unique constraint (SCHEMA.CONSTRAINT_NAME)" and
+        // Postgres's "unique constraint \"constraint_name\"" formats.
+        Pattern constraintPattern = Pattern.compile(
+                "unique constraint\\s*\\(?\"?(?:[^.\"()]+\\.)?([^)\"]+)\"?\\)?", Pattern.CASE_INSENSITIVE);
         Matcher matcher = constraintPattern.matcher(errorMessage);
         
         if (matcher.find()) {

@@ -115,7 +115,7 @@ public class AlertAndReminderController {
                                     value = """
                                             {
                                                 "alertName": "Contract Expiry Alert",
-                                                "sqlQuery": "SELECT * FROM contracts WHERE expiry_date <= SYSDATE + :notifyDays",
+                                                "sqlQuery": "SELECT * FROM contracts WHERE expiry_date <= CURRENT_DATE + :notifyDays",
                                                 "expiryDateField": "EXPIRY_DATE",
                                                 "notifyDays": 30,
                                                 "notifyUserRolesPoid": ["123", "456"],
@@ -194,7 +194,7 @@ public class AlertAndReminderController {
                                             value = """
                                                     {
                                                         "alertName": "Updated Contract Alert",
-                                                        "sqlQuery": "SELECT * FROM contracts WHERE expiry_date <= SYSDATE + :notifyDays",
+                                                        "sqlQuery": "SELECT * FROM contracts WHERE expiry_date <= CURRENT_DATE + :notifyDays",
                                                         "expiryDateField": "EXPIRY_DATE",
                                                         "notifyDays": 45,
                                                         "notifyUserRolesPoid": ["123", "456"],

@@ -37,10 +37,10 @@ public class EmailPdfTemplateMasterEntity {
     @Column(name = "EMAIL_SUBJECT")
     private String emailSubject;
 
-    @Column(name = "EMAIL_CONTENT", columnDefinition = "CLOB")
+    @Column(name = "EMAIL_CONTENT", columnDefinition = "TEXT")
     private String emailContent;
 
-    @Column(name = "PDF_CONTENT", columnDefinition = "CLOB")
+    @Column(name = "PDF_CONTENT", columnDefinition = "TEXT")
     private String pdfContent;
 
     @Column(name = "ACTIVE")

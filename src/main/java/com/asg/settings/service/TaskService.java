@@ -23,7 +23,6 @@ import com.asg.settings.repository.TempTaskImportTemplateRepository;
 import com.asg.settings.utility.TaskExcelParser;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import oracle.jdbc.OracleTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,31 +209,35 @@ public class TaskService {
     }
 
     public List<LastTaskDto> getLastTask(Long userPoid, Long companyPoid) throws SQLException {
-        String sql = "BEGIN PROC_TASK_GET_LAST_TASK_DETAIL(?, ?, ?, ?); END;";
-        try (Connection conn = dataSource.getConnection();
-             CallableStatement cs = conn.prepareCall(sql)) {
+        String sql = "{ call PROC_TASK_GET_LAST_TASK_DETAIL(?, ?, ?, ?) }";
+        try (Connection conn = dataSource.getConnection()) {
+            // Postgres refcursors only live for the duration of the transaction that opened them
+            conn.setAutoCommit(false);
 
-            cs.setLong(1, userPoid);
-            cs.setLong(2, companyPoid);
-            cs.registerOutParameter(3, Types.VARCHAR);
-            cs.registerOutParameter(4, OracleTypes.CURSOR);
-            cs.execute();
+            try (CallableStatement cs = conn.prepareCall(sql)) {
+                cs.setLong(1, userPoid);
+                cs.setLong(2, companyPoid);
+                cs.registerOutParameter(3, Types.VARCHAR);
+                cs.registerOutParameter(4, Types.OTHER); // REF_CURSOR
+                cs.execute();
 
-            String result = cs.getString(3);
-            if (result != null && result.contains("SUCCESS")) {
-                try (ResultSet rs = (ResultSet) cs.getObject(4)) {
-                    List<LastTaskDto> list = new ArrayList<>();
-                    while (rs.next()) {
-                        list.add(new LastTaskDto(
-                                rs.getString("TASK_CATEGORY"),
-                                rs.getString("TASK_SUB_CATEGORY"),
-                                rs.getLong("TASK_USER_POID")
-                        ));
+                String result = cs.getString(3);
+                if (result != null && result.contains("SUCCESS")) {
+                    try (ResultSet rs = (ResultSet) cs.getObject(4)) {
+                        List<LastTaskDto> list = new ArrayList<>();
+                        while (rs.next()) {
+                            list.add(new LastTaskDto(
+                                    rs.getString("TASK_CATEGORY"),
+                                    rs.getString("TASK_SUB_CATEGORY"),
+                                    rs.getLong("TASK_USER_POID")
+                            ));
+                        }
+                        conn.commit();
+                        return list;
                     }
-                    return list;
+                } else {
+                    throw new SQLException(result);
                 }
-            } else {
-                throw new SQLException(result);
             }
         }
     }

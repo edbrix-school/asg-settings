@@ -36,7 +36,7 @@ public class TempTaskImportTemplateRepository {
 
     // Need this as second step to get data from temp table and put into actual and then delete temp table
     public String importTasksFromExcel(Long userPoid, Long companyPoid) throws SQLException {
-        String sql = "BEGIN PROC_TASK_IMPORT_FROM_EXCEL(?, ?, ?); END;";
+        String sql = "{ call PROC_TASK_IMPORT_FROM_EXCEL(?, ?, ?) }";
         try (Connection conn = dataSource.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
 

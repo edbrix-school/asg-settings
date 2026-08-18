@@ -15,7 +15,7 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     Task findByTransactionPoid(Long TaskPoid);
 
     @Query(value = """
-            SELECT COALESCE(MAX(TO_NUMBER(REGEXP_SUBSTR(DOC_REF, '[0-9]+'))), 0)
+            SELECT COALESCE(MAX(substring(DOC_REF from '[0-9]+')::numeric), 0)
             FROM GLOBAL_TASK_HDR
             WHERE TASK_CATEGORY = :category
             """, nativeQuery = true)

@@ -18,6 +18,6 @@ public interface EmailPdfTemplateRepository extends JpaRepository<EmailPdfTempla
     @Query("SELECT e FROM EmailPdfTemplateMasterEntity e WHERE e.templateName = :templateName AND (e.deleted IS NULL OR e.deleted = 'N')")
     EmailPdfTemplateMasterEntity findByTemplateName(String templateName);
 
-    @Query(value = "SELECT GLOBAL_EMAIL_PDF_TEMPLATE_SEQ.NEXTVAL FROM DUAL", nativeQuery = true)
+    @Query(value = "SELECT nextval('GLOBAL_EMAIL_PDF_TEMPLATE_SEQ')", nativeQuery = true)
     Long getNextSequenceValue();
 }

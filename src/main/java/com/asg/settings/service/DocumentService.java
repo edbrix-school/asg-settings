@@ -228,7 +228,7 @@ public class DocumentService {
                     (CallableStatementCreator) con -> {
                         CallableStatement cs = con.prepareCall(sql);
                         cs.setString(1, userId);
-                        cs.registerOutParameter(2, oracle.jdbc.OracleTypes.CURSOR);
+                        cs.registerOutParameter(2, java.sql.Types.OTHER); // REF_CURSOR
                         return cs;
                     },
                     (CallableStatementCallback<Map<String, Map<String, Boolean>>>) cs -> {

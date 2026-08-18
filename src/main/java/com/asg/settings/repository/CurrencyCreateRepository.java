@@ -110,11 +110,12 @@ public class CurrencyCreateRepository {
                             "(CURRENCY_POID, GROUP_POID, CURRENCY_CODE, CURRENCY_NAME, CURRENCY_NAME2, " +
                             "CURRENCY_SHORT_NAME, COIN_SHORT_NAME, CURRENCY_DECIMALS, SEQNO, ACTIVE, " +
                             "CREATED_BY, CREATED_DATE, DELETED, NUMBER_FORMAT_CURRENCY) " +
-                            "VALUES (GLOBAL_CURRENCY_MASTER_SEQ.NEXTVAL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE, ?, ?)";
-                
-                int rowsAffected = jdbcTemplate.update(sql, 
+                            "VALUES (nextval('GLOBAL_CURRENCY_MASTER_SEQ'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?) " +
+                            "RETURNING CURRENCY_POID";
+
+                Long generatedId = jdbcTemplate.queryForObject(sql, Long.class,
                     entity.getGroupPoid(),
-                    entity.getCurrencyCode(), 
+                    entity.getCurrencyCode(),
                     entity.getCurrencyName(),
                     request.getCurrencyName2(),
                     request.getCurrencyShortName(),
@@ -125,17 +126,12 @@ public class CurrencyCreateRepository {
                     entity.getCreatedBy(),
                     entity.getDeleted(),
                     request.getNumberFormatCurrency());
-                    
-                log.info("Direct JDBC insert affected {} rows", rowsAffected);
-                
-                // Get the generated ID
-                Long generatedId = jdbcTemplate.queryForObject(
-                    "SELECT GLOBAL_CURRENCY_MASTER_SEQ.CURRVAL FROM DUAL", Long.class);
+
                 entity.setCurrencyPoid(generatedId);
-                
+
                 log.info("Entity created with ID: {}", generatedId);
                 return entity;
-                
+
             } catch (Exception e) {
                 log.error("Direct JDBC insert failed: {}", e.getMessage());
                 throw e;

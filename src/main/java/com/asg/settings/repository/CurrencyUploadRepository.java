@@ -20,7 +20,7 @@ public class CurrencyUploadRepository {
     }
 
     public String callCurrencyUploadProc(Long groupPoid, Long userPoid, Long companyPoid) throws SQLException {
-        String sql = "BEGIN PROC_CURRENCY_RATE_UPLOAD(?, ?, ?, ?); END;";
+        String sql = "{ call PROC_CURRENCY_RATE_UPLOAD(?, ?, ?, ?) }";
         try (Connection conn = dataSource.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
 
@@ -42,7 +42,7 @@ public class CurrencyUploadRepository {
     }
 
     public String callCurrencyUpdateProc(Long groupPoid, String currencyCode, LocalDate rateChangeDate, BigDecimal buyRate, BigDecimal sellRate) throws SQLException {
-        String sql = "BEGIN PROC_GLOB_CURRENCY_UPDATE(?, ?, ?, ?, ?, ?); END;";
+        String sql = "{ call PROC_GLOB_CURRENCY_UPDATE(?, ?, ?, ?, ?, ?) }";
         try (Connection conn = dataSource.getConnection();
              CallableStatement cs = conn.prepareCall(sql)) {
 
