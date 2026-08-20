@@ -37,14 +37,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.CallableStatementCallback;
-import org.springframework.jdbc.core.CallableStatementCreator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -201,7 +200,13 @@ public class DocumentService {
         Map<String, Map<String, Boolean>> userRights = loadUserRights(getUserId());
         DocumentEntity document = documentRepository.findByDocId(docId);
 
-        if (userRights.get(docId).get("DELETE")) {
+        // loadUserRights() returns null on failure, and even on success there's no map entry for a
+        // docId the user has zero rights on — either way, absence must mean "not allowed to delete",
+        // not a NullPointerException.
+        Map<String, Boolean> docRights = userRights != null ? userRights.get(docId) : null;
+        boolean canDelete = docRights != null && Boolean.TRUE.equals(docRights.get("DELETE"));
+
+        if (canDelete) {
             if (document == null) {
                 throw new ValidationException("Document not found with id: " + docId);
             }
@@ -222,41 +227,49 @@ public class DocumentService {
 
     Map<String, Map<String, Boolean>> loadUserRights(String userId) {
         try {
-            String sql = "{ call PROC_GLOB_USR_RIGHTS_APPSTART(?, ?) }";
-
-            return jdbcTemplate.execute(
-                    (CallableStatementCreator) con -> {
-                        CallableStatement cs = con.prepareCall(sql);
-                        cs.setString(1, userId);
-                        cs.registerOutParameter(2, java.sql.Types.OTHER); // REF_CURSOR
-                        return cs;
-                    },
-                    (CallableStatementCallback<Map<String, Map<String, Boolean>>>) cs -> {
-                        cs.execute();
-
-                        try (ResultSet rs = (ResultSet) cs.getObject(2)) {
-                            BigDecimal userPoid = BigDecimal.ZERO;
-                            Map<String, Map<String, Boolean>> userRights = new HashMap<>();
-
-                            while (rs.next()) {
-                                userPoid = rs.getBigDecimal("USER_POID");
-                                String docId = rs.getString("DOC_ID");
-                                String rights = rs.getString("RIGHTS");
-                                System.out.println(rights);
-
-                                Map<String, Boolean> docRights = new HashMap<>();
-                                docRights.put("VIEW", rights.charAt(0) == '1');
-                                docRights.put("CREATE", rights.charAt(1) == '1');
-                                docRights.put("EDIT", rights.charAt(2) == '1');
-                                docRights.put("DELETE", rights.charAt(3) == '1');
-                                docRights.put("PRINT", rights.charAt(4) == '1');
-                                docRights.put("EMAIL", rights.charAt(5) == '1');
-                                userRights.put(docId, docRights);
-                            }
-                            return userRights;
-                        }
+            // PROC_GLOB_USR_RIGHTS_APPSTART's refcursor OUT param is second, not first — pgjdbc's
+            // CallableStatement.registerOutParameter only binds a REF_CURSOR correctly in the first
+            // position, so it silently dropped this one instead of binding it. Calling the procedure
+            // as a plain CALL query sidesteps that entirely: Postgres returns the cursor's name as an
+            // ordinary one-row ResultSet, which we then FETCH from separately. Same fix already
+            // applied to PermissionRepository.getUserPermissions() in ags-security-gateway.
+            //
+            // Uses a dedicated Connection straight from the DataSource, not jdbcTemplate.execute()'s
+            // ConnectionCallback — Hibernate's open-in-view binds one connection to the whole request,
+            // and JdbcTemplate would reuse that same bound connection. Toggling autocommit/commit on
+            // it here would corrupt its transaction state for the JPA calls later in this same
+            // request (deleteDocument()'s own documentRepository.findByDocId() right after this).
+            try (java.sql.Connection con = jdbcTemplate.getDataSource().getConnection()) {
+                con.setAutoCommit(false);
+                String cursorName;
+                try (PreparedStatement ps = con.prepareStatement("CALL PROC_GLOB_USR_RIGHTS_APPSTART(?, NULL)")) {
+                    ps.setString(1, userId);
+                    try (ResultSet crs = ps.executeQuery()) {
+                        crs.next();
+                        cursorName = crs.getString(1);
                     }
-            );
+                }
+
+                Map<String, Map<String, Boolean>> userRights = new HashMap<>();
+                try (Statement fetchStmt = con.createStatement();
+                     ResultSet rs = fetchStmt.executeQuery("FETCH ALL FROM \"" + cursorName + "\"")) {
+                    while (rs.next()) {
+                        String docId = rs.getString("DOC_ID");
+                        String rights = rs.getString("RIGHTS");
+
+                        Map<String, Boolean> docRights = new HashMap<>();
+                        docRights.put("VIEW", rights.charAt(0) == '1');
+                        docRights.put("CREATE", rights.charAt(1) == '1');
+                        docRights.put("EDIT", rights.charAt(2) == '1');
+                        docRights.put("DELETE", rights.charAt(3) == '1');
+                        docRights.put("PRINT", rights.charAt(4) == '1');
+                        docRights.put("EMAIL", rights.charAt(5) == '1');
+                        userRights.put(docId, docRights);
+                    }
+                }
+                con.commit();
+                return userRights;
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
